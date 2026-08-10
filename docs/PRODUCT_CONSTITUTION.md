@@ -68,3 +68,29 @@ Não implementado por decisão explícita (não por limitação): tratamento por
 fatores, inferência estatística, AVM, machine learning, SHAP, análise de
 convergência, geração automática de laudo, agentes de pesquisa e RAG. Estes
 módulos só podem ser construídos **sobre datasets congelados**.
+
+## Artigo 9 — Oposições conceituais permanentes
+
+Estas distinções são normativas e vinculam toda implementação presente e
+futura de imóvel, mercado e comparáveis (ver `docs/PROPERTY_DATA_MODEL.md`,
+`docs/MARKET_OBSERVATION_MODEL.md`, `docs/COMPARABLE_GOVERNANCE.md`,
+`docs/GEO_MODEL.md`). Nenhum código pode tratar os dois lados de um par abaixo
+como sinônimos ou converter um no outro implicitamente.
+
+| Oposição | Significado |
+| --- | --- |
+| `PROPERTY != LISTING` | o imóvel (`properties`/`market_properties`) não é o anúncio; o anúncio é uma `market_observation` |
+| `PROPERTY != MARKET OBSERVATION` | o imóvel é a entidade estável; a observação é um evento datado sobre ela |
+| `ASKING != TRANSACTION` | preço pedido e preço transacionado são colunas e evidências distintas, nunca inferidas uma da outra |
+| `REMOVED != SOLD` | um anúncio retirado não é evidência de venda; não existe status `SOLD` |
+| `DISCOVERED != ELIGIBLE` | localizar um candidato a comparável não é o mesmo que aprová-lo tecnicamente |
+| `ELIGIBLE != INCLUDED` | ser elegível não é o mesmo que ter sido escolhido para a análise |
+| `EXCLUDED != DELETED` | um comparável excluído permanece no acervo com motivo e histórico |
+| `UNKNOWN != ZERO` | ausência de conhecimento é um estado explícito, nunca um valor numérico neutro |
+| `COMPLETENESS != CONFIDENCE` | ter mais dados preenchidos não significa que os dados são confiáveis |
+| `DERIVED != OBSERVED` | um valor calculado (ex.: preço por área) nunca é apresentado como um valor observado |
+| `ADOPTED != UNIVERSALLY TRUE` | um fato canônico é o valor escolhido pelo avaliador para aquele caso, não uma verdade absoluta sobre o imóvel |
+| `AI OUTPUT != VERIFIED FACT` | saída de IA, OCR ou parser é sempre candidato; só se torna fato com verificação/adoção humana registrada |
+
+Qualquer violação destas oposições no schema, na RPC ou na interface é
+considerada defeito de conformidade, não decisão de produto.

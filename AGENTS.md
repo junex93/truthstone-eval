@@ -33,7 +33,7 @@ são permanentes e valem para qualquer agente ou pessoa que edite este repositó
   `evidence_field_revisions`, `dataset_item_snapshots`.
 - Nunca dar acesso de `anon` a tabelas de domínio ou às RPCs oficiais.
 - Toda nova RPC `SECURITY DEFINER`: `search_path = public`, autorização interna
-  explícita e **nunca** expor `set_config` do GUC `fluxa.privileged_op`.
+  explícita e **nunca** expor `set_config` do GUC `valuation.privileged_op`.
 
 ## 3. Operações oficiais
 
@@ -98,6 +98,28 @@ pelo cliente nunca é aceito.
 Não implementar tratamento por fatores, inferência estatística, AVM, ML, SHAP,
 convergência, laudo automático, agentes de pesquisa ou RAG sem pedido explícito —
 e somente sobre datasets congelados.
+
+## 12-A. Regras permanentes — mercado e comparáveis (Fase 3)
+
+- Nunca interpretar um anúncio `REMOVED` como vendido sem evidência de
+  transação (`CLOSED_SALE`/`CLOSED_RENT`) com sua própria fonte.
+- Nunca tratar múltiplos anúncios do mesmo imóvel como comparáveis
+  independentes sem revisão de duplicidade (`resolve_property_match`).
+- Nunca sobrescrever preço pedido histórico: toda alteração passa por
+  `record_price_observation`, que preserva a leitura anterior.
+- Nunca deletar um comparável excluído: `EXCLUDED != DELETED`, o registro e
+  seu histórico de decisão permanecem no acervo.
+- Nunca converter um atributo com `knowledge_state = UNKNOWN` (ou ausente) em
+  zero ou em qualquer valor numérico neutro.
+- Nunca tratar completude de dados como confiança (`COMPLETENESS !=
+  CONFIDENCE`).
+- Nunca tratar preço pedido como preço transacionado: `asking_*` e
+  `transaction_*` são sempre evidências e colunas distintas.
+- Nunca resolver automaticamente atributos divergentes entre observações:
+  divergência é preservada até haver adoção humana.
+- Fatos canônicos exigem adoção humana autorizada
+  (`adopt_canonical_fact`, papel `can_review`, justificativa registrada);
+  nenhum outro caminho pode gravar em `property_canonical_facts`.
 
 ## 12. Documentação
 

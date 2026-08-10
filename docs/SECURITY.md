@@ -26,6 +26,13 @@ PostgreSQL. A UI não é considerada parte do perímetro de segurança.
 | dataset_items | sim | sim | não | sim (só se não congelado) |
 | evidence_reviews, evidence_field_revisions | sim | **não** | não | não |
 | audit_log, dataset_item_snapshots | sim | **não** | não | não |
+| market_properties, market_observations, developments | sim | sim | sim (com triggers) | não |
+| property_attribute_observations, market_observation_price_history | sim | sim | não | não |
+| property_canonical_facts | sim | **não** (só via RPC) | **não** | não |
+| comparable_candidates | sim | sim (nasce DISCOVERED/NOT_DECIDED) | **não** (só via RPC) | não |
+| comparable_decision_history, comparable_exclusion_reasons | sim | **não** | não | não |
+| property_match_candidates | sim | sim | **não** (só via RPC) | não |
+| market_source_quality_assessments, derived_values | sim | sim | conforme RLS | não |
 
 `anon` não tem acesso a nenhuma tabela do domínio nem às RPCs oficiais.
 
@@ -38,9 +45,15 @@ PostgreSQL. A UI não é considerada parte do perímetro de segurança.
 | `revise_evidence_field` | `can_write`, motivo | `FIELD_REVISED` |
 | `freeze_dataset` | `can_write`, confirmação literal `CONGELAR` | `DATASET_FROZEN` |
 | `transition_case_status` | `can_write` (+ `is_org_admin` para COMPLETED) | `CASE_STATUS_CHANGED` |
+| `record_price_observation` | `can_write` | `PRICE_OBSERVATION_ADDED` |
+| `adopt_canonical_fact` | `can_review`, justificativa, campo de origem `VERIFIED` quando aplicável | `CANONICAL_FACT_ADOPTED` |
+| `resolve_property_match` | `can_review`, justificativa para decisões confirmadas | `DUPLICATE_MATCH_CONFIRMED` |
+| `decide_comparable` | `can_write`, `ELIGIBLE` prévio para incluir, motivo catalogado para excluir | `COMPARABLE_*` conforme resultado |
+| `distance_between_properties_meters` / `distance_subject_to_market_property_meters` | `is_org_member` das duas entidades (leitura) | — |
 
 Todas são `SECURITY DEFINER` com `search_path = public`, ativam
-`fluxa.privileged_op` apenas dentro da própria transação e o desativam ao fim.
+`valuation.privileged_op` apenas dentro da própria transação e o desativam ao
+fim (namespace renomeado de `fluxa.*`; ver ADR-019 em `docs/DECISIONS.md`).
 
 ## Auditoria não fabricável
 
@@ -63,12 +76,26 @@ no servidor, com `actor_user_id` derivado do token — nunca do payload.
   (`properties`, `evidence_field_revisions`, `evidence_reviews`, `dataset_items`,
   `ai_runs`). Sem consultas lentas registradas (base ainda pequena).
 
+## Domínio de mercado e comparáveis
+
+`market_observations` e `property_attribute_observations` só recebem
+`UPDATE` restrito por trigger (`guard_market_observation_update` impede
+reclassificação de tipo e sobrescrita de preço fora de RPC; `property_
+attribute_observations` não tem `GRANT` de `UPDATE`, só `SELECT, INSERT`).
+`property_canonical_facts`, `comparable_candidates.status` e `property_
+match_candidates.match_status` só mudam por RPC — os triggers `guard_
+canonical_fact`, `guard_comparable_candidate_update` e `guard_match_
+candidate_update` recusam qualquer `UPDATE` fora da operação oficial, mesmo
+para OWNER. As RPCs de distância verificam `is_org_member` das duas
+entidades antes de retornar qualquer valor, para que o cálculo em si não
+vaze a existência/posição de um imóvel de outra organização.
+
 ## Limitações conhecidas (não escondidas)
 
 1. `in_privileged_op()` recebeu `EXECUTE` para `authenticated` (necessário: os
    triggers rodam como o invocador). Ela apenas **lê** um GUC de transação; o GUC
    só é gravado dentro das RPCs `SECURITY DEFINER`. Se algum dia existir uma RPC
-   exposta capaz de chamar `set_config('fluxa.privileged_op', ...)`, essa
+   exposta capaz de chamar `set_config('valuation.privileged_op', ...)`, essa
    proteção cai — revisar em qualquer nova RPC.
 2. Não há verificação criptográfica assíncrona periódica dos bytes em storage
    contra `sha256_hash` (detecção de alteração fora do fluxo). Recomendado.
@@ -76,6 +103,12 @@ no servidor, com `actor_user_id` derivado do token — nunca do payload.
    (timestamping). O hash é confiável na medida em que o banco é confiável.
 4. Não há rate limiting nem detecção de anomalia sobre a Data API.
 5. `profiles` ainda não é populado automaticamente por trigger de novo usuário.
+7. A camada de aplicação (server functions, formulários, rotas) para
+   `market_properties`, `market_observations` e `comparable_candidates`
+   ainda não existe — apenas o schema, os triggers e as RPCs. Qualquer
+   interação hoje seria via chamada direta às RPCs/Data API.
+8. Não há geocoding nem regra automática de elegibilidade geográfica de
+   comparável (ver `docs/GEO_MODEL.md`).
 6. Não há procedimento de exclusão/anonimização de titular (LGPD) — conflita com
    a imutabilidade e precisa de decisão de produto.
 

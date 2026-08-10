@@ -7,7 +7,9 @@ Unidade de isolamento: `organizations`. Todo registro de domínio carrega
 
 - `organization_id` é **imutável** após a criação (trigger
   `prevent_org_migration` em casos, imóveis, fontes, artefatos, extrações,
-  campos, datasets e execuções de IA);
+  campos, datasets, execuções de IA e, desde a Fase 3, também em
+  `developments`, `market_properties`, `market_observations`,
+  `comparable_candidates` e `market_source_quality_assessments`);
 - chaves estrangeiras **compostas** `(organization_id, id)` garantem que um filho
   jamais aponte para um pai de outra organização — a consistência não depende de
   o código escrever o `organization_id` correto;
@@ -58,6 +60,29 @@ Não existe exclusão física de prova, decisão ou trilha. "Remover" um caso é
 `ARCHIVED` com justificativa. Isso é uma decisão de produto (ADR-004 em
 `docs/DECISIONS.md`) e tem consequência: apagar dados de um titular exige
 procedimento administrativo específico, ainda **não implementado**.
+
+## Domínio de imóvel e mercado (Fase 3)
+
+Distinções normativas permanentes — ver Artigo 9 de
+`docs/PRODUCT_CONSTITUTION.md` para o quadro completo:
+`PROPERTY != LISTING`, `PROPERTY != MARKET OBSERVATION`,
+`ASKING != TRANSACTION`, `REMOVED != SOLD`, `DISCOVERED != ELIGIBLE`,
+`ELIGIBLE != INCLUDED`, `EXCLUDED != DELETED`, `UNKNOWN != ZERO`,
+`COMPLETENESS != CONFIDENCE`, `DERIVED != OBSERVED`,
+`ADOPTED != UNIVERSALLY TRUE`, `AI OUTPUT != VERIFIED FACT`.
+
+Documentos detalhados: `docs/PROPERTY_DATA_MODEL.md` (imóvel avaliando vs.
+imóvel de mercado vs. empreendimento; observação de atributo vs. fato
+canônico), `docs/MARKET_OBSERVATION_MODEL.md` (observações de mercado,
+histórico de preço, evidência de transação), `docs/COMPARABLE_GOVERNANCE.md`
+(ciclo de vida do comparável, exclusão, duplicidade) e `docs/GEO_MODEL.md`
+(posição geográfica canônica e distância).
+
+Regra de ciclo de vida adicional imposta no banco: preço pedido histórico é
+append-only (`market_observation_price_history`, sem GRANT de UPDATE/DELETE);
+decisão de comparável e de duplicidade só existem via RPC (`decide_
+comparable`, `resolve_property_match`); fato canônico só é escrito por
+`adopt_canonical_fact` e nunca a partir de saída de IA não verificada.
 
 ## Registro de uso de IA
 
