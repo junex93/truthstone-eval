@@ -24,6 +24,7 @@ import { Route as AuthenticatedShellEvidenceIndexRouteImport } from './routes/_a
 import { Route as AuthenticatedShellEvidenceSourceIdRouteImport } from './routes/_authenticated/_shell/evidence/$sourceId'
 import { Route as AuthenticatedShellCasesCaseIdIndexRouteImport } from './routes/_authenticated/_shell/cases/$caseId/index'
 import { Route as AuthenticatedShellCasesCaseIdComparablesRouteImport } from './routes/_authenticated/_shell/cases/$caseId/comparables'
+import { Route as AuthenticatedShellCasesCaseIdDuplicatesRouteImport } from './routes/_authenticated/_shell/cases/$caseId/duplicates'
 import { Route as AuthenticatedShellCasesCaseIdPropertyRouteImport } from './routes/_authenticated/_shell/cases/$caseId/property'
 import { Route as AuthenticatedShellCasesCaseIdMarketIndexRouteImport } from './routes/_authenticated/_shell/cases/$caseId/market/index'
 import { Route as AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRouteImport } from './routes/_authenticated/_shell/cases/$caseId/market/$marketPropertyId'
@@ -111,6 +112,12 @@ const AuthenticatedShellCasesCaseIdComparablesRoute =
     path: '/comparables',
     getParentRoute: () => AuthenticatedShellCasesCaseIdRoute,
   } as any)
+const AuthenticatedShellCasesCaseIdDuplicatesRoute =
+  AuthenticatedShellCasesCaseIdDuplicatesRouteImport.update({
+    id: '/duplicates',
+    path: '/duplicates',
+    getParentRoute: () => AuthenticatedShellCasesCaseIdRoute,
+  } as any)
 const AuthenticatedShellCasesCaseIdPropertyRoute =
   AuthenticatedShellCasesCaseIdPropertyRouteImport.update({
     id: '/property',
@@ -143,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/datasets/': typeof AuthenticatedShellDatasetsIndexRoute
   '/evidence/': typeof AuthenticatedShellEvidenceIndexRoute
   '/cases/$caseId/comparables': typeof AuthenticatedShellCasesCaseIdComparablesRoute
+  '/cases/$caseId/duplicates': typeof AuthenticatedShellCasesCaseIdDuplicatesRoute
   '/cases/$caseId/property': typeof AuthenticatedShellCasesCaseIdPropertyRoute
   '/cases/$caseId/': typeof AuthenticatedShellCasesCaseIdIndexRoute
   '/cases/$caseId/market/$marketPropertyId': typeof AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRoute
@@ -160,6 +168,7 @@ export interface FileRoutesByTo {
   '/datasets': typeof AuthenticatedShellDatasetsIndexRoute
   '/evidence': typeof AuthenticatedShellEvidenceIndexRoute
   '/cases/$caseId/comparables': typeof AuthenticatedShellCasesCaseIdComparablesRoute
+  '/cases/$caseId/duplicates': typeof AuthenticatedShellCasesCaseIdDuplicatesRoute
   '/cases/$caseId/property': typeof AuthenticatedShellCasesCaseIdPropertyRoute
   '/cases/$caseId': typeof AuthenticatedShellCasesCaseIdIndexRoute
   '/cases/$caseId/market/$marketPropertyId': typeof AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRoute
@@ -181,6 +190,7 @@ export interface FileRoutesById {
   '/_authenticated/_shell/datasets/': typeof AuthenticatedShellDatasetsIndexRoute
   '/_authenticated/_shell/evidence/': typeof AuthenticatedShellEvidenceIndexRoute
   '/_authenticated/_shell/cases/$caseId/comparables': typeof AuthenticatedShellCasesCaseIdComparablesRoute
+  '/_authenticated/_shell/cases/$caseId/duplicates': typeof AuthenticatedShellCasesCaseIdDuplicatesRoute
   '/_authenticated/_shell/cases/$caseId/property': typeof AuthenticatedShellCasesCaseIdPropertyRoute
   '/_authenticated/_shell/cases/$caseId/': typeof AuthenticatedShellCasesCaseIdIndexRoute
   '/_authenticated/_shell/cases/$caseId/market/$marketPropertyId': typeof AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRoute
@@ -201,6 +211,7 @@ export interface FileRouteTypes {
     | '/datasets/'
     | '/evidence/'
     | '/cases/$caseId/comparables'
+    | '/cases/$caseId/duplicates'
     | '/cases/$caseId/property'
     | '/cases/$caseId/'
     | '/cases/$caseId/market/$marketPropertyId'
@@ -218,6 +229,7 @@ export interface FileRouteTypes {
     | '/datasets'
     | '/evidence'
     | '/cases/$caseId/comparables'
+    | '/cases/$caseId/duplicates'
     | '/cases/$caseId/property'
     | '/cases/$caseId'
     | '/cases/$caseId/market/$marketPropertyId'
@@ -238,6 +250,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_shell/datasets/'
     | '/_authenticated/_shell/evidence/'
     | '/_authenticated/_shell/cases/$caseId/comparables'
+    | '/_authenticated/_shell/cases/$caseId/duplicates'
     | '/_authenticated/_shell/cases/$caseId/property'
     | '/_authenticated/_shell/cases/$caseId/'
     | '/_authenticated/_shell/cases/$caseId/market/$marketPropertyId'
@@ -357,6 +370,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellCasesCaseIdComparablesRouteImport
       parentRoute: typeof AuthenticatedShellCasesCaseIdRoute
     }
+    '/_authenticated/_shell/cases/$caseId/duplicates': {
+      id: '/_authenticated/_shell/cases/$caseId/duplicates'
+      path: '/duplicates'
+      fullPath: '/cases/$caseId/duplicates'
+      preLoaderRoute: typeof AuthenticatedShellCasesCaseIdDuplicatesRouteImport
+      parentRoute: typeof AuthenticatedShellCasesCaseIdRoute
+    }
     '/_authenticated/_shell/cases/$caseId/property': {
       id: '/_authenticated/_shell/cases/$caseId/property'
       path: '/property'
@@ -383,6 +403,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedShellCasesCaseIdRouteChildren {
   AuthenticatedShellCasesCaseIdComparablesRoute: typeof AuthenticatedShellCasesCaseIdComparablesRoute
+  AuthenticatedShellCasesCaseIdDuplicatesRoute: typeof AuthenticatedShellCasesCaseIdDuplicatesRoute
   AuthenticatedShellCasesCaseIdPropertyRoute: typeof AuthenticatedShellCasesCaseIdPropertyRoute
   AuthenticatedShellCasesCaseIdIndexRoute: typeof AuthenticatedShellCasesCaseIdIndexRoute
   AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRoute: typeof AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRoute
@@ -393,6 +414,8 @@ const AuthenticatedShellCasesCaseIdRouteChildren: AuthenticatedShellCasesCaseIdR
   {
     AuthenticatedShellCasesCaseIdComparablesRoute:
       AuthenticatedShellCasesCaseIdComparablesRoute,
+    AuthenticatedShellCasesCaseIdDuplicatesRoute:
+      AuthenticatedShellCasesCaseIdDuplicatesRoute,
     AuthenticatedShellCasesCaseIdPropertyRoute:
       AuthenticatedShellCasesCaseIdPropertyRoute,
     AuthenticatedShellCasesCaseIdIndexRoute:
