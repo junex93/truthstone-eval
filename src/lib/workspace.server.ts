@@ -77,25 +77,36 @@ export interface AuditInput {
   metadata?: unknown;
 }
 
-/** Append-only audit write. Never throws away the caller's operation result. */
-export async function writeAudit(supabase: Db, input: AuditInput): Promise<void> {
-  const args = {
-    _org: input.organizationId,
-    _case: input.caseId ?? null,
-    _event_type: input.eventType,
-    _entity_type: input.entityType,
-    _entity_id: input.entityId ?? null,
-    _before: input.before ?? null,
-    _after: input.after ?? null,
-    _metadata: input.metadata ?? null,
-  } as unknown as Database["public"]["Functions"]["write_audit_event"]["Args"];
+/**
+ * Append-only audit write.
+ *
+ * The client role has NO write grant on public.audit_log: the trail cannot be
+ * fabricated, edited or deleted through the Data API. Non-atomic events (record
+ * creation) are written here with the service role; every critical invariant
+ * change (verify, reject, revise, freeze, status transition) writes its own audit
+ * row INSIDE the database function, in the same transaction as the act itself.
+ */
+export async function writeAudit(_supabase: Db, input: AuditInput): Promise<void> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-  const { error } = await supabase.rpc("write_audit_event", args);
+  const { error } = await supabaseAdmin.from("audit_log").insert({
+    organization_id: input.organizationId,
+    valuation_case_id: input.caseId ?? null,
+    actor_user_id: input.actorUserId ?? null,
+    event_type: input.eventType,
+    entity_type: input.entityType,
+    entity_id: input.entityId ?? null,
+    before_data: (input.before ?? null) as never,
+    after_data: (input.after ?? null) as never,
+    metadata: (input.metadata ?? null) as never,
+  });
+
   if (error) {
     console.error("[audit] failed to write event", input.eventType, error.message);
     throw new Error(`Falha ao registrar evento de auditoria: ${error.message}`);
   }
 }
+
 
 /** Deterministic SHA-256 over bytes, computed on the server runtime. */
 export async function sha256Hex(bytes: ArrayBuffer): Promise<string> {
