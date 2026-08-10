@@ -12,6 +12,7 @@ import {
 import {
   requireMembership,
   requireWriteAccess,
+  stripGeoPoint,
   writeAudit,
 } from "@/lib/workspace.server";
 

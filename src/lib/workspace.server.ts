@@ -128,3 +128,13 @@ export function requireOrgScope(recordOrgId: string, membership: Membership): vo
     throw new Error("Registro fora do escopo da organização atual.");
   }
 }
+
+/**
+ * Removes the PostGIS column from a row before it crosses the server boundary.
+ * geo_point is the canonical position in the database; latitude/longitude are the
+ * interoperability mirror kept in sync by the trigger sync_geo_point.
+ */
+export function stripGeoPoint<T extends Record<string, unknown>>(row: T): Omit<T, "geo_point"> {
+  const { geo_point: _geoPoint, ...rest } = row;
+  return rest;
+}
