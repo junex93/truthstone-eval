@@ -23,7 +23,9 @@ import { Route as AuthenticatedShellDatasetsDatasetIdRouteImport } from './route
 import { Route as AuthenticatedShellEvidenceIndexRouteImport } from './routes/_authenticated/_shell/evidence/index'
 import { Route as AuthenticatedShellEvidenceSourceIdRouteImport } from './routes/_authenticated/_shell/evidence/$sourceId'
 import { Route as AuthenticatedShellCasesCaseIdIndexRouteImport } from './routes/_authenticated/_shell/cases/$caseId/index'
+import { Route as AuthenticatedShellCasesCaseIdPropertyRouteImport } from './routes/_authenticated/_shell/cases/$caseId/property'
 import { Route as AuthenticatedShellCasesCaseIdMarketIndexRouteImport } from './routes/_authenticated/_shell/cases/$caseId/market/index'
+import { Route as AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRouteImport } from './routes/_authenticated/_shell/cases/$caseId/market/$marketPropertyId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -102,10 +104,22 @@ const AuthenticatedShellCasesCaseIdIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedShellCasesCaseIdRoute,
   } as any)
+const AuthenticatedShellCasesCaseIdPropertyRoute =
+  AuthenticatedShellCasesCaseIdPropertyRouteImport.update({
+    id: '/property',
+    path: '/property',
+    getParentRoute: () => AuthenticatedShellCasesCaseIdRoute,
+  } as any)
 const AuthenticatedShellCasesCaseIdMarketIndexRoute =
   AuthenticatedShellCasesCaseIdMarketIndexRouteImport.update({
     id: '/market/',
     path: '/market/',
+    getParentRoute: () => AuthenticatedShellCasesCaseIdRoute,
+  } as any)
+const AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRoute =
+  AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRouteImport.update({
+    id: '/market/$marketPropertyId',
+    path: '/market/$marketPropertyId',
     getParentRoute: () => AuthenticatedShellCasesCaseIdRoute,
   } as any)
 
@@ -121,7 +135,9 @@ export interface FileRoutesByFullPath {
   '/cases/': typeof AuthenticatedShellCasesIndexRoute
   '/datasets/': typeof AuthenticatedShellDatasetsIndexRoute
   '/evidence/': typeof AuthenticatedShellEvidenceIndexRoute
+  '/cases/$caseId/property': typeof AuthenticatedShellCasesCaseIdPropertyRoute
   '/cases/$caseId/': typeof AuthenticatedShellCasesCaseIdIndexRoute
+  '/cases/$caseId/market/$marketPropertyId': typeof AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRoute
   '/cases/$caseId/market/': typeof AuthenticatedShellCasesCaseIdMarketIndexRoute
 }
 export interface FileRoutesByTo {
@@ -135,7 +151,9 @@ export interface FileRoutesByTo {
   '/cases': typeof AuthenticatedShellCasesIndexRoute
   '/datasets': typeof AuthenticatedShellDatasetsIndexRoute
   '/evidence': typeof AuthenticatedShellEvidenceIndexRoute
+  '/cases/$caseId/property': typeof AuthenticatedShellCasesCaseIdPropertyRoute
   '/cases/$caseId': typeof AuthenticatedShellCasesCaseIdIndexRoute
+  '/cases/$caseId/market/$marketPropertyId': typeof AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRoute
   '/cases/$caseId/market': typeof AuthenticatedShellCasesCaseIdMarketIndexRoute
 }
 export interface FileRoutesById {
@@ -153,7 +171,9 @@ export interface FileRoutesById {
   '/_authenticated/_shell/cases/': typeof AuthenticatedShellCasesIndexRoute
   '/_authenticated/_shell/datasets/': typeof AuthenticatedShellDatasetsIndexRoute
   '/_authenticated/_shell/evidence/': typeof AuthenticatedShellEvidenceIndexRoute
+  '/_authenticated/_shell/cases/$caseId/property': typeof AuthenticatedShellCasesCaseIdPropertyRoute
   '/_authenticated/_shell/cases/$caseId/': typeof AuthenticatedShellCasesCaseIdIndexRoute
+  '/_authenticated/_shell/cases/$caseId/market/$marketPropertyId': typeof AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRoute
   '/_authenticated/_shell/cases/$caseId/market/': typeof AuthenticatedShellCasesCaseIdMarketIndexRoute
 }
 export interface FileRouteTypes {
@@ -170,7 +190,9 @@ export interface FileRouteTypes {
     | '/cases/'
     | '/datasets/'
     | '/evidence/'
+    | '/cases/$caseId/property'
     | '/cases/$caseId/'
+    | '/cases/$caseId/market/$marketPropertyId'
     | '/cases/$caseId/market/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -184,7 +206,9 @@ export interface FileRouteTypes {
     | '/cases'
     | '/datasets'
     | '/evidence'
+    | '/cases/$caseId/property'
     | '/cases/$caseId'
+    | '/cases/$caseId/market/$marketPropertyId'
     | '/cases/$caseId/market'
   id:
     | '__root__'
@@ -201,7 +225,9 @@ export interface FileRouteTypes {
     | '/_authenticated/_shell/cases/'
     | '/_authenticated/_shell/datasets/'
     | '/_authenticated/_shell/evidence/'
+    | '/_authenticated/_shell/cases/$caseId/property'
     | '/_authenticated/_shell/cases/$caseId/'
+    | '/_authenticated/_shell/cases/$caseId/market/$marketPropertyId'
     | '/_authenticated/_shell/cases/$caseId/market/'
   fileRoutesById: FileRoutesById
 }
@@ -311,6 +337,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellCasesCaseIdIndexRouteImport
       parentRoute: typeof AuthenticatedShellCasesCaseIdRoute
     }
+    '/_authenticated/_shell/cases/$caseId/property': {
+      id: '/_authenticated/_shell/cases/$caseId/property'
+      path: '/property'
+      fullPath: '/cases/$caseId/property'
+      preLoaderRoute: typeof AuthenticatedShellCasesCaseIdPropertyRouteImport
+      parentRoute: typeof AuthenticatedShellCasesCaseIdRoute
+    }
     '/_authenticated/_shell/cases/$caseId/market/': {
       id: '/_authenticated/_shell/cases/$caseId/market/'
       path: '/market'
@@ -318,18 +351,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellCasesCaseIdMarketIndexRouteImport
       parentRoute: typeof AuthenticatedShellCasesCaseIdRoute
     }
+    '/_authenticated/_shell/cases/$caseId/market/$marketPropertyId': {
+      id: '/_authenticated/_shell/cases/$caseId/market/$marketPropertyId'
+      path: '/market/$marketPropertyId'
+      fullPath: '/cases/$caseId/market/$marketPropertyId'
+      preLoaderRoute: typeof AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRouteImport
+      parentRoute: typeof AuthenticatedShellCasesCaseIdRoute
+    }
   }
 }
 
 interface AuthenticatedShellCasesCaseIdRouteChildren {
+  AuthenticatedShellCasesCaseIdPropertyRoute: typeof AuthenticatedShellCasesCaseIdPropertyRoute
   AuthenticatedShellCasesCaseIdIndexRoute: typeof AuthenticatedShellCasesCaseIdIndexRoute
+  AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRoute: typeof AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRoute
   AuthenticatedShellCasesCaseIdMarketIndexRoute: typeof AuthenticatedShellCasesCaseIdMarketIndexRoute
 }
 
 const AuthenticatedShellCasesCaseIdRouteChildren: AuthenticatedShellCasesCaseIdRouteChildren =
   {
+    AuthenticatedShellCasesCaseIdPropertyRoute:
+      AuthenticatedShellCasesCaseIdPropertyRoute,
     AuthenticatedShellCasesCaseIdIndexRoute:
       AuthenticatedShellCasesCaseIdIndexRoute,
+    AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRoute:
+      AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRoute,
     AuthenticatedShellCasesCaseIdMarketIndexRoute:
       AuthenticatedShellCasesCaseIdMarketIndexRoute,
   }
@@ -388,3 +434,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
