@@ -1134,11 +1134,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      audit_write_internal: {
+        Args: {
+          _after: Json
+          _before: Json
+          _case: string
+          _entity_id: string
+          _entity_type: string
+          _event_type: string
+          _metadata: Json
+          _org: string
+        }
+        Returns: string
+      }
       can_review: { Args: { _org: string }; Returns: boolean }
       can_write: { Args: { _org: string }; Returns: boolean }
       current_org_role: {
         Args: { _org: string }
         Returns: Database["public"]["Enums"]["org_role"]
+      }
+      freeze_dataset: {
+        Args: { _confirmation: string; _dataset_version_id: string }
+        Returns: Json
       }
       has_org_role: {
         Args: {
@@ -1150,6 +1167,36 @@ export type Database = {
       in_privileged_op: { Args: never; Returns: boolean }
       is_org_admin: { Args: { _org: string }; Returns: boolean }
       is_org_member: { Args: { _org: string }; Returns: boolean }
+      reject_evidence_field: {
+        Args: { _field_id: string; _reason: string }
+        Returns: string
+      }
+      revise_evidence_field: {
+        Args: {
+          _field_id: string
+          _field_state: Database["public"]["Enums"]["field_state"]
+          _normalized_value: string
+          _numeric_value: number
+          _raw_value: string
+          _reason: string
+          _source_excerpt: string
+          _source_locator: Json
+          _unit: string
+        }
+        Returns: string
+      }
+      transition_case_status: {
+        Args: {
+          _case_id: string
+          _next_status: Database["public"]["Enums"]["case_status"]
+          _reason: string
+        }
+        Returns: Database["public"]["Enums"]["case_status"]
+      }
+      verify_evidence_field: {
+        Args: { _field_id: string; _notes: string }
+        Returns: string
+      }
       write_audit_event: {
         Args: {
           _after: Json
