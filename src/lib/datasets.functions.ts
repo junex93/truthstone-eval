@@ -292,63 +292,21 @@ export const freezeDataset = createServerFn({ method: "POST" })
     if (!dataset) throw new Error("Dataset não encontrado.");
     if (dataset.frozen_at) throw new Error("Este dataset já está congelado.");
 
-    const { data: items } = await supabase
-      .from("dataset_items")
-      .select("evidence_field_id, role_in_dataset")
-      .eq("dataset_version_id", dataset.id);
-
-    if (!items || items.length === 0) {
-      throw new Error("Não é possível congelar um dataset sem elementos.");
-    }
-
-    const fieldIds = items.map((i) => i.evidence_field_id);
-    const { data: fields, error: fieldsError } = await supabase
-      .from("evidence_fields")
-      .select("id, field_name, normalized_value, raw_value, unit, validation_status, verified_at")
-      .in("id", fieldIds);
-    if (fieldsError) throw new Error(fieldsError.message);
-
-    const notVerified = (fields ?? []).filter((f) => f.validation_status !== "VERIFIED");
-    if (notVerified.length > 0) {
-      throw new Error(
-        `Existem ${notVerified.length} campo(s) não verificados na composição. Congelamento bloqueado.`,
-      );
-    }
-
-    const composition = (fields ?? [])
-      .slice()
-      .sort((a, b) => a.id.localeCompare(b.id))
-      .map((f) =>
-        [
-          f.id,
-          f.field_name,
-          f.normalized_value ?? f.raw_value ?? "",
-          f.unit ?? "",
-          f.verified_at ?? "",
-        ].join("|"),
-      )
-      .join("\n");
-
-    const hash = await sha256HexOfString(
-      `dataset:${dataset.id}:v${dataset.version_number}\n${composition}`,
-    );
-
-    const frozenAt = new Date().toISOString();
-    const { error } = await supabase
-      .from("dataset_versions")
-      .update({ frozen_at: frozenAt, frozen_by: userId, dataset_hash: hash })
-      .eq("id", dataset.id);
+    const { data: result, error } = await supabase.rpc("freeze_dataset", {
+      _dataset_version_id: data.datasetVersionId,
+      _confirmation: data.confirmation,
+    });
     if (error) throw new Error(error.message);
 
-    await writeAudit(supabase, {
-      organizationId: membership.organizationId,
-      actorUserId: userId,
-      caseId: dataset.valuation_case_id,
-      eventType: "DATASET_FROZEN",
-      entityType: "dataset_version",
-      entityId: dataset.id,
-      after: { frozen_at: frozenAt, dataset_hash: hash, item_count: items.length },
-    });
+    const payload = (result ?? {}) as {
+      dataset_hash: string;
+      frozen_at: string;
+      item_count: number;
+    };
 
-    return { datasetHash: hash, frozenAt, itemCount: items.length };
+    return {
+      datasetHash: payload.dataset_hash,
+      frozenAt: payload.frozen_at,
+      itemCount: payload.item_count,
+    };
   });
