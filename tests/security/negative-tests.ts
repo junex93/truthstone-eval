@@ -223,6 +223,104 @@ async function seedCandidateField(orgId: string, caseId: string, ownerId: string
   return field.data.id as string;
 }
 
+
+async function seedMarketProperty(orgId: string, caseId: string, ownerId: string, label: string) {
+  const { data, error } = await admin
+    .from("market_properties")
+    .insert({
+      organization_id: orgId,
+      valuation_case_id: caseId,
+      label,
+      created_by: ownerId,
+    })
+    .select("id")
+    .single();
+  if (error) throw new Error(`seedMarketProperty: ${error.message}`);
+  return data.id as string;
+}
+
+async function seedMarketObservation(
+  orgId: string,
+  caseId: string,
+  marketPropertyId: string,
+  ownerId: string,
+  observationType: string = "SALE_LISTING",
+) {
+  const { data, error } = await admin
+    .from("market_observations")
+    .insert({
+      organization_id: orgId,
+      valuation_case_id: caseId,
+      market_property_id: marketPropertyId,
+      observation_type: observationType,
+      asking_price: 500000,
+      created_by: ownerId,
+    })
+    .select("id")
+    .single();
+  if (error) throw new Error(`seedMarketObservation: ${error.message}`);
+  return data.id as string;
+}
+
+async function seedSubjectProperty(orgId: string, caseId: string) {
+  const { data, error } = await admin
+    .from("properties")
+    .insert({ organization_id: orgId, valuation_case_id: caseId })
+    .select("id")
+    .single();
+  if (error) throw new Error(`seedSubjectProperty: ${error.message}`);
+  return data.id as string;
+}
+
+async function seedEvidenceSourceOnly(orgId: string, caseId: string, ownerId: string, name: string) {
+  const { data, error } = await admin
+    .from("evidence_sources")
+    .insert({
+      organization_id: orgId,
+      valuation_case_id: caseId,
+      source_type: "PRIVATE_DOCUMENT",
+      source_name: name,
+      accessed_at: new Date().toISOString(),
+      created_by: ownerId,
+    })
+    .select("id")
+    .single();
+  if (error) throw new Error(`seedEvidenceSourceOnly: ${error.message}`);
+  return data.id as string;
+}
+
+async function seedAttributeObservation(opts: {
+  orgId: string;
+  caseId: string;
+  ownerId: string;
+  subjectPropertyId?: string;
+  marketPropertyId?: string;
+  attributeName: string;
+  valueOrigin: string;
+  evidenceFieldId?: string;
+  numericValue?: number;
+}) {
+  const { data, error } = await admin
+    .from("property_attribute_observations")
+    .insert({
+      organization_id: opts.orgId,
+      valuation_case_id: opts.caseId,
+      subject_property_id: opts.subjectPropertyId ?? null,
+      market_property_id: opts.marketPropertyId ?? null,
+      attribute_name: opts.attributeName,
+      raw_value: String(opts.numericValue ?? 120),
+      normalized_value: String(opts.numericValue ?? 120),
+      numeric_value: opts.numericValue ?? 120,
+      value_origin: opts.valueOrigin,
+      evidence_field_id: opts.evidenceFieldId ?? null,
+      created_by: opts.ownerId,
+    })
+    .select("id")
+    .single();
+  if (error) throw new Error(`seedAttributeObservation: ${error.message}`);
+  return data.id as string;
+}
+
 async function cleanup(orgIds: string[]) {
   // Immutable tables refuse deletes by design; teardown uses the privileged flag
   // is NOT available over the API, so fixture rows are left tagged and orgs renamed.
@@ -657,7 +755,321 @@ async function main() {
       .then((r) => ({ error: r.error })),
   );
 
+
+  console.log("\n=== 11. MARKET & COMPARABLE INTELLIGENCE — TENANT / CASE ISOLATION ===");
+  const subjectA1 = await seedSubjectProperty(orgA, caseA1);
+  const subjectA2 = await seedSubjectProperty(orgA, caseA2);
+  const subjectB1 = await seedSubjectProperty(orgB, caseB1);
+  const marketPropA1 = await seedMarketProperty(orgA, caseA1, owner.id, "Imóvel de mercado A1");
+  const marketPropA2 = await seedMarketProperty(orgA, caseA2, owner.id, "Imóvel de mercado A2");
+  const marketPropB1 = await seedMarketProperty(orgB, caseB1, outsider.id, "Imóvel de mercado B1");
+  const obsA1 = await seedMarketObservation(orgA, caseA1, marketPropA1, owner.id);
+  const obsA2 = await seedMarketObservation(orgA, caseA2, marketPropA2, owner.id);
+  const obsB1 = await seedMarketObservation(orgB, caseB1, marketPropB1, outsider.id);
+
+  await expectInvisible("org A cannot read a market_property of org B", () =>
+    owner.client.from("market_properties").select("id").eq("id", marketPropB1),
+  );
+  await expectBlocked("org A cannot insert a market_observation scoped to org B", () =>
+    owner.client.from("market_observations").insert({
+      organization_id: orgB,
+      valuation_case_id: caseB1,
+      market_property_id: marketPropB1,
+      observation_type: "SALE_LISTING",
+      created_by: owner.id,
+    }),
+  );
+  await expectBlocked("case A1 cannot reference a market property that belongs to case A2", () =>
+    owner.client.from("market_observations").insert({
+      organization_id: orgA,
+      valuation_case_id: caseA1,
+      market_property_id: marketPropA2,
+      observation_type: "SALE_LISTING",
+      created_by: owner.id,
+    }),
+  );
+  await expectBlocked("case A1 cannot use an observation of case A2 as a comparable candidate", () =>
+    owner.client.from("comparable_candidates").insert({
+      organization_id: orgA,
+      valuation_case_id: caseA1,
+      subject_property_id: subjectA1,
+      market_property_id: marketPropA1,
+      market_observation_id: obsA2,
+      created_by: owner.id,
+    }),
+  );
+
+  console.log("\n=== 12. MARKET INTELLIGENCE TENANT / LINEAGE IMMUTABILITY ===");
+  await expectBlocked("organization_id of a market_property is immutable", () =>
+    owner.client.from("market_properties").update({ organization_id: orgB }).eq("id", marketPropA1),
+  );
+  await expectBlocked("organization_id of a market_observation is immutable", () =>
+    owner.client.from("market_observations").update({ organization_id: orgB }).eq("id", obsA1),
+  );
+  await expectBlocked("property_match_candidates cannot pair market properties across orgs", () =>
+    owner.client.from("property_match_candidates").insert({
+      organization_id: orgA,
+      valuation_case_id: caseA1,
+      left_market_property_id: marketPropA1 < marketPropB1 ? marketPropA1 : marketPropB1,
+      right_market_property_id: marketPropA1 < marketPropB1 ? marketPropB1 : marketPropA1,
+      created_by: owner.id,
+    }),
+  );
+  await expectBlocked("property_match_candidates cannot pair market properties across cases", () =>
+    owner.client.from("property_match_candidates").insert({
+      organization_id: orgA,
+      valuation_case_id: caseA1,
+      left_market_property_id: marketPropA1 < marketPropA2 ? marketPropA1 : marketPropA2,
+      right_market_property_id: marketPropA1 < marketPropA2 ? marketPropA2 : marketPropA1,
+      created_by: owner.id,
+    }),
+  );
+
+  const candidateA = await owner.client
+    .from("comparable_candidates")
+    .insert({
+      organization_id: orgA,
+      valuation_case_id: caseA1,
+      subject_property_id: subjectA1,
+      market_property_id: marketPropA1,
+      market_observation_id: obsA1,
+      created_by: owner.id,
+    })
+    .select("id")
+    .single();
+  const candidateAId = candidateA.data?.id as string | undefined;
+  if (candidateAId) {
+    const decide1 = await owner.client.rpc("decide_comparable", {
+      _candidate_id: candidateAId,
+      _candidate_status: "UNDER_REVIEW",
+      _inclusion_status: null,
+      _reason_code: null,
+      _notes: "em análise",
+    });
+    record(
+      "decide_comparable moves candidate to UNDER_REVIEW (fixture for immutability tests)",
+      !decide1.error,
+      decide1.error?.message ?? "ok",
+    );
+    await expectBlocked("comparable_decision_history cannot be UPDATEd by the client", () =>
+      owner.client
+        .from("comparable_decision_history")
+        .update({ notes: "adulterado" })
+        .eq("candidate_id", candidateAId),
+    );
+    await expectNoEffect(
+      "comparable_decision_history cannot be DELETEd by the client",
+      () => owner.client.from("comparable_decision_history").delete().eq("candidate_id", candidateAId),
+      async () => {
+        const check = await admin
+          .from("comparable_decision_history")
+          .select("id")
+          .eq("candidate_id", candidateAId);
+        return (check.data?.length ?? 0) >= 1;
+      },
+    );
+
+    const decide2 = await owner.client.rpc("decide_comparable", {
+      _candidate_id: candidateAId,
+      _candidate_status: "ELIGIBLE",
+      _inclusion_status: null,
+      _reason_code: null,
+      _notes: "elegível",
+    });
+    const decide3 = await owner.client.rpc("decide_comparable", {
+      _candidate_id: candidateAId,
+      _candidate_status: null,
+      _inclusion_status: "EXCLUDED",
+      _reason_code: "AREA_OUT_OF_SCOPE",
+      _notes: "área fora do escopo",
+    });
+    record(
+      "decide_comparable can EXCLUDE with a valid taxonomy reason (fixture)",
+      !decide2.error && !decide3.error,
+      decide2.error?.message ?? decide3.error?.message ?? "ok",
+    );
+    await expectNoEffect(
+      "an EXCLUDED comparable candidate cannot be DELETEd by the client role",
+      () => owner.client.from("comparable_candidates").delete().eq("id", candidateAId),
+      async () => {
+        const check = await admin.from("comparable_candidates").select("id").eq("id", candidateAId);
+        return (check.data?.length ?? 0) === 1;
+      },
+    );
+  } else {
+    record("comparable candidate fixture", false, `unexpected: ${candidateA.error?.message}`);
+  }
+
+  console.log("\n=== 13. PRICE / OBSERVATION INTEGRITY ===");
+  await expectBlocked("a SALE_LISTING observation cannot be inserted with a transaction_price", () =>
+    owner.client.from("market_observations").insert({
+      organization_id: orgA,
+      valuation_case_id: caseA1,
+      market_property_id: marketPropA1,
+      observation_type: "SALE_LISTING",
+      transaction_price: 700000,
+      created_by: owner.id,
+    }),
+  );
+  await expectBlocked("observation_type cannot change SALE_LISTING -> CLOSED_SALE", () =>
+    owner.client.from("market_observations").update({ observation_type: "CLOSED_SALE" }).eq("id", obsA1),
+  );
+  await expectBlocked("asking_price cannot be overwritten by a direct UPDATE (bypassing record_price_observation)", () =>
+    owner.client.from("market_observations").update({ asking_price: 999999 }).eq("id", obsA1),
+  );
+
+  console.log("\n=== 14. CANONICAL FACT AUTHORITY ===");
+  const manualAttrObs = await seedAttributeObservation({
+    orgId: orgA,
+    caseId: caseA1,
+    ownerId: owner.id,
+    subjectPropertyId: subjectA1,
+    attributeName: "usable_area",
+    valueOrigin: "MANUAL_USER_INPUT",
+    numericValue: 100,
+  });
+  await expectBlocked("adopt_canonical_fact is denied to a VALUER", () =>
+    valuer.client.rpc("adopt_canonical_fact", {
+      _subject_property_id: subjectA1,
+      _market_property_id: null,
+      _attribute_name: "usable_area",
+      _observation_id: manualAttrObs,
+      _reason: "tentativa de adoção por VALUER",
+    }),
+  );
+
+  const externalAttrObs = await seedAttributeObservation({
+    orgId: orgA,
+    caseId: caseA1,
+    ownerId: owner.id,
+    subjectPropertyId: subjectA1,
+    attributeName: "bedrooms",
+    valueOrigin: "EXTERNAL_API",
+    numericValue: 3,
+  });
+  await expectBlocked("adopt_canonical_fact is denied for an EXTERNAL_API observation", () =>
+    owner.client.rpc("adopt_canonical_fact", {
+      _subject_property_id: subjectA1,
+      _market_property_id: null,
+      _attribute_name: "bedrooms",
+      _observation_id: externalAttrObs,
+      _reason: "tentativa de adoção de valor automatizado",
+    }),
+  );
+
+  const unverifiedExtractionAttrObs = await seedAttributeObservation({
+    orgId: orgA,
+    caseId: caseA1,
+    ownerId: owner.id,
+    subjectPropertyId: subjectA1,
+    attributeName: "private_area",
+    valueOrigin: "EVIDENCE_EXTRACTION",
+    evidenceFieldId: candidateField,
+    numericValue: 120,
+  });
+  await expectBlocked(
+    "adopt_canonical_fact is denied for EVIDENCE_EXTRACTION whose field is not VERIFIED",
+    () =>
+      owner.client.rpc("adopt_canonical_fact", {
+        _subject_property_id: subjectA1,
+        _market_property_id: null,
+        _attribute_name: "private_area",
+        _observation_id: unverifiedExtractionAttrObs,
+        _reason: "tentativa de adoção de extração não verificada",
+      }),
+  );
+
+  console.log("\n=== 15. GEOSPATIAL RPC SCOPE ===");
+  await expectBlocked("cross-org distance_between_properties_meters call fails", () =>
+    owner.client.rpc("distance_between_properties_meters", {
+      _left_market_property_id: marketPropA1,
+      _right_market_property_id: marketPropB1,
+    }),
+  );
+  await expectBlocked("cross-org distance_subject_to_market_property_meters call fails", () =>
+    outsider.client.rpc("distance_subject_to_market_property_meters", {
+      _subject_property_id: subjectA1,
+      _market_property_id: marketPropB1,
+    }),
+  );
+
+  console.log("\n=== 16. PRICE HISTORY / ATTRIBUTE OBSERVATION INTEGRITY ===");
+  const sourceCaseA2 = await seedEvidenceSourceOnly(orgA, caseA2, owner.id, "Fonte do caso A2");
+  await expectBlocked("record_price_observation refuses an evidence_source_id from another case", () =>
+    owner.client.rpc("record_price_observation", {
+      _observation_id: obsA1,
+      _asking_price: 510000,
+      _asking_monthly_rent: null,
+      _observed_at: new Date().toISOString(),
+      _status: "ACTIVE",
+      _evidence_source_id: sourceCaseA2,
+      _evidence_field_id: null,
+      _notes: "tentativa de contaminação cross-case",
+    }),
+  );
+
+  const crossCaseFieldGap = await owner.client.rpc("record_price_observation", {
+    _observation_id: obsA1,
+    _asking_price: 511000,
+    _asking_monthly_rent: null,
+    _observed_at: new Date().toISOString(),
+    _status: "ACTIVE",
+    _evidence_source_id: null,
+    _evidence_field_id: crossCaseField,
+    _notes: "campo de evidência de outro caso (A2) referenciado a partir de A1",
+  });
+  record(
+    "GAP (documented, not fixed): record_price_observation does not verify that evidence_field_id belongs to the same case as the observation",
+    !!crossCaseFieldGap.error,
+    crossCaseFieldGap.error
+      ? `blocked: ${crossCaseFieldGap.error.message.slice(0, 200)}`
+      : "SECURITY GAP: insert succeeded with a cross-case evidence_field_id — only organization scope is enforced by the FK, not case scope",
+  );
+
+  await expectBlocked(
+    "property_attribute_observations cannot reference both subject_property_id and market_property_id",
+    () =>
+      owner.client.from("property_attribute_observations").insert({
+        organization_id: orgA,
+        valuation_case_id: caseA1,
+        subject_property_id: subjectA1,
+        market_property_id: marketPropA1,
+        attribute_name: "condition_status",
+        value_origin: "MANUAL_USER_INPUT",
+        created_by: owner.id,
+      }),
+  );
+  await expectBlocked(
+    "property_attribute_observations cannot reference neither subject_property_id nor market_property_id",
+    () =>
+      owner.client.from("property_attribute_observations").insert({
+        organization_id: orgA,
+        valuation_case_id: caseA1,
+        attribute_name: "condition_status",
+        value_origin: "MANUAL_USER_INPUT",
+        created_by: owner.id,
+      }),
+  );
+
+  const nullParking = await owner.client
+    .from("market_properties")
+    .insert({
+      organization_id: orgA,
+      valuation_case_id: caseA1,
+      label: "Imóvel com vaga desconhecida",
+      parking_spaces: null,
+      created_by: owner.id,
+    })
+    .select("id, parking_spaces")
+    .single();
+  record(
+    "a NULL numeric attribute (parking_spaces) stays NULL and is never coerced to 0",
+    !nullParking.error && nullParking.data?.parking_spaces === null,
+    nullParking.error?.message ?? `parking_spaces = ${JSON.stringify(nullParking.data?.parking_spaces)}`,
+  );
+
   await cleanup(orgIds);
+
 
   const failed = results.filter((r) => !r.passed);
   console.log(`\n===== SUMMARY =====`);

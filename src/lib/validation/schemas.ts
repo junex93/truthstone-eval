@@ -1,9 +1,14 @@
 import { z } from "zod";
 
 import {
+  ADDRESS_NORMALIZATION_STATUSES,
   CASE_STATUSES,
+  CONDITION_STATUSES,
   FIELD_STATES,
+  FURNISHED_STATUSES,
+  OCCUPANCY_STATUSES,
   PROCESSOR_TYPES,
+  PROPERTY_TYPE_CODES,
   SOURCE_TYPES,
 } from "@/lib/domain/constants";
 
@@ -30,6 +35,14 @@ const optionalDecimal = z
 const optionalInt = optionalDecimal.transform((v) =>
   v === undefined ? undefined : Math.trunc(v),
 );
+
+/** Enum opcional tolerante a `""` proveniente de <select> não preenchido. */
+function optionalEnum<T extends readonly [string, ...string[]]>(values: T) {
+  return z
+    .enum(values)
+    .optional()
+    .or(z.literal("").transform(() => undefined));
+}
 
 export const organizationSchema = z.object({
   name: trimmed(160).min(2, "Informe o nome da organização"),
@@ -72,25 +85,68 @@ export const changeCaseStatusSchema = z.object({
 
 export const propertySchema = z.object({
   caseId: z.string().uuid(),
+  // Identificação e tipologia
   propertyType: optionalText(80),
+  propertyTypeCode: optionalEnum(PROPERTY_TYPE_CODES),
+  developmentId: z
+    .string()
+    .uuid()
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+  // Endereço
   addressLine: optionalText(240),
   addressNumber: optionalText(30),
   complement: optionalText(120),
   district: optionalText(120),
+  subdistrict: optionalText(120),
   city: optionalText(120),
   state: optionalText(40),
   postalCode: optionalText(20),
   country: optionalText(60),
+  countryCode: optionalText(3),
+  streetType: optionalText(40),
+  streetName: optionalText(200),
+  streetNumber: optionalText(30),
+  addressRaw: optionalText(400),
+  addressNormalized: optionalText(400),
+  addressNormalizationStatus: optionalEnum(ADDRESS_NORMALIZATION_STATUSES),
+  // Georreferência
   latitude: optionalDecimal,
   longitude: optionalDecimal,
+  // Áreas
   privateArea: optionalDecimal,
   builtArea: optionalDecimal,
   landArea: optionalDecimal,
+  usableArea: optionalDecimal,
+  totalArea: optionalDecimal,
+  commonArea: optionalDecimal,
+  // Programa
   bedrooms: optionalInt,
+  suites: optionalInt,
   bathrooms: optionalInt,
+  halfBathrooms: optionalInt,
   parkingSpaces: optionalInt,
-  constructionYear: optionalInt,
+  // Edificação
   floorNumber: optionalInt,
+  totalFloors: optionalInt,
+  unitsPerFloor: optionalInt,
+  buildingUnits: optionalInt,
+  elevators: optionalInt,
+  constructionYear: optionalInt,
+  renovationYear: optionalInt,
+  ceilingHeight: optionalDecimal,
+  // Terreno
+  frontage: optionalDecimal,
+  depth: optionalDecimal,
+  topography: optionalText(60),
+  // Estado e ocupação
+  conditionStatus: optionalEnum(CONDITION_STATUSES),
+  occupancyStatus: optionalEnum(OCCUPANCY_STATUSES),
+  furnishedStatus: optionalEnum(FURNISHED_STATUSES),
+  viewType: optionalText(80),
+  orientation: optionalText(40),
+  positionInBuilding: optionalText(80),
+  // Descrição técnica
   description: optionalText(4000),
 });
 export type PropertyInput = z.infer<typeof propertySchema>;

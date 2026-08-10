@@ -67,3 +67,100 @@ mesma entrega.
 **Decisão:** fatores, inferência estatística, AVM, ML, SHAP, convergência, laudo
 automático, agentes e RAG só serão construídos sobre datasets congelados, após o
 hardening da base factual.
+
+## ADR-011 — Imóvel avaliando, imóvel de mercado e empreendimento como entidades separadas
+**Status:** aceito.
+**Contexto:** um laudo compara o imóvel avaliando contra imóveis observados no
+mercado; tratá-los como a mesma tabela obrigaria gambiarras de tipo/escopo.
+**Decisão:** `properties` (avaliando), `market_properties` (mercado,
+escopado por caso) e `developments` (empreendimento) são tabelas distintas
+com FKs compostas por organização e caso.
+**Consequência:** duplicação parcial de vocabulário de atributos entre
+`properties` e `market_properties`; em troca, cada entidade tem semântica e
+regras de imutabilidade próprias.
+
+## ADR-012 — Observação de atributo separada de fato canônico
+**Status:** aceito.
+**Contexto:** fontes divergem sobre o mesmo atributo; resolver a divergência
+automaticamente violaria o Artigo 5 da constituição do produto.
+**Decisão:** `property_attribute_observations` (append-only, um por
+evidência) e `property_canonical_facts` (um valor vigente por atributo/
+entidade, escrito só por `adopt_canonical_fact`, superado nunca apagado).
+**Consequência:** toda leitura de "o valor do atributo X" precisa decidir
+explicitamente se quer a observação bruta ou o fato adotado; não há atalho
+que confunda os dois.
+
+## ADR-013 — Preço pedido e preço transacionado como colunas mutuamente exclusivas
+**Status:** aceito.
+**Decisão:** `market_observations` usa `CHECK` constraints para impedir que
+`asking_*` e `transaction_*` sejam preenchidos fora do `observation_type`
+correspondente; `observation_type` é imutável após criação.
+**Consequência:** registrar uma venda concretizada exige nova observação
+(`CLOSED_SALE`), nunca a edição de uma oferta existente.
+
+## ADR-014 — Status `REMOVED` sem status `SOLD`
+**Status:** aceito.
+**Contexto:** o desaparecimento de um anúncio é frequentemente mal-usado como
+proxy de venda em produtos imobiliários.
+**Decisão:** o enum `market_observation_status` não contém `SOLD`. Venda só é
+representada por uma observação distinta do tipo `CLOSED_SALE`/`CLOSED_RENT`
+com evidência própria.
+**Consequência:** consumidores futuros não podem "contar vendas" a partir de
+anúncios retirados; precisam de evidência de transação.
+
+## ADR-015 — Decisão de comparável e de duplicidade só por RPC `SECURITY DEFINER`
+**Status:** aceito.
+**Decisão:** `decide_comparable` e `resolve_property_match` são as únicas
+portas de escrita para `comparable_candidates.candidate_status/inclusion_
+status` e `property_match_candidates.match_status`; triggers `guard_
+comparable_candidate_update` e `guard_match_candidate_update` recusam
+`UPDATE` fora dessas RPCs.
+**Consequência:** mesmo o service role de aplicação, ao escrever fora da RPC,
+seria bloqueado — a garantia está no trigger, não na disciplina do chamador.
+
+## ADR-016 — Confirmação de duplicidade não funde nem apaga
+**Status:** aceito.
+**Contexto:** merge de entidades destrói proveniência e é irreversível.
+**Decisão:** `CONFIRMED_SAME` altera apenas o `match_status` do par em
+`property_match_candidates`; os dois `market_properties` e todo o histórico
+de cada lado permanecem intactos e independentes.
+**Consequência:** qualquer consolidação de comparáveis duplicados fica para
+uma camada de consumo futura (não implementada), que decide como tratar o
+par sem perder dado.
+
+## ADR-017 — `geo_point` (PostGIS geography) como posição canônica; lat/long como espelho
+**Status:** aceito.
+**Decisão:** `sync_geo_point()` recalcula, na mesma transação de escrita, o
+lado que não foi informado (`geo_point` a partir de lat/long, ou o inverso).
+**Consequência:** impossível gravar posição divergente entre as duas
+representações; toda consulta espacial deve usar `geo_point` com índice
+GiST.
+
+## ADR-018 — Geocoding e regra de raio fora de escopo
+**Status:** aceito.
+**Decisão:** nenhuma integração de geocoding é chamada pelo sistema; as RPCs
+de distância (`distance_between_properties_meters`, `distance_subject_to_
+market_property_meters`) só calculam metros entre pontos já preenchidos e
+nunca decidem elegibilidade de comparável.
+**Consequência:** preenchimento de coordenadas é manual/por evidência;
+qualquer regra de raio de comparabilidade permanece decisão humana via
+`decide_comparable`.
+
+## ADR-019 — Namespace interno `fluxa.*` renomeado para `valuation.*`
+**Status:** aceito (compatibilidade histórica documentada).
+**Contexto:** o GUC de transação e o `manifest_schema_version` usavam o
+prefixo herdado `fluxa` (nome de produto anterior). A migração
+`20260810195526_da6447e9-1470-422b-b1ff-5e7f1532fe3a.sql` substitui, função
+por função, `fluxa.privileged_op`/`fluxa.change_reason`/
+`fluxa.dataset.manifest/1` por `valuation.privileged_op`/`valuation.change_
+reason`/`valuation.dataset.manifest/1`, preservando byte a byte o
+comportamento, a autorização e as regras de imutabilidade.
+**Consequência:** datasets já congelados **antes** desta migração carregam
+`manifest_schema_version = 'fluxa.dataset.manifest/1'` no seu manifesto — essa
+string é histórica, faz parte do hash já calculado e **não deve ser
+reescrita**: alterá-la invalidaria o SHA-256 registrado. Documentação e
+schema novos usam exclusivamente `valuation.*`. Migrações aplicadas
+anteriores a esta renomeação (`20260810172137_...`, `20260810172605_...`)
+mantêm o texto literal `fluxa.*` porque descrevem o estado do banco no
+momento em que foram aplicadas; migrações são histórico imutável e não são
+editadas retroativamente.

@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { propertyColumns } from "@/lib/cases.server";
 import { CASE_STATUS_TRANSITIONS, type CaseStatus } from "@/lib/domain/constants";
 import {
   changeCaseStatusSchema,
@@ -221,26 +222,7 @@ export const saveProperty = createServerFn({ method: "POST" })
     const payload = {
       organization_id: membership.organizationId,
       valuation_case_id: data.caseId,
-      property_type: data.propertyType ?? null,
-      address_line: data.addressLine ?? null,
-      address_number: data.addressNumber ?? null,
-      complement: data.complement ?? null,
-      district: data.district ?? null,
-      city: data.city ?? null,
-      state: data.state ?? null,
-      postal_code: data.postalCode ?? null,
-      country: data.country ?? "BR",
-      latitude: data.latitude ?? null,
-      longitude: data.longitude ?? null,
-      private_area: data.privateArea ?? null,
-      built_area: data.builtArea ?? null,
-      land_area: data.landArea ?? null,
-      bedrooms: data.bedrooms ?? null,
-      bathrooms: data.bathrooms ?? null,
-      parking_spaces: data.parkingSpaces ?? null,
-      construction_year: data.constructionYear ?? null,
-      floor_number: data.floorNumber ?? null,
-      description: data.description ?? null,
+      ...propertyColumns(data),
     };
 
     if (existing) {

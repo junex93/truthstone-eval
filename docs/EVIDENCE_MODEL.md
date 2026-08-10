@@ -51,6 +51,31 @@ Ausência nunca é `NULL` silencioso: é `field_state` explícito. Divergência 
 fontes é registrada como `DIVERGENT` e exige decisão humana justificada — o
 sistema não escolhe o valor "mais provável".
 
+## Evidência aplicada a imóveis e mercado (Fase 3)
+
+O mesmo motor de evidência (`evidence_sources` → `evidence_artifacts` →
+`evidence_extractions` → `evidence_fields`) alimenta, opcionalmente, três
+novas tabelas de domínio:
+
+- `property_attribute_observations.evidence_field_id`/`evidence_source_id` —
+  o que uma evidência afirma sobre um atributo de imóvel;
+- `market_observations.evidence_source_id`/`primary_artifact_id` — a fonte de
+  um anúncio, cotação ou transação;
+- `market_observation_price_history.evidence_source_id`/`evidence_field_id` —
+  a evidência de cada leitura histórica de preço.
+
+O trigger `guard_market_evidence_scope` impede que a evidência vinculada
+pertença a um caso de avaliação diferente do registro de mercado — a mesma
+proteção anti-contaminação cross-case do congelamento de dataset
+(`docs/DATASET_INTEGRITY.md`), aplicada agora também ao domínio de mercado.
+
+Regra de adoção: `adopt_canonical_fact` só aceita uma observação de origem
+`EVIDENCE_EXTRACTION` se o `evidence_field_id` vinculado estiver `VERIFIED` —
+`AI OUTPUT != VERIFIED FACT` também aqui: uma extração de IA/OCR/parser não
+verificada não pode virar fato canônico do imóvel. Origem `EXTERNAL_API`
+nunca é adotável como fato, mesmo verificada. Ver `docs/PROPERTY_DATA_
+MODEL.md`.
+
 ## Extrações
 
 Uma extração concluída (`COMPLETED` / `REVIEW_REQUIRED`) não pode ter

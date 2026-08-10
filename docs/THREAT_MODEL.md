@@ -107,5 +107,52 @@ admin no servidor (sem GRANT de INSERT para `authenticated`).
   papel): não há rate limiting nem detecção de anomalia.
 - **T16** Colusão entre OWNER e REVIEWER: mitigada apenas por rastreabilidade
   (autor + justificativa + timestamp), não por prevenção.
-- **T17** Confiança no `fluxa.privileged_op` (GUC): ver limitação 1 em
-  `docs/SECURITY.md`.
+- **T17** Confiança no `valuation.privileged_op` (GUC, renomeado de
+  `fluxa.privileged_op` — ver ADR-019): ver limitação 1 em `docs/SECURITY.md`.
+
+## T18 — Contaminação cross-case no domínio de mercado
+
+Mitigação: `guard_market_evidence_scope` compara o caso da evidência
+vinculada com o caso da observação/observação de atributo antes de aceitar
+`INSERT`/`UPDATE`; FKs compostas `(organization_id, valuation_case_id, id)`
+em `market_properties`, `market_observations`, `comparable_candidates` e
+`property_match_candidates` impedem referenciar entidade de outro caso.
+Situação análoga a T8, aplicada ao novo domínio.
+Ainda **não coberto** por teste negativo executável (ver limitação abaixo).
+
+## T19 — Sobrescrita silenciosa de preço pedido
+
+Mitigação: `guard_market_observation_update` recusa `UPDATE` direto de
+`asking_price`/`asking_monthly_rent` fora de operação privilegiada; a única
+porta é `record_price_observation`, que insere uma linha em `market_
+observation_price_history` (append-only, sem GRANT de UPDATE/DELETE) antes
+de atualizar o valor corrente.
+Teste: não coberto por `tests/security/negative-tests.ts` nesta fase (ver
+limitação abaixo).
+
+## T20 — Adoção não autorizada de fato canônico
+
+Mitigação: `guard_canonical_fact` recusa qualquer escrita em `property_
+canonical_facts` fora de `adopt_canonical_fact`; a RPC exige `can_review`,
+justificativa registrada e, para observações de extração, o campo de
+evidência subjacente `VERIFIED`. Origem `EXTERNAL_API` nunca é adotável.
+Teste: não coberto por teste negativo executável nesta fase.
+
+## T21 — Forjar decisão de comparável ou de duplicidade
+
+Mitigação: `guard_comparable_candidate_update` e `guard_match_candidate_
+update` recusam `UPDATE` direto em `comparable_candidates` e `property_
+match_candidates`; as únicas portas são `decide_comparable` (exige
+`ELIGIBLE` prévio para incluir, motivo catalogado para excluir) e `resolve_
+property_match` (exige `can_review` e justificativa para confirmações).
+`comparable_decision_history` é append-only e não fabricável por INSERT
+direto (sem GRANT).
+Teste: não coberto por teste negativo executável nesta fase.
+
+## Ameaças novas reconhecidas e ainda NÃO cobertas por teste executável
+
+T18–T21 acima têm mitigação estrutural no banco (trigger + RPC + ausência de
+GRANT), mas, diferentemente de T1–T12, **não** têm hoje uma asserção
+correspondente em `tests/security/negative-tests.ts`. A extensão da suíte de
+testes negativos para cobrir o domínio de mercado e comparáveis é
+recomendada e ainda não foi feita — declarado aqui, não escondido.

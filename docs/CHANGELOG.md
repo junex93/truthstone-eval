@@ -75,3 +75,69 @@ Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
 - Design system pericial (tokens OKLCH), domínio/vocabulário único e schemas Zod.
 - Server functions para o ciclo de vida completo; autenticação e-mail/senha e
   Google; telas de dashboard, casos, evidência, datasets, admin e relatórios.
+
+## [Fase 3] Property & Comparable Intelligence Foundation — 2026-08-10
+
+### Banco de dados
+- Extensão `postgis` habilitada.
+- Novos enums de taxonomia: `property_type_code`, `knowledge_state`,
+  `address_normalization_status`, `development_type`,
+  `market_observation_type`, `market_observation_status`,
+  `transaction_evidence_status`, `value_origin`, `property_match_status`,
+  `comparable_candidate_status`, `comparable_inclusion_status`,
+  `seller_type`, `quality_dimension_state`, `occupancy_status`,
+  `furnished_status`, `condition_status`.
+- `properties` expandida com tipologia, áreas, atributos físicos, endereço
+  estruturado, `address_normalization_status`, `development_id`, `geo_point`.
+- Novas tabelas: `developments`, `market_properties`, `market_observations`,
+  `market_observation_price_history`, `property_attribute_observations`,
+  `property_canonical_facts`, `property_match_candidates`,
+  `comparable_exclusion_reasons` (com taxonomia seed), `comparable_
+  candidates`, `comparable_decision_history`, `market_source_quality_
+  assessments`, `derived_values`.
+- Triggers novos: `sync_geo_point` (canonicaliza `geo_point` vs. lat/long),
+  `guard_canonical_fact` (só `adopt_canonical_fact` escreve fato canônico),
+  `guard_market_observation_update` (tipo de observação e vínculo de
+  imóvel/caso imutáveis; preço pedido só muda via RPC),
+  `guard_market_evidence_scope` (evidência vinculada precisa ser do mesmo
+  caso), `guard_comparable_candidate_update` (só `decide_comparable`),
+  `guard_match_candidate_update` (só `resolve_property_match`), além de
+  `block_delete`/`prevent_org_migration`/`set_updated_at` estendidos às novas
+  tabelas.
+- RPCs `SECURITY DEFINER` novas: `record_price_observation`,
+  `adopt_canonical_fact`, `resolve_property_match`, `decide_comparable`,
+  `distance_between_properties_meters`,
+  `distance_subject_to_market_property_meters`.
+- Índices GiST em `properties.geo_point`, `market_properties.geo_point`,
+  `developments.geo_point`, além de índices B-tree de organização/caso/status
+  nas novas tabelas.
+- GRANTs: leitura ampla para `authenticated` nas novas tabelas; escrita
+  direta de decisão (`property_canonical_facts` update, `comparable_
+  candidates` status, `comparable_decision_history`, `market_observation_
+  price_history` update/delete) **sem** GRANT — só pelas RPCs oficiais.
+  `comparable_exclusion_reasons` com leitura pública para `authenticated`.
+- Nomenclatura: migração `20260810195526_...` renomeia o namespace interno de
+  GUC/manifesto de `fluxa.*` para `valuation.*` (ver ADR-019 em
+  `docs/DECISIONS.md`), sem alterar comportamento.
+
+### Documentação
+- Criados `docs/PROPERTY_DATA_MODEL.md`, `docs/MARKET_OBSERVATION_MODEL.md`,
+  `docs/COMPARABLE_GOVERNANCE.md`, `docs/GEO_MODEL.md`.
+- `docs/PRODUCT_CONSTITUTION.md`: novo Artigo 9 com as oposições conceituais
+  permanentes desta fase.
+- `docs/ARCHITECTURE.md`, `docs/DATA_GOVERNANCE.md`, `docs/EVIDENCE_MODEL.md`,
+  `docs/SECURITY.md`, `docs/THREAT_MODEL.md` atualizados com o novo domínio.
+- `docs/DECISIONS.md`: ADR-011 a ADR-019.
+- `AGENTS.md`: nova seção 13 com regras permanentes específicas de mercado e
+  comparáveis.
+
+### Limitações declaradas nesta fase
+- Não existe, no código de aplicação (`src/lib`, `src/routes`), nenhuma
+  server function, formulário ou tela para as novas tabelas — apenas o
+  schema, os triggers e as RPCs no banco, mais o vocabulário em
+  `src/lib/domain/constants.ts`. A camada de aplicação (server functions e
+  rotas) para imóveis de mercado e comparáveis **não foi implementada** até o
+  momento deste documento.
+- Não há geocoding, regra de raio/elegibilidade geográfica, merge de imóveis
+  duplicados, promoção de imóvel de mercado a avaliando, nem score de
+  completude/confiança sobre atributos ou fontes.

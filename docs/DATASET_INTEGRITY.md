@@ -33,7 +33,7 @@ RPC `SECURITY DEFINER`, transação única. Exige confirmação explícita liter
 
 ## Manifesto canônico
 
-`manifest_schema_version = 'fluxa.dataset.manifest/1'`, `hash_algorithm = 'SHA-256'`.
+`manifest_schema_version = 'valuation.dataset.manifest/1' (renomeado de 'fluxa.dataset.manifest/1'; ver ADR-019)`, `hash_algorithm = 'SHA-256'`.
 
 Determinismo garantido por:
 
