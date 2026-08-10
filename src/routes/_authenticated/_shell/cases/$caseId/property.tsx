@@ -80,8 +80,8 @@ function SubjectPropertyPage() {
 
       <PropertyForm caseId={caseId} property={property} writable={writable} />
 
-      {property?.id ? (
-        <DivergencePanel subjectPropertyId={property.id as string} writable={writable} />
+      {property?.["id"] ? (
+        <DivergencePanel subjectPropertyId={property["id"] as string} writable={writable} />
       ) : null}
     </div>
   );
@@ -92,19 +92,19 @@ function SubjectPropertyPage() {
 function CompletenessPanel({ property }: { property: Record<string, unknown> | null }) {
   const result = marketPropertyCompleteness(
     {
-      property_type_code: (property?.property_type_code as string | null) ?? null,
-      private_area: (property?.private_area as number | null) ?? null,
-      built_area: (property?.built_area as number | null) ?? null,
-      usable_area: (property?.usable_area as number | null) ?? null,
-      total_area: (property?.total_area as number | null) ?? null,
-      land_area: (property?.land_area as number | null) ?? null,
-      address_raw: (property?.address_raw as string | null) ?? null,
-      address_normalized: (property?.address_normalized as string | null) ?? null,
-      latitude: (property?.latitude as number | null) ?? null,
-      longitude: (property?.longitude as number | null) ?? null,
-      bedrooms: (property?.bedrooms as number | null) ?? null,
-      parking_spaces: (property?.parking_spaces as number | null) ?? null,
-      development_id: (property?.development_id as string | null) ?? null,
+      property_type_code: (property?.["property_type_code"] as string | null) ?? null,
+      private_area: (property?.["private_area"] as number | null) ?? null,
+      built_area: (property?.["built_area"] as number | null) ?? null,
+      usable_area: (property?.["usable_area"] as number | null) ?? null,
+      total_area: (property?.["total_area"] as number | null) ?? null,
+      land_area: (property?.["land_area"] as number | null) ?? null,
+      address_raw: (property?.["address_raw"] as string | null) ?? null,
+      address_normalized: (property?.["address_normalized"] as string | null) ?? null,
+      latitude: (property?.["latitude"] as number | null) ?? null,
+      longitude: (property?.["longitude"] as number | null) ?? null,
+      bedrooms: (property?.["bedrooms"] as number | null) ?? null,
+      parking_spaces: (property?.["parking_spaces"] as number | null) ?? null,
+      development_id: (property?.["development_id"] as string | null) ?? null,
     },
     { hasLinkedSource: false },
   );
@@ -228,19 +228,19 @@ function DivergenceGroup({
       <p className="text-sm font-medium text-foreground">{attributeName}</p>
       <div className="grid gap-2 sm:grid-cols-2">
         {observations.map((observation) => (
-          <div key={observation.id as string} className="rounded-sm border border-border p-2 text-xs">
+          <div key={observation["id"] as string} className="rounded-sm border border-border p-2 text-xs">
             <p className="mono-value text-foreground">
-              {observation.normalized_value as string} {observation.unit ? `(${observation.unit})` : ""}
+              {observation["normalized_value"] as string} {observation["unit"] ? `(${observation["unit"]})` : ""}
             </p>
             <p className="mt-1 text-muted-foreground">
-              Origem: {observation.value_origin as string}
+              Origem: {observation["value_origin"] as string}
             </p>
             {writable ? (
               <Button
-                variant={selectedId === observation.id ? "default" : "outline"}
+                variant={selectedId === observation["id"] ? "default" : "outline"}
                 size="sm"
                 className="mt-2"
-                onClick={() => setSelectedId(observation.id as string)}
+                onClick={() => setSelectedId(observation["id"] as string)}
               >
                 Selecionar
               </Button>
@@ -340,13 +340,13 @@ function PropertyForm({
   useEffect(() => {
     const initial: Record<string, string> = {};
     for (const [key, column] of TEXT_FIELDS) initial[key] = textOf(property, column);
-    initial.propertyType = textOf(property, "property_type");
-    initial.propertyTypeCode = textOf(property, "property_type_code");
-    initial.addressNormalizationStatus = textOf(property, "address_normalization_status");
-    initial.conditionStatus = textOf(property, "condition_status");
-    initial.occupancyStatus = textOf(property, "occupancy_status");
-    initial.furnishedStatus = textOf(property, "furnished_status");
-    initial.description = textOf(property, "description");
+    initial["propertyType"] = textOf(property, "property_type");
+    initial["propertyTypeCode"] = textOf(property, "property_type_code");
+    initial["addressNormalizationStatus"] = textOf(property, "address_normalization_status");
+    initial["conditionStatus"] = textOf(property, "condition_status");
+    initial["occupancyStatus"] = textOf(property, "occupancy_status");
+    initial["furnishedStatus"] = textOf(property, "furnished_status");
+    initial["description"] = textOf(property, "description");
     setValues(initial);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [property]);
@@ -554,7 +554,7 @@ function SelectField({
   return (
     <div className="space-y-1.5">
       <Label>{label}</Label>
-      <Select value={value || undefined} onValueChange={onChange} disabled={!writable}>
+      <Select value={value} onValueChange={onChange} disabled={!writable}>
         <SelectTrigger>
           <SelectValue placeholder={NOT_INFORMED} />
         </SelectTrigger>
