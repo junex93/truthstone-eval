@@ -133,8 +133,17 @@ export const registerEvidenceArtifact = createServerFn({ method: "POST" })
     if (sourceError) throw new Error(sourceError.message);
     if (!source) throw new Error("Fonte não encontrada nesta organização.");
 
-    if (!data.storagePath.startsWith(`${membership.organizationId}/`)) {
+    // Storage path is canonical: <organization_id>/<valuation_case_id>/<file>.
+    // Both segments are checked against the database record, not just the path text.
+    const segments = data.storagePath.split("/");
+    if (segments[0] !== membership.organizationId) {
       throw new Error("Caminho de armazenamento fora do escopo da organização.");
+    }
+    if (!source.valuation_case_id) {
+      throw new Error("Vincule a fonte a um caso antes de capturar artefatos.");
+    }
+    if (segments[1] !== source.valuation_case_id) {
+      throw new Error("Caminho de armazenamento não corresponde ao caso da fonte.");
     }
 
     const download = await supabase.storage.from("evidence-originals").download(data.storagePath);
@@ -148,7 +157,9 @@ export const registerEvidenceArtifact = createServerFn({ method: "POST" })
     const bytes = await download.data.arrayBuffer();
     const hash = await sha256Hex(bytes);
 
-    const { data: created, error } = await supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: created, error } = await supabaseAdmin
       .from("evidence_artifacts")
       .insert({
         organization_id: membership.organizationId,

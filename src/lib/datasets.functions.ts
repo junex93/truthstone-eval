@@ -10,7 +10,6 @@ import {
 import {
   requireMembership,
   requireWriteAccess,
-  sha256HexOfString,
   writeAudit,
 } from "@/lib/workspace.server";
 
