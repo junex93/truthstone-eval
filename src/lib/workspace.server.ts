@@ -69,6 +69,8 @@ export async function requireAdminAccess(supabase: Db, userId: string): Promise<
 export interface AuditInput {
   organizationId: string;
   caseId?: string | null;
+  /** Acting user. Required because the audit row is written with the service role. */
+  actorUserId?: string | null;
   eventType: AuditEventType;
   entityType: string;
   entityId?: string | null;
@@ -76,6 +78,7 @@ export interface AuditInput {
   after?: unknown;
   metadata?: unknown;
 }
+
 
 /**
  * Append-only audit write.
