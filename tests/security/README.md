@@ -17,7 +17,7 @@ Nenhuma asserção de segurança é feita com ela.
 Saída: `PASS`/`FAIL` por asserção e um resumo. Código de saída `1` se houver
 qualquer regressão.
 
-## Cobertura (49 asserções)
+## Cobertura (75 asserções)
 
 1. Acesso anônimo (tabelas e RPCs)
 2. Isolamento cross-tenant

@@ -95,7 +95,7 @@ vaze a existência/posição de um imóvel de outra organização.
 1. `in_privileged_op()` recebeu `EXECUTE` para `authenticated` (necessário: os
    triggers rodam como o invocador). Ela apenas **lê** um GUC de transação; o GUC
    só é gravado dentro das RPCs `SECURITY DEFINER`. Se algum dia existir uma RPC
-   exposta capaz de chamar `set_config('fluxa.privileged_op', ...)`, essa
+   exposta capaz de chamar `set_config('valuation.privileged_op', ...)`, essa
    proteção cai — revisar em qualquer nova RPC.
 2. Não há verificação criptográfica assíncrona periódica dos bytes em storage
    contra `sha256_hash` (detecção de alteração fora do fluxo). Recomendado.
