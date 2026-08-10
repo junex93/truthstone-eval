@@ -213,9 +213,13 @@ function UploadArtifact({
   const [busy, setBusy] = useState(false);
 
   async function handleFile(file: File) {
+    if (!caseId) {
+      toast.error("Vincule a fonte a um caso antes de capturar artefatos.");
+      return;
+    }
     setBusy(true);
     try {
-      const path = `${organizationId}/${caseId ?? "sem-caso"}/${crypto.randomUUID()}-${file.name}`;
+      const path = `${organizationId}/${caseId}/${crypto.randomUUID()}-${file.name}`;
       const upload = await supabase.storage.from("evidence-originals").upload(path, file);
       if (upload.error) throw new Error(upload.error.message);
       await register({
