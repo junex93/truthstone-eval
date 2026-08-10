@@ -17,6 +17,8 @@ import { Route as AuthenticatedShellAdminRouteImport } from './routes/_authentic
 import { Route as AuthenticatedShellDashboardRouteImport } from './routes/_authenticated/_shell/dashboard'
 import { Route as AuthenticatedShellReportsRouteImport } from './routes/_authenticated/_shell/reports'
 import { Route as AuthenticatedShellCasesIndexRouteImport } from './routes/_authenticated/_shell/cases/index'
+import { Route as AuthenticatedShellCasesCaseIdRouteImport } from './routes/_authenticated/_shell/cases/$caseId'
+import { Route as AuthenticatedShellEvidenceIndexRouteImport } from './routes/_authenticated/_shell/evidence/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -59,6 +61,18 @@ const AuthenticatedShellCasesIndexRoute =
     path: '/cases/',
     getParentRoute: () => AuthenticatedShellRoute,
   } as any)
+const AuthenticatedShellCasesCaseIdRoute =
+  AuthenticatedShellCasesCaseIdRouteImport.update({
+    id: '/cases/$caseId',
+    path: '/cases/$caseId',
+    getParentRoute: () => AuthenticatedShellRoute,
+  } as any)
+const AuthenticatedShellEvidenceIndexRoute =
+  AuthenticatedShellEvidenceIndexRouteImport.update({
+    id: '/evidence/',
+    path: '/evidence/',
+    getParentRoute: () => AuthenticatedShellRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -66,7 +80,9 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedShellAdminRoute
   '/dashboard': typeof AuthenticatedShellDashboardRoute
   '/reports': typeof AuthenticatedShellReportsRoute
+  '/cases/$caseId': typeof AuthenticatedShellCasesCaseIdRoute
   '/cases/': typeof AuthenticatedShellCasesIndexRoute
+  '/evidence/': typeof AuthenticatedShellEvidenceIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -74,7 +90,9 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedShellAdminRoute
   '/dashboard': typeof AuthenticatedShellDashboardRoute
   '/reports': typeof AuthenticatedShellReportsRoute
+  '/cases/$caseId': typeof AuthenticatedShellCasesCaseIdRoute
   '/cases': typeof AuthenticatedShellCasesIndexRoute
+  '/evidence': typeof AuthenticatedShellEvidenceIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -85,13 +103,31 @@ export interface FileRoutesById {
   '/_authenticated/_shell/admin': typeof AuthenticatedShellAdminRoute
   '/_authenticated/_shell/dashboard': typeof AuthenticatedShellDashboardRoute
   '/_authenticated/_shell/reports': typeof AuthenticatedShellReportsRoute
+  '/_authenticated/_shell/cases/$caseId': typeof AuthenticatedShellCasesCaseIdRoute
   '/_authenticated/_shell/cases/': typeof AuthenticatedShellCasesIndexRoute
+  '/_authenticated/_shell/evidence/': typeof AuthenticatedShellEvidenceIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/admin' | '/dashboard' | '/reports' | '/cases/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/dashboard'
+    | '/reports'
+    | '/cases/$caseId'
+    | '/cases/'
+    | '/evidence/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/admin' | '/dashboard' | '/reports' | '/cases'
+  to:
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/dashboard'
+    | '/reports'
+    | '/cases/$caseId'
+    | '/cases'
+    | '/evidence'
   id:
     | '__root__'
     | '/'
@@ -101,7 +137,9 @@ export interface FileRouteTypes {
     | '/_authenticated/_shell/admin'
     | '/_authenticated/_shell/dashboard'
     | '/_authenticated/_shell/reports'
+    | '/_authenticated/_shell/cases/$caseId'
     | '/_authenticated/_shell/cases/'
+    | '/_authenticated/_shell/evidence/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -168,6 +206,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellCasesIndexRouteImport
       parentRoute: typeof AuthenticatedShellRoute
     }
+    '/_authenticated/_shell/cases/$caseId': {
+      id: '/_authenticated/_shell/cases/$caseId'
+      path: '/cases/$caseId'
+      fullPath: '/cases/$caseId'
+      preLoaderRoute: typeof AuthenticatedShellCasesCaseIdRouteImport
+      parentRoute: typeof AuthenticatedShellRoute
+    }
+    '/_authenticated/_shell/evidence/': {
+      id: '/_authenticated/_shell/evidence/'
+      path: '/evidence'
+      fullPath: '/evidence/'
+      preLoaderRoute: typeof AuthenticatedShellEvidenceIndexRouteImport
+      parentRoute: typeof AuthenticatedShellRoute
+    }
   }
 }
 
@@ -175,14 +227,18 @@ interface AuthenticatedShellRouteChildren {
   AuthenticatedShellAdminRoute: typeof AuthenticatedShellAdminRoute
   AuthenticatedShellDashboardRoute: typeof AuthenticatedShellDashboardRoute
   AuthenticatedShellReportsRoute: typeof AuthenticatedShellReportsRoute
+  AuthenticatedShellCasesCaseIdRoute: typeof AuthenticatedShellCasesCaseIdRoute
   AuthenticatedShellCasesIndexRoute: typeof AuthenticatedShellCasesIndexRoute
+  AuthenticatedShellEvidenceIndexRoute: typeof AuthenticatedShellEvidenceIndexRoute
 }
 
 const AuthenticatedShellRouteChildren: AuthenticatedShellRouteChildren = {
   AuthenticatedShellAdminRoute: AuthenticatedShellAdminRoute,
   AuthenticatedShellDashboardRoute: AuthenticatedShellDashboardRoute,
   AuthenticatedShellReportsRoute: AuthenticatedShellReportsRoute,
+  AuthenticatedShellCasesCaseIdRoute: AuthenticatedShellCasesCaseIdRoute,
   AuthenticatedShellCasesIndexRoute: AuthenticatedShellCasesIndexRoute,
+  AuthenticatedShellEvidenceIndexRoute: AuthenticatedShellEvidenceIndexRoute,
 }
 
 const AuthenticatedShellRouteWithChildren =

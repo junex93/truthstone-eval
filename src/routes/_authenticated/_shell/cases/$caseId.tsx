@@ -82,12 +82,10 @@ function CaseDetailPage() {
             <SectionTitle
               title="Datasets deste caso"
               description="Um dataset congelado é pré-requisito para qualquer cálculo metodológico."
-              actions={
-                <Button asChild variant="outline" size="sm">
-                  <Link to="/datasets">Gerenciar datasets</Link>
-                </Button>
-              }
             />
+            <Button asChild variant="outline" size="sm">
+              <Link to="/datasets">Gerenciar datasets</Link>
+            </Button>
             {datasets.length === 0 ? (
               <p className="text-sm text-muted-foreground">Nenhuma versão de dataset criada.</p>
             ) : (
