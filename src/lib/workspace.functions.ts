@@ -79,7 +79,9 @@ export const bootstrapWorkspace = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: org.id,
+      actorUserId: userId,
       eventType: "ORGANIZATION_CREATED",
+
       entityType: "organization",
       entityId: org.id,
       after: { name: org.name },
