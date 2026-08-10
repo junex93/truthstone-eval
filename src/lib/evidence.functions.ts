@@ -101,6 +101,7 @@ export const createEvidenceSource = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       caseId: data.caseId ?? null,
       eventType: "EVIDENCE_SOURCE_CREATED",
       entityType: "evidence_source",
@@ -132,8 +133,17 @@ export const registerEvidenceArtifact = createServerFn({ method: "POST" })
     if (sourceError) throw new Error(sourceError.message);
     if (!source) throw new Error("Fonte não encontrada nesta organização.");
 
-    if (!data.storagePath.startsWith(`${membership.organizationId}/`)) {
+    // Storage path is canonical: <organization_id>/<valuation_case_id>/<file>.
+    // Both segments are checked against the database record, not just the path text.
+    const segments = data.storagePath.split("/");
+    if (segments[0] !== membership.organizationId) {
       throw new Error("Caminho de armazenamento fora do escopo da organização.");
+    }
+    if (!source.valuation_case_id) {
+      throw new Error("Vincule a fonte a um caso antes de capturar artefatos.");
+    }
+    if (segments[1] !== source.valuation_case_id) {
+      throw new Error("Caminho de armazenamento não corresponde ao caso da fonte.");
     }
 
     const download = await supabase.storage.from("evidence-originals").download(data.storagePath);
@@ -147,7 +157,9 @@ export const registerEvidenceArtifact = createServerFn({ method: "POST" })
     const bytes = await download.data.arrayBuffer();
     const hash = await sha256Hex(bytes);
 
-    const { data: created, error } = await supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: created, error } = await supabaseAdmin
       .from("evidence_artifacts")
       .insert({
         organization_id: membership.organizationId,
@@ -167,6 +179,7 @@ export const registerEvidenceArtifact = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       caseId: source.valuation_case_id,
       eventType: "ARTIFACT_CAPTURED",
       entityType: "evidence_artifact",
@@ -322,6 +335,7 @@ export const createExtraction = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       eventType: "EXTRACTION_CREATED",
       entityType: "evidence_extraction",
       entityId: created.id,
@@ -374,6 +388,7 @@ export const createEvidenceField = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       eventType: "FIELD_CREATED",
       entityType: "evidence_field",
       entityId: created.id,
@@ -429,35 +444,11 @@ export const verifyEvidenceField = createServerFn({ method: "POST" })
       );
     }
 
-    const now = new Date().toISOString();
-    const { error } = await supabase
-      .from("evidence_fields")
-      .update({
-        validation_status: "VERIFIED",
-        verified_by: userId,
-        verified_at: now,
-        verification_notes: data.verificationNotes,
-      })
-      .eq("id", field.id);
+    const { error } = await supabase.rpc("verify_evidence_field", {
+      _field_id: field.id,
+      _notes: data.verificationNotes,
+    });
     if (error) throw new Error(error.message);
-
-    await supabase.from("evidence_reviews").insert({
-      organization_id: membership.organizationId,
-      field_id: field.id,
-      decision: "VERIFIED",
-      notes: data.verificationNotes,
-      reviewer_id: userId,
-    });
-
-    await writeAudit(supabase, {
-      organizationId: membership.organizationId,
-      eventType: "FIELD_VERIFIED",
-      entityType: "evidence_field",
-      entityId: field.id,
-      before: { validation_status: field.validation_status },
-      after: { validation_status: "VERIFIED" },
-      metadata: { notes: data.verificationNotes },
-    });
 
     return { ok: true };
   });
@@ -478,35 +469,11 @@ export const rejectEvidenceField = createServerFn({ method: "POST" })
     if (readError) throw new Error(readError.message);
     if (!field) throw new Error("Campo não encontrado.");
 
-    const now = new Date().toISOString();
-    const { error } = await supabase
-      .from("evidence_fields")
-      .update({
-        validation_status: "REJECTED",
-        rejected_by: userId,
-        rejected_at: now,
-        rejection_reason: data.rejectionReason,
-      })
-      .eq("id", field.id);
+    const { error } = await supabase.rpc("reject_evidence_field", {
+      _field_id: field.id,
+      _reason: data.rejectionReason,
+    });
     if (error) throw new Error(error.message);
-
-    await supabase.from("evidence_reviews").insert({
-      organization_id: membership.organizationId,
-      field_id: field.id,
-      decision: "REJECTED",
-      notes: data.rejectionReason,
-      reviewer_id: userId,
-    });
-
-    await writeAudit(supabase, {
-      organizationId: membership.organizationId,
-      eventType: "FIELD_REJECTED",
-      entityType: "evidence_field",
-      entityId: field.id,
-      before: { validation_status: field.validation_status },
-      after: { validation_status: "REJECTED" },
-      metadata: { reason: data.rejectionReason },
-    });
 
     return { ok: true };
   });

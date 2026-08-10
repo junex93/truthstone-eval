@@ -71,6 +71,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "ai_runs_case_org_fk"
+            columns: ["organization_id", "valuation_case_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_cases"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
             foreignKeyName: "ai_runs_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -128,6 +135,108 @@ export type Database = {
         }
         Relationships: []
       }
+      dataset_item_snapshots: {
+        Row: {
+          artifact_id: string
+          artifact_sha256: string | null
+          created_at: string
+          dataset_item_id: string | null
+          dataset_version_id: string
+          evidence_field_id: string
+          evidence_field_revision: number
+          evidence_source_id: string
+          extraction_id: string
+          extraction_version: number
+          field_name: string
+          field_state_at_freeze: Database["public"]["Enums"]["field_state"]
+          id: string
+          item_ordinal: number
+          normalized_value_at_freeze: string | null
+          numeric_value_at_freeze: number | null
+          organization_id: string
+          raw_value_at_freeze: string | null
+          role_in_dataset: string | null
+          source_excerpt_at_freeze: string | null
+          source_locator_at_freeze: Json | null
+          unit_at_freeze: string | null
+          validation_status_at_freeze: Database["public"]["Enums"]["validation_status"]
+          valuation_case_id: string
+          verified_at_at_freeze: string | null
+          verified_by_at_freeze: string | null
+        }
+        Insert: {
+          artifact_id: string
+          artifact_sha256?: string | null
+          created_at?: string
+          dataset_item_id?: string | null
+          dataset_version_id: string
+          evidence_field_id: string
+          evidence_field_revision: number
+          evidence_source_id: string
+          extraction_id: string
+          extraction_version: number
+          field_name: string
+          field_state_at_freeze: Database["public"]["Enums"]["field_state"]
+          id?: string
+          item_ordinal: number
+          normalized_value_at_freeze?: string | null
+          numeric_value_at_freeze?: number | null
+          organization_id: string
+          raw_value_at_freeze?: string | null
+          role_in_dataset?: string | null
+          source_excerpt_at_freeze?: string | null
+          source_locator_at_freeze?: Json | null
+          unit_at_freeze?: string | null
+          validation_status_at_freeze: Database["public"]["Enums"]["validation_status"]
+          valuation_case_id: string
+          verified_at_at_freeze?: string | null
+          verified_by_at_freeze?: string | null
+        }
+        Update: {
+          artifact_id?: string
+          artifact_sha256?: string | null
+          created_at?: string
+          dataset_item_id?: string | null
+          dataset_version_id?: string
+          evidence_field_id?: string
+          evidence_field_revision?: number
+          evidence_source_id?: string
+          extraction_id?: string
+          extraction_version?: number
+          field_name?: string
+          field_state_at_freeze?: Database["public"]["Enums"]["field_state"]
+          id?: string
+          item_ordinal?: number
+          normalized_value_at_freeze?: string | null
+          numeric_value_at_freeze?: number | null
+          organization_id?: string
+          raw_value_at_freeze?: string | null
+          role_in_dataset?: string | null
+          source_excerpt_at_freeze?: string | null
+          source_locator_at_freeze?: Json | null
+          unit_at_freeze?: string | null
+          validation_status_at_freeze?: Database["public"]["Enums"]["validation_status"]
+          valuation_case_id?: string
+          verified_at_at_freeze?: string | null
+          verified_by_at_freeze?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dataset_item_snapshots_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dsis_version_org_fk"
+            columns: ["organization_id", "dataset_version_id"]
+            isOneToOne: false
+            referencedRelation: "dataset_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       dataset_items: {
         Row: {
           created_at: string
@@ -181,6 +290,20 @@ export type Database = {
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "dsi_field_org_fk"
+            columns: ["organization_id", "evidence_field_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_fields"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "dsi_version_org_fk"
+            columns: ["organization_id", "dataset_version_id"]
+            isOneToOne: false
+            referencedRelation: "dataset_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
         ]
       }
       dataset_versions: {
@@ -188,14 +311,17 @@ export type Database = {
           created_at: string
           created_by: string
           dataset_hash: string | null
+          dataset_manifest: Json | null
           description: string | null
           exclusion_criteria: string | null
           frozen_at: string | null
           frozen_by: string | null
           geographic_scope: string | null
+          hash_algorithm: string | null
           id: string
           inclusion_criteria: string | null
           known_limitations: string | null
+          manifest_schema_version: string | null
           name: string
           organization_id: string
           purpose: string | null
@@ -207,14 +333,17 @@ export type Database = {
           created_at?: string
           created_by: string
           dataset_hash?: string | null
+          dataset_manifest?: Json | null
           description?: string | null
           exclusion_criteria?: string | null
           frozen_at?: string | null
           frozen_by?: string | null
           geographic_scope?: string | null
+          hash_algorithm?: string | null
           id?: string
           inclusion_criteria?: string | null
           known_limitations?: string | null
+          manifest_schema_version?: string | null
           name: string
           organization_id: string
           purpose?: string | null
@@ -226,14 +355,17 @@ export type Database = {
           created_at?: string
           created_by?: string
           dataset_hash?: string | null
+          dataset_manifest?: Json | null
           description?: string | null
           exclusion_criteria?: string | null
           frozen_at?: string | null
           frozen_by?: string | null
           geographic_scope?: string | null
+          hash_algorithm?: string | null
           id?: string
           inclusion_criteria?: string | null
           known_limitations?: string | null
+          manifest_schema_version?: string | null
           name?: string
           organization_id?: string
           purpose?: string | null
@@ -255,6 +387,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "valuation_cases"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dsv_case_org_fk"
+            columns: ["organization_id", "valuation_case_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_cases"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -305,6 +444,13 @@ export type Database = {
           storage_path?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "artifacts_source_org_fk"
+            columns: ["organization_id", "evidence_source_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_sources"
+            referencedColumns: ["organization_id", "id"]
+          },
           {
             foreignKeyName: "evidence_artifacts_evidence_source_id_fkey"
             columns: ["evidence_source_id"]
@@ -385,6 +531,13 @@ export type Database = {
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "extractions_artifact_org_fk"
+            columns: ["organization_id", "artifact_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_artifacts"
+            referencedColumns: ["organization_id", "id"]
+          },
         ]
       }
       evidence_field_revisions: {
@@ -392,49 +545,82 @@ export type Database = {
           change_reason: string | null
           changed_by: string | null
           created_at: string
+          extraction_id: string | null
           field_id: string
+          field_name: string | null
           field_state: Database["public"]["Enums"]["field_state"] | null
           id: string
           normalized_value: string | null
+          numeric_value: number | null
           organization_id: string
           raw_value: string | null
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_reason: string | null
           revision_number: number
+          source_excerpt: string | null
+          source_locator: Json | null
           unit: string | null
           validation_status:
             | Database["public"]["Enums"]["validation_status"]
             | null
+          verification_notes: string | null
+          verified_at: string | null
+          verified_by: string | null
         }
         Insert: {
           change_reason?: string | null
           changed_by?: string | null
           created_at?: string
+          extraction_id?: string | null
           field_id: string
+          field_name?: string | null
           field_state?: Database["public"]["Enums"]["field_state"] | null
           id?: string
           normalized_value?: string | null
+          numeric_value?: number | null
           organization_id: string
           raw_value?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
           revision_number: number
+          source_excerpt?: string | null
+          source_locator?: Json | null
           unit?: string | null
           validation_status?:
             | Database["public"]["Enums"]["validation_status"]
             | null
+          verification_notes?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Update: {
           change_reason?: string | null
           changed_by?: string | null
           created_at?: string
+          extraction_id?: string | null
           field_id?: string
+          field_name?: string | null
           field_state?: Database["public"]["Enums"]["field_state"] | null
           id?: string
           normalized_value?: string | null
+          numeric_value?: number | null
           organization_id?: string
           raw_value?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
           revision_number?: number
+          source_excerpt?: string | null
+          source_locator?: Json | null
           unit?: string | null
           validation_status?:
             | Database["public"]["Enums"]["validation_status"]
             | null
+          verification_notes?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Relationships: [
           {
@@ -443,6 +629,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "evidence_fields"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "revisions_field_org_fk"
+            columns: ["organization_id", "field_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_fields"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -534,6 +727,13 @@ export type Database = {
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fields_extraction_org_fk"
+            columns: ["organization_id", "extraction_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_extractions"
+            referencedColumns: ["organization_id", "id"]
+          },
         ]
       }
       evidence_reviews: {
@@ -588,6 +788,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_artifact_org_fk"
+            columns: ["organization_id", "artifact_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_artifacts"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "reviews_field_org_fk"
+            columns: ["organization_id", "field_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_fields"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -654,6 +868,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "valuation_cases"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sources_case_org_fk"
+            columns: ["organization_id", "valuation_case_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_cases"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -839,6 +1060,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "properties_case_org_fk"
+            columns: ["organization_id", "valuation_case_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_cases"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
             foreignKeyName: "properties_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -906,8 +1134,29 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      audit_write_internal: {
+        Args: {
+          _after: Json
+          _before: Json
+          _case: string
+          _entity_id: string
+          _entity_type: string
+          _event_type: string
+          _metadata: Json
+          _org: string
+        }
+        Returns: string
+      }
       can_review: { Args: { _org: string }; Returns: boolean }
       can_write: { Args: { _org: string }; Returns: boolean }
+      current_org_role: {
+        Args: { _org: string }
+        Returns: Database["public"]["Enums"]["org_role"]
+      }
+      freeze_dataset: {
+        Args: { _confirmation: string; _dataset_version_id: string }
+        Returns: Json
+      }
       has_org_role: {
         Args: {
           _org: string
@@ -915,8 +1164,39 @@ export type Database = {
         }
         Returns: boolean
       }
+      in_privileged_op: { Args: never; Returns: boolean }
       is_org_admin: { Args: { _org: string }; Returns: boolean }
       is_org_member: { Args: { _org: string }; Returns: boolean }
+      reject_evidence_field: {
+        Args: { _field_id: string; _reason: string }
+        Returns: string
+      }
+      revise_evidence_field: {
+        Args: {
+          _field_id: string
+          _field_state: Database["public"]["Enums"]["field_state"]
+          _normalized_value: string
+          _numeric_value: number
+          _raw_value: string
+          _reason: string
+          _source_excerpt: string
+          _source_locator: Json
+          _unit: string
+        }
+        Returns: string
+      }
+      transition_case_status: {
+        Args: {
+          _case_id: string
+          _next_status: Database["public"]["Enums"]["case_status"]
+          _reason: string
+        }
+        Returns: Database["public"]["Enums"]["case_status"]
+      }
+      verify_evidence_field: {
+        Args: { _field_id: string; _notes: string }
+        Returns: string
+      }
       write_audit_event: {
         Args: {
           _after: Json

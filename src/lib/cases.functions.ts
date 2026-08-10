@@ -60,6 +60,7 @@ export const createCase = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       caseId: created.id,
       eventType: "CASE_CREATED",
       entityType: "valuation_case",
@@ -153,6 +154,7 @@ export const updateCase = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       caseId: data.caseId,
       eventType: "CASE_UPDATED",
       entityType: "valuation_case",
@@ -164,59 +166,29 @@ export const updateCase = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/**
+ * Status transitions are executed by the database function
+ * public.transition_case_status: the state machine, the "frozen dataset exists"
+ * precondition, the justification requirement for reversals and the audit row all
+ * live in one transaction. The client role has no UPDATE path to the status column.
+ */
 export const changeCaseStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => changeCaseStatusSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const membership = await requireWriteAccess(supabase, userId);
+    await requireWriteAccess(supabase, userId);
 
-    const { data: current, error: readError } = await supabase
-      .from("valuation_cases")
-      .select("id, status")
-      .eq("id", data.caseId)
-      .eq("organization_id", membership.organizationId)
-      .maybeSingle();
-    if (readError) throw new Error(readError.message);
-    if (!current) throw new Error("Caso não encontrado.");
-
-    const allowed = CASE_STATUS_TRANSITIONS[current.status as CaseStatus] ?? [];
-    if (!allowed.includes(data.nextStatus)) {
-      throw new Error(
-        `Transição inválida: ${current.status} não pode ir para ${data.nextStatus}.`,
-      );
-    }
-
-    if (data.nextStatus === "DATASET_FROZEN") {
-      const { count } = await supabase
-        .from("dataset_versions")
-        .select("id", { count: "exact", head: true })
-        .eq("valuation_case_id", data.caseId)
-        .not("frozen_at", "is", null);
-      if ((count ?? 0) === 0) {
-        throw new Error("Não há dataset congelado neste caso.");
-      }
-    }
-
-    const { error } = await supabase
-      .from("valuation_cases")
-      .update({ status: data.nextStatus })
-      .eq("id", data.caseId);
-    if (error) throw new Error(error.message);
-
-    await writeAudit(supabase, {
-      organizationId: membership.organizationId,
-      caseId: data.caseId,
-      eventType: "CASE_STATUS_CHANGED",
-      entityType: "valuation_case",
-      entityId: data.caseId,
-      before: { status: current.status },
-      after: { status: data.nextStatus },
-      metadata: { reason: data.reason ?? null },
+    const { error } = await supabase.rpc("transition_case_status", {
+      _case_id: data.caseId,
+      _next_status: data.nextStatus,
+      _reason: data.reason ?? "",
     });
+    if (error) throw new Error(error.message);
 
     return { ok: true };
   });
+
 
 export const saveProperty = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -270,6 +242,7 @@ export const saveProperty = createServerFn({ method: "POST" })
       if (error) throw new Error(error.message);
       await writeAudit(supabase, {
         organizationId: membership.organizationId,
+      actorUserId: userId,
         caseId: data.caseId,
         eventType: "PROPERTY_UPDATED",
         entityType: "property",
@@ -289,6 +262,7 @@ export const saveProperty = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       caseId: data.caseId,
       eventType: "PROPERTY_CREATED",
       entityType: "property",

@@ -79,7 +79,9 @@ export const bootstrapWorkspace = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: org.id,
+      actorUserId: userId,
       eventType: "ORGANIZATION_CREATED",
+
       entityType: "organization",
       entityId: org.id,
       after: { name: org.name },
@@ -168,6 +170,7 @@ export const updateMemberRole = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       eventType: "USER_ROLE_CHANGED",
       entityType: "organization_member",
       entityId: data.memberId,
