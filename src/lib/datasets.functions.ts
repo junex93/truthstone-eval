@@ -104,6 +104,7 @@ export const createDataset = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       caseId: data.caseId,
       eventType: "DATASET_CREATED",
       entityType: "dataset_version",
@@ -221,6 +222,7 @@ export const addDatasetItem = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       caseId: dataset.valuation_case_id,
       eventType: "DATASET_ITEM_ADDED",
       entityType: "dataset_item",
@@ -258,6 +260,7 @@ export const removeDatasetItem = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       caseId: dataset?.valuation_case_id ?? null,
       eventType: "DATASET_ITEM_REMOVED",
       entityType: "dataset_item",
@@ -339,6 +342,7 @@ export const freezeDataset = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       caseId: dataset.valuation_case_id,
       eventType: "DATASET_FROZEN",
       entityType: "dataset_version",

@@ -168,6 +168,7 @@ export const updateMemberRole = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       eventType: "USER_ROLE_CHANGED",
       entityType: "organization_member",
       entityId: data.memberId,

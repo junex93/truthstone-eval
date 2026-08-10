@@ -60,6 +60,7 @@ export const createCase = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       caseId: created.id,
       eventType: "CASE_CREATED",
       entityType: "valuation_case",
@@ -153,6 +154,7 @@ export const updateCase = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       caseId: data.caseId,
       eventType: "CASE_UPDATED",
       entityType: "valuation_case",
@@ -206,6 +208,7 @@ export const changeCaseStatus = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       caseId: data.caseId,
       eventType: "CASE_STATUS_CHANGED",
       entityType: "valuation_case",
@@ -270,6 +273,7 @@ export const saveProperty = createServerFn({ method: "POST" })
       if (error) throw new Error(error.message);
       await writeAudit(supabase, {
         organizationId: membership.organizationId,
+      actorUserId: userId,
         caseId: data.caseId,
         eventType: "PROPERTY_UPDATED",
         entityType: "property",
@@ -289,6 +293,7 @@ export const saveProperty = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       caseId: data.caseId,
       eventType: "PROPERTY_CREATED",
       entityType: "property",

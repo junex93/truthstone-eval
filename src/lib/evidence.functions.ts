@@ -101,6 +101,7 @@ export const createEvidenceSource = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       caseId: data.caseId ?? null,
       eventType: "EVIDENCE_SOURCE_CREATED",
       entityType: "evidence_source",
@@ -167,6 +168,7 @@ export const registerEvidenceArtifact = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       caseId: source.valuation_case_id,
       eventType: "ARTIFACT_CAPTURED",
       entityType: "evidence_artifact",
@@ -322,6 +324,7 @@ export const createExtraction = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       eventType: "EXTRACTION_CREATED",
       entityType: "evidence_extraction",
       entityId: created.id,
@@ -374,6 +377,7 @@ export const createEvidenceField = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       eventType: "FIELD_CREATED",
       entityType: "evidence_field",
       entityId: created.id,
@@ -451,6 +455,7 @@ export const verifyEvidenceField = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       eventType: "FIELD_VERIFIED",
       entityType: "evidence_field",
       entityId: field.id,
@@ -500,6 +505,7 @@ export const rejectEvidenceField = createServerFn({ method: "POST" })
 
     await writeAudit(supabase, {
       organizationId: membership.organizationId,
+      actorUserId: userId,
       eventType: "FIELD_REJECTED",
       entityType: "evidence_field",
       entityId: field.id,
