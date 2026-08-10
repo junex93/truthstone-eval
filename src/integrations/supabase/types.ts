@@ -135,6 +135,225 @@ export type Database = {
         }
         Relationships: []
       }
+      comparable_candidates: {
+        Row: {
+          candidate_status: Database["public"]["Enums"]["comparable_candidate_status"]
+          created_at: string
+          created_by: string
+          exclusion_notes: string | null
+          exclusion_reason_code: string | null
+          id: string
+          inclusion_reason: string | null
+          inclusion_status: Database["public"]["Enums"]["comparable_inclusion_status"]
+          market_observation_id: string
+          market_property_id: string
+          organization_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          subject_property_id: string
+          updated_at: string
+          valuation_case_id: string
+        }
+        Insert: {
+          candidate_status?: Database["public"]["Enums"]["comparable_candidate_status"]
+          created_at?: string
+          created_by: string
+          exclusion_notes?: string | null
+          exclusion_reason_code?: string | null
+          id?: string
+          inclusion_reason?: string | null
+          inclusion_status?: Database["public"]["Enums"]["comparable_inclusion_status"]
+          market_observation_id: string
+          market_property_id: string
+          organization_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          subject_property_id: string
+          updated_at?: string
+          valuation_case_id: string
+        }
+        Update: {
+          candidate_status?: Database["public"]["Enums"]["comparable_candidate_status"]
+          created_at?: string
+          created_by?: string
+          exclusion_notes?: string | null
+          exclusion_reason_code?: string | null
+          id?: string
+          inclusion_reason?: string | null
+          inclusion_status?: Database["public"]["Enums"]["comparable_inclusion_status"]
+          market_observation_id?: string
+          market_property_id?: string
+          organization_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          subject_property_id?: string
+          updated_at?: string
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comp_case_fk"
+            columns: ["organization_id", "valuation_case_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_cases"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "comp_market_fk"
+            columns: [
+              "organization_id",
+              "valuation_case_id",
+              "market_property_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "market_properties"
+            referencedColumns: ["organization_id", "valuation_case_id", "id"]
+          },
+          {
+            foreignKeyName: "comp_observation_fk"
+            columns: [
+              "organization_id",
+              "valuation_case_id",
+              "market_observation_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "market_observations"
+            referencedColumns: ["organization_id", "valuation_case_id", "id"]
+          },
+          {
+            foreignKeyName: "comp_subject_fk"
+            columns: ["organization_id", "subject_property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "comparable_candidates_exclusion_reason_code_fkey"
+            columns: ["exclusion_reason_code"]
+            isOneToOne: false
+            referencedRelation: "comparable_exclusion_reasons"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "comparable_candidates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comparable_decision_history: {
+        Row: {
+          actor_user_id: string | null
+          candidate_id: string
+          created_at: string
+          id: string
+          new_candidate_status:
+            | Database["public"]["Enums"]["comparable_candidate_status"]
+            | null
+          new_inclusion_status:
+            | Database["public"]["Enums"]["comparable_inclusion_status"]
+            | null
+          notes: string | null
+          organization_id: string
+          previous_candidate_status:
+            | Database["public"]["Enums"]["comparable_candidate_status"]
+            | null
+          previous_inclusion_status:
+            | Database["public"]["Enums"]["comparable_inclusion_status"]
+            | null
+          reason_code: string | null
+          valuation_case_id: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          candidate_id: string
+          created_at?: string
+          id?: string
+          new_candidate_status?:
+            | Database["public"]["Enums"]["comparable_candidate_status"]
+            | null
+          new_inclusion_status?:
+            | Database["public"]["Enums"]["comparable_inclusion_status"]
+            | null
+          notes?: string | null
+          organization_id: string
+          previous_candidate_status?:
+            | Database["public"]["Enums"]["comparable_candidate_status"]
+            | null
+          previous_inclusion_status?:
+            | Database["public"]["Enums"]["comparable_inclusion_status"]
+            | null
+          reason_code?: string | null
+          valuation_case_id: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          candidate_id?: string
+          created_at?: string
+          id?: string
+          new_candidate_status?:
+            | Database["public"]["Enums"]["comparable_candidate_status"]
+            | null
+          new_inclusion_status?:
+            | Database["public"]["Enums"]["comparable_inclusion_status"]
+            | null
+          notes?: string | null
+          organization_id?: string
+          previous_candidate_status?:
+            | Database["public"]["Enums"]["comparable_candidate_status"]
+            | null
+          previous_inclusion_status?:
+            | Database["public"]["Enums"]["comparable_inclusion_status"]
+            | null
+          reason_code?: string | null
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comparable_decision_history_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "comparable_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comparable_decision_history_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comparable_exclusion_reasons: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          is_active: boolean
+          label: string
+          taxonomy_version: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          is_active?: boolean
+          label: string
+          taxonomy_version?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          is_active?: boolean
+          label?: string
+          taxonomy_version?: number
+        }
+        Relationships: []
+      }
       dataset_item_snapshots: {
         Row: {
           artifact_id: string
@@ -394,6 +613,179 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "valuation_cases"
             referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      derived_values: {
+        Row: {
+          area_basis: string | null
+          calculated_at: string
+          calculated_value: number | null
+          created_by: string
+          derivation_type: string
+          derivation_version: string
+          id: string
+          input_references: Json
+          market_observation_id: string | null
+          market_property_id: string | null
+          organization_id: string
+          subject_property_id: string | null
+          unit: string | null
+          valuation_case_id: string
+        }
+        Insert: {
+          area_basis?: string | null
+          calculated_at?: string
+          calculated_value?: number | null
+          created_by: string
+          derivation_type: string
+          derivation_version?: string
+          id?: string
+          input_references?: Json
+          market_observation_id?: string | null
+          market_property_id?: string | null
+          organization_id: string
+          subject_property_id?: string | null
+          unit?: string | null
+          valuation_case_id: string
+        }
+        Update: {
+          area_basis?: string | null
+          calculated_at?: string
+          calculated_value?: number | null
+          created_by?: string
+          derivation_type?: string
+          derivation_version?: string
+          id?: string
+          input_references?: Json
+          market_observation_id?: string | null
+          market_property_id?: string | null
+          organization_id?: string
+          subject_property_id?: string | null
+          unit?: string | null
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "derived_case_fk"
+            columns: ["organization_id", "valuation_case_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_cases"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "derived_observation_fk"
+            columns: [
+              "organization_id",
+              "valuation_case_id",
+              "market_observation_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "market_observations"
+            referencedColumns: ["organization_id", "valuation_case_id", "id"]
+          },
+          {
+            foreignKeyName: "derived_values_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      developments: {
+        Row: {
+          address_normalization_status: Database["public"]["Enums"]["address_normalization_status"]
+          address_normalized: string | null
+          address_raw: string | null
+          city: string | null
+          construction_year: number | null
+          country_code: string | null
+          created_at: string
+          created_by: string
+          developer_name: string | null
+          development_type: Database["public"]["Enums"]["development_type"]
+          district: string | null
+          geo_point: unknown
+          id: string
+          latitude: number | null
+          longitude: number | null
+          name: string
+          notes: string | null
+          number_of_floors: number | null
+          number_of_units: number | null
+          organization_id: string
+          postal_code: string | null
+          state: string | null
+          updated_at: string
+          valuation_case_id: string
+        }
+        Insert: {
+          address_normalization_status?: Database["public"]["Enums"]["address_normalization_status"]
+          address_normalized?: string | null
+          address_raw?: string | null
+          city?: string | null
+          construction_year?: number | null
+          country_code?: string | null
+          created_at?: string
+          created_by: string
+          developer_name?: string | null
+          development_type?: Database["public"]["Enums"]["development_type"]
+          district?: string | null
+          geo_point?: unknown
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          notes?: string | null
+          number_of_floors?: number | null
+          number_of_units?: number | null
+          organization_id: string
+          postal_code?: string | null
+          state?: string | null
+          updated_at?: string
+          valuation_case_id: string
+        }
+        Update: {
+          address_normalization_status?: Database["public"]["Enums"]["address_normalization_status"]
+          address_normalized?: string | null
+          address_raw?: string | null
+          city?: string | null
+          construction_year?: number | null
+          country_code?: string | null
+          created_at?: string
+          created_by?: string
+          developer_name?: string | null
+          development_type?: Database["public"]["Enums"]["development_type"]
+          district?: string | null
+          geo_point?: unknown
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          notes?: string | null
+          number_of_floors?: number | null
+          number_of_units?: number | null
+          organization_id?: string
+          postal_code?: string | null
+          state?: string | null
+          updated_at?: string
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "developments_case_fk"
+            columns: ["organization_id", "valuation_case_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_cases"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "developments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -878,6 +1270,504 @@ export type Database = {
           },
         ]
       }
+      market_observation_price_history: {
+        Row: {
+          asking_monthly_rent: number | null
+          asking_price: number | null
+          created_at: string
+          created_by: string
+          currency_code: string
+          evidence_field_id: string | null
+          evidence_source_id: string | null
+          id: string
+          market_observation_id: string
+          notes: string | null
+          observation_status:
+            | Database["public"]["Enums"]["market_observation_status"]
+            | null
+          observed_at: string
+          organization_id: string
+          valuation_case_id: string
+        }
+        Insert: {
+          asking_monthly_rent?: number | null
+          asking_price?: number | null
+          created_at?: string
+          created_by: string
+          currency_code?: string
+          evidence_field_id?: string | null
+          evidence_source_id?: string | null
+          id?: string
+          market_observation_id: string
+          notes?: string | null
+          observation_status?:
+            | Database["public"]["Enums"]["market_observation_status"]
+            | null
+          observed_at?: string
+          organization_id: string
+          valuation_case_id: string
+        }
+        Update: {
+          asking_monthly_rent?: number | null
+          asking_price?: number | null
+          created_at?: string
+          created_by?: string
+          currency_code?: string
+          evidence_field_id?: string | null
+          evidence_source_id?: string | null
+          id?: string
+          market_observation_id?: string
+          notes?: string | null
+          observation_status?:
+            | Database["public"]["Enums"]["market_observation_status"]
+            | null
+          observed_at?: string
+          organization_id?: string
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_observation_price_history_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "price_history_field_fk"
+            columns: ["organization_id", "evidence_field_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_fields"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "price_history_observation_fk"
+            columns: [
+              "organization_id",
+              "valuation_case_id",
+              "market_observation_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "market_observations"
+            referencedColumns: ["organization_id", "valuation_case_id", "id"]
+          },
+          {
+            foreignKeyName: "price_history_source_fk"
+            columns: ["organization_id", "evidence_source_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_sources"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      market_observations: {
+        Row: {
+          asking_monthly_rent: number | null
+          asking_price: number | null
+          broker_name: string | null
+          broker_reference: string | null
+          contracted_monthly_rent: number | null
+          created_at: string
+          created_by: string
+          currency_code: string
+          evidence_source_id: string | null
+          external_listing_id: string | null
+          first_seen_at: string | null
+          id: string
+          last_seen_at: string | null
+          listing_url: string | null
+          market_property_id: string
+          notes: string | null
+          observation_date: string | null
+          observation_type: Database["public"]["Enums"]["market_observation_type"]
+          organization_id: string
+          portal_name: string | null
+          primary_artifact_id: string | null
+          publication_date: string | null
+          publisher_name: string | null
+          registry_reference: string | null
+          seller_type: Database["public"]["Enums"]["seller_type"]
+          status: Database["public"]["Enums"]["market_observation_status"]
+          transaction_date: string | null
+          transaction_document_type: string | null
+          transaction_evidence_status:
+            | Database["public"]["Enums"]["transaction_evidence_status"]
+            | null
+          transaction_price: number | null
+          updated_at: string
+          valuation_case_id: string
+        }
+        Insert: {
+          asking_monthly_rent?: number | null
+          asking_price?: number | null
+          broker_name?: string | null
+          broker_reference?: string | null
+          contracted_monthly_rent?: number | null
+          created_at?: string
+          created_by: string
+          currency_code?: string
+          evidence_source_id?: string | null
+          external_listing_id?: string | null
+          first_seen_at?: string | null
+          id?: string
+          last_seen_at?: string | null
+          listing_url?: string | null
+          market_property_id: string
+          notes?: string | null
+          observation_date?: string | null
+          observation_type: Database["public"]["Enums"]["market_observation_type"]
+          organization_id: string
+          portal_name?: string | null
+          primary_artifact_id?: string | null
+          publication_date?: string | null
+          publisher_name?: string | null
+          registry_reference?: string | null
+          seller_type?: Database["public"]["Enums"]["seller_type"]
+          status?: Database["public"]["Enums"]["market_observation_status"]
+          transaction_date?: string | null
+          transaction_document_type?: string | null
+          transaction_evidence_status?:
+            | Database["public"]["Enums"]["transaction_evidence_status"]
+            | null
+          transaction_price?: number | null
+          updated_at?: string
+          valuation_case_id: string
+        }
+        Update: {
+          asking_monthly_rent?: number | null
+          asking_price?: number | null
+          broker_name?: string | null
+          broker_reference?: string | null
+          contracted_monthly_rent?: number | null
+          created_at?: string
+          created_by?: string
+          currency_code?: string
+          evidence_source_id?: string | null
+          external_listing_id?: string | null
+          first_seen_at?: string | null
+          id?: string
+          last_seen_at?: string | null
+          listing_url?: string | null
+          market_property_id?: string
+          notes?: string | null
+          observation_date?: string | null
+          observation_type?: Database["public"]["Enums"]["market_observation_type"]
+          organization_id?: string
+          portal_name?: string | null
+          primary_artifact_id?: string | null
+          publication_date?: string | null
+          publisher_name?: string | null
+          registry_reference?: string | null
+          seller_type?: Database["public"]["Enums"]["seller_type"]
+          status?: Database["public"]["Enums"]["market_observation_status"]
+          transaction_date?: string | null
+          transaction_document_type?: string | null
+          transaction_evidence_status?:
+            | Database["public"]["Enums"]["transaction_evidence_status"]
+            | null
+          transaction_price?: number | null
+          updated_at?: string
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_observations_artifact_fk"
+            columns: ["organization_id", "primary_artifact_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_artifacts"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "market_observations_case_fk"
+            columns: ["organization_id", "valuation_case_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_cases"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "market_observations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_observations_property_fk"
+            columns: [
+              "organization_id",
+              "valuation_case_id",
+              "market_property_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "market_properties"
+            referencedColumns: ["organization_id", "valuation_case_id", "id"]
+          },
+          {
+            foreignKeyName: "market_observations_source_fk"
+            columns: ["organization_id", "evidence_source_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_sources"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      market_properties: {
+        Row: {
+          address_normalization_status: Database["public"]["Enums"]["address_normalization_status"]
+          address_normalized: string | null
+          address_raw: string | null
+          bathrooms: number | null
+          bedrooms: number | null
+          built_area: number | null
+          city: string | null
+          common_area: number | null
+          complement: string | null
+          condition_status:
+            | Database["public"]["Enums"]["condition_status"]
+            | null
+          construction_year: number | null
+          country_code: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          development_id: string | null
+          district: string | null
+          floor_number: number | null
+          furnished_status:
+            | Database["public"]["Enums"]["furnished_status"]
+            | null
+          geo_point: unknown
+          half_bathrooms: number | null
+          id: string
+          label: string | null
+          land_area: number | null
+          latitude: number | null
+          longitude: number | null
+          occupancy_status:
+            | Database["public"]["Enums"]["occupancy_status"]
+            | null
+          organization_id: string
+          parking_spaces: number | null
+          postal_code: string | null
+          private_area: number | null
+          property_type_code:
+            | Database["public"]["Enums"]["property_type_code"]
+            | null
+          renovation_year: number | null
+          state: string | null
+          street_name: string | null
+          street_number: string | null
+          street_type: string | null
+          subdistrict: string | null
+          suites: number | null
+          total_area: number | null
+          total_floors: number | null
+          unit_identifier: string | null
+          updated_at: string
+          usable_area: number | null
+          valuation_case_id: string
+        }
+        Insert: {
+          address_normalization_status?: Database["public"]["Enums"]["address_normalization_status"]
+          address_normalized?: string | null
+          address_raw?: string | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          built_area?: number | null
+          city?: string | null
+          common_area?: number | null
+          complement?: string | null
+          condition_status?:
+            | Database["public"]["Enums"]["condition_status"]
+            | null
+          construction_year?: number | null
+          country_code?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          development_id?: string | null
+          district?: string | null
+          floor_number?: number | null
+          furnished_status?:
+            | Database["public"]["Enums"]["furnished_status"]
+            | null
+          geo_point?: unknown
+          half_bathrooms?: number | null
+          id?: string
+          label?: string | null
+          land_area?: number | null
+          latitude?: number | null
+          longitude?: number | null
+          occupancy_status?:
+            | Database["public"]["Enums"]["occupancy_status"]
+            | null
+          organization_id: string
+          parking_spaces?: number | null
+          postal_code?: string | null
+          private_area?: number | null
+          property_type_code?:
+            | Database["public"]["Enums"]["property_type_code"]
+            | null
+          renovation_year?: number | null
+          state?: string | null
+          street_name?: string | null
+          street_number?: string | null
+          street_type?: string | null
+          subdistrict?: string | null
+          suites?: number | null
+          total_area?: number | null
+          total_floors?: number | null
+          unit_identifier?: string | null
+          updated_at?: string
+          usable_area?: number | null
+          valuation_case_id: string
+        }
+        Update: {
+          address_normalization_status?: Database["public"]["Enums"]["address_normalization_status"]
+          address_normalized?: string | null
+          address_raw?: string | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          built_area?: number | null
+          city?: string | null
+          common_area?: number | null
+          complement?: string | null
+          condition_status?:
+            | Database["public"]["Enums"]["condition_status"]
+            | null
+          construction_year?: number | null
+          country_code?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          development_id?: string | null
+          district?: string | null
+          floor_number?: number | null
+          furnished_status?:
+            | Database["public"]["Enums"]["furnished_status"]
+            | null
+          geo_point?: unknown
+          half_bathrooms?: number | null
+          id?: string
+          label?: string | null
+          land_area?: number | null
+          latitude?: number | null
+          longitude?: number | null
+          occupancy_status?:
+            | Database["public"]["Enums"]["occupancy_status"]
+            | null
+          organization_id?: string
+          parking_spaces?: number | null
+          postal_code?: string | null
+          private_area?: number | null
+          property_type_code?:
+            | Database["public"]["Enums"]["property_type_code"]
+            | null
+          renovation_year?: number | null
+          state?: string | null
+          street_name?: string | null
+          street_number?: string | null
+          street_type?: string | null
+          subdistrict?: string | null
+          suites?: number | null
+          total_area?: number | null
+          total_floors?: number | null
+          unit_identifier?: string | null
+          updated_at?: string
+          usable_area?: number | null
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_properties_case_fk"
+            columns: ["organization_id", "valuation_case_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_cases"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "market_properties_development_fk"
+            columns: ["organization_id", "valuation_case_id", "development_id"]
+            isOneToOne: false
+            referencedRelation: "developments"
+            referencedColumns: ["organization_id", "valuation_case_id", "id"]
+          },
+          {
+            foreignKeyName: "market_properties_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_source_quality_assessments: {
+        Row: {
+          assessed_by: string
+          created_at: string
+          cross_source_confirmation: Database["public"]["Enums"]["quality_dimension_state"]
+          data_completeness: Database["public"]["Enums"]["quality_dimension_state"]
+          id: string
+          market_observation_id: string
+          notes: string | null
+          organization_id: string
+          source_reliability: Database["public"]["Enums"]["quality_dimension_state"]
+          spatial_relevance: Database["public"]["Enums"]["quality_dimension_state"]
+          temporal_relevance: Database["public"]["Enums"]["quality_dimension_state"]
+          updated_at: string
+          valuation_case_id: string
+        }
+        Insert: {
+          assessed_by: string
+          created_at?: string
+          cross_source_confirmation?: Database["public"]["Enums"]["quality_dimension_state"]
+          data_completeness?: Database["public"]["Enums"]["quality_dimension_state"]
+          id?: string
+          market_observation_id: string
+          notes?: string | null
+          organization_id: string
+          source_reliability?: Database["public"]["Enums"]["quality_dimension_state"]
+          spatial_relevance?: Database["public"]["Enums"]["quality_dimension_state"]
+          temporal_relevance?: Database["public"]["Enums"]["quality_dimension_state"]
+          updated_at?: string
+          valuation_case_id: string
+        }
+        Update: {
+          assessed_by?: string
+          created_at?: string
+          cross_source_confirmation?: Database["public"]["Enums"]["quality_dimension_state"]
+          data_completeness?: Database["public"]["Enums"]["quality_dimension_state"]
+          id?: string
+          market_observation_id?: string
+          notes?: string | null
+          organization_id?: string
+          source_reliability?: Database["public"]["Enums"]["quality_dimension_state"]
+          spatial_relevance?: Database["public"]["Enums"]["quality_dimension_state"]
+          temporal_relevance?: Database["public"]["Enums"]["quality_dimension_state"]
+          updated_at?: string
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_source_quality_assessments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quality_observation_fk"
+            columns: [
+              "organization_id",
+              "valuation_case_id",
+              "market_observation_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "market_observations"
+            referencedColumns: ["organization_id", "valuation_case_id", "id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           created_at: string
@@ -979,84 +1869,201 @@ export type Database = {
       properties: {
         Row: {
           address_line: string | null
+          address_normalization_status: Database["public"]["Enums"]["address_normalization_status"]
+          address_normalized: string | null
           address_number: string | null
+          address_raw: string | null
           bathrooms: number | null
           bedrooms: number | null
+          building_units: number | null
           built_area: number | null
+          ceiling_height: number | null
           city: string | null
+          common_area: number | null
           complement: string | null
+          condition_status:
+            | Database["public"]["Enums"]["condition_status"]
+            | null
           construction_year: number | null
           country: string | null
+          country_code: string | null
           created_at: string
+          depth: number | null
           description: string | null
+          development_id: string | null
           district: string | null
+          elevators: number | null
           floor_number: number | null
+          frontage: number | null
+          furnished_status:
+            | Database["public"]["Enums"]["furnished_status"]
+            | null
+          geo_point: unknown
+          half_bathrooms: number | null
           id: string
           land_area: number | null
           latitude: number | null
           longitude: number | null
+          occupancy_status:
+            | Database["public"]["Enums"]["occupancy_status"]
+            | null
           organization_id: string
+          orientation: string | null
           parking_spaces: number | null
+          position_in_building: string | null
           postal_code: string | null
           private_area: number | null
           property_type: string | null
+          property_type_code:
+            | Database["public"]["Enums"]["property_type_code"]
+            | null
+          renovation_year: number | null
           state: string | null
+          street_name: string | null
+          street_number: string | null
+          street_type: string | null
+          subdistrict: string | null
+          suites: number | null
+          topography: string | null
+          total_area: number | null
+          total_floors: number | null
+          units_per_floor: number | null
           updated_at: string
+          usable_area: number | null
           valuation_case_id: string
+          view_type: string | null
         }
         Insert: {
           address_line?: string | null
+          address_normalization_status?: Database["public"]["Enums"]["address_normalization_status"]
+          address_normalized?: string | null
           address_number?: string | null
+          address_raw?: string | null
           bathrooms?: number | null
           bedrooms?: number | null
+          building_units?: number | null
           built_area?: number | null
+          ceiling_height?: number | null
           city?: string | null
+          common_area?: number | null
           complement?: string | null
+          condition_status?:
+            | Database["public"]["Enums"]["condition_status"]
+            | null
           construction_year?: number | null
           country?: string | null
+          country_code?: string | null
           created_at?: string
+          depth?: number | null
           description?: string | null
+          development_id?: string | null
           district?: string | null
+          elevators?: number | null
           floor_number?: number | null
+          frontage?: number | null
+          furnished_status?:
+            | Database["public"]["Enums"]["furnished_status"]
+            | null
+          geo_point?: unknown
+          half_bathrooms?: number | null
           id?: string
           land_area?: number | null
           latitude?: number | null
           longitude?: number | null
+          occupancy_status?:
+            | Database["public"]["Enums"]["occupancy_status"]
+            | null
           organization_id: string
+          orientation?: string | null
           parking_spaces?: number | null
+          position_in_building?: string | null
           postal_code?: string | null
           private_area?: number | null
           property_type?: string | null
+          property_type_code?:
+            | Database["public"]["Enums"]["property_type_code"]
+            | null
+          renovation_year?: number | null
           state?: string | null
+          street_name?: string | null
+          street_number?: string | null
+          street_type?: string | null
+          subdistrict?: string | null
+          suites?: number | null
+          topography?: string | null
+          total_area?: number | null
+          total_floors?: number | null
+          units_per_floor?: number | null
           updated_at?: string
+          usable_area?: number | null
           valuation_case_id: string
+          view_type?: string | null
         }
         Update: {
           address_line?: string | null
+          address_normalization_status?: Database["public"]["Enums"]["address_normalization_status"]
+          address_normalized?: string | null
           address_number?: string | null
+          address_raw?: string | null
           bathrooms?: number | null
           bedrooms?: number | null
+          building_units?: number | null
           built_area?: number | null
+          ceiling_height?: number | null
           city?: string | null
+          common_area?: number | null
           complement?: string | null
+          condition_status?:
+            | Database["public"]["Enums"]["condition_status"]
+            | null
           construction_year?: number | null
           country?: string | null
+          country_code?: string | null
           created_at?: string
+          depth?: number | null
           description?: string | null
+          development_id?: string | null
           district?: string | null
+          elevators?: number | null
           floor_number?: number | null
+          frontage?: number | null
+          furnished_status?:
+            | Database["public"]["Enums"]["furnished_status"]
+            | null
+          geo_point?: unknown
+          half_bathrooms?: number | null
           id?: string
           land_area?: number | null
           latitude?: number | null
           longitude?: number | null
+          occupancy_status?:
+            | Database["public"]["Enums"]["occupancy_status"]
+            | null
           organization_id?: string
+          orientation?: string | null
           parking_spaces?: number | null
+          position_in_building?: string | null
           postal_code?: string | null
           private_area?: number | null
           property_type?: string | null
+          property_type_code?:
+            | Database["public"]["Enums"]["property_type_code"]
+            | null
+          renovation_year?: number | null
           state?: string | null
+          street_name?: string | null
+          street_number?: string | null
+          street_type?: string | null
+          subdistrict?: string | null
+          suites?: number | null
+          topography?: string | null
+          total_area?: number | null
+          total_floors?: number | null
+          units_per_floor?: number | null
           updated_at?: string
+          usable_area?: number | null
           valuation_case_id?: string
+          view_type?: string | null
         }
         Relationships: [
           {
@@ -1065,6 +2072,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "valuation_cases"
             referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "properties_development_fk"
+            columns: ["organization_id", "valuation_case_id", "development_id"]
+            isOneToOne: false
+            referencedRelation: "developments"
+            referencedColumns: ["organization_id", "valuation_case_id", "id"]
           },
           {
             foreignKeyName: "properties_organization_id_fkey"
@@ -1078,6 +2092,298 @@ export type Database = {
             columns: ["valuation_case_id"]
             isOneToOne: true
             referencedRelation: "valuation_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_attribute_observations: {
+        Row: {
+          attribute_name: string
+          created_at: string
+          created_by: string
+          evidence_field_id: string | null
+          evidence_source_id: string | null
+          id: string
+          knowledge_state: Database["public"]["Enums"]["knowledge_state"]
+          market_property_id: string | null
+          normalized_value: string | null
+          notes: string | null
+          numeric_value: number | null
+          observed_at: string | null
+          organization_id: string
+          raw_value: string | null
+          subject_property_id: string | null
+          unit: string | null
+          valuation_case_id: string
+          value_origin: Database["public"]["Enums"]["value_origin"]
+        }
+        Insert: {
+          attribute_name: string
+          created_at?: string
+          created_by: string
+          evidence_field_id?: string | null
+          evidence_source_id?: string | null
+          id?: string
+          knowledge_state?: Database["public"]["Enums"]["knowledge_state"]
+          market_property_id?: string | null
+          normalized_value?: string | null
+          notes?: string | null
+          numeric_value?: number | null
+          observed_at?: string | null
+          organization_id: string
+          raw_value?: string | null
+          subject_property_id?: string | null
+          unit?: string | null
+          valuation_case_id: string
+          value_origin: Database["public"]["Enums"]["value_origin"]
+        }
+        Update: {
+          attribute_name?: string
+          created_at?: string
+          created_by?: string
+          evidence_field_id?: string | null
+          evidence_source_id?: string | null
+          id?: string
+          knowledge_state?: Database["public"]["Enums"]["knowledge_state"]
+          market_property_id?: string | null
+          normalized_value?: string | null
+          notes?: string | null
+          numeric_value?: number | null
+          observed_at?: string | null
+          organization_id?: string
+          raw_value?: string | null
+          subject_property_id?: string | null
+          unit?: string | null
+          valuation_case_id?: string
+          value_origin?: Database["public"]["Enums"]["value_origin"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attr_obs_case_fk"
+            columns: ["organization_id", "valuation_case_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_cases"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "attr_obs_field_fk"
+            columns: ["organization_id", "evidence_field_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_fields"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "attr_obs_market_fk"
+            columns: [
+              "organization_id",
+              "valuation_case_id",
+              "market_property_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "market_properties"
+            referencedColumns: ["organization_id", "valuation_case_id", "id"]
+          },
+          {
+            foreignKeyName: "attr_obs_source_fk"
+            columns: ["organization_id", "evidence_source_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_sources"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "attr_obs_subject_fk"
+            columns: ["organization_id", "subject_property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "property_attribute_observations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_canonical_facts: {
+        Row: {
+          adopted_at: string
+          adopted_by: string
+          adopted_from_observation_id: string | null
+          adopted_numeric_value: number | null
+          adopted_unit: string | null
+          adopted_value: string | null
+          adoption_reason: string
+          attribute_name: string
+          created_at: string
+          id: string
+          market_property_id: string | null
+          organization_id: string
+          subject_property_id: string | null
+          superseded_at: string | null
+          superseded_by_fact_id: string | null
+          valuation_case_id: string
+        }
+        Insert: {
+          adopted_at?: string
+          adopted_by: string
+          adopted_from_observation_id?: string | null
+          adopted_numeric_value?: number | null
+          adopted_unit?: string | null
+          adopted_value?: string | null
+          adoption_reason: string
+          attribute_name: string
+          created_at?: string
+          id?: string
+          market_property_id?: string | null
+          organization_id: string
+          subject_property_id?: string | null
+          superseded_at?: string | null
+          superseded_by_fact_id?: string | null
+          valuation_case_id: string
+        }
+        Update: {
+          adopted_at?: string
+          adopted_by?: string
+          adopted_from_observation_id?: string | null
+          adopted_numeric_value?: number | null
+          adopted_unit?: string | null
+          adopted_value?: string | null
+          adoption_reason?: string
+          attribute_name?: string
+          created_at?: string
+          id?: string
+          market_property_id?: string | null
+          organization_id?: string
+          subject_property_id?: string | null
+          superseded_at?: string | null
+          superseded_by_fact_id?: string | null
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canonical_case_fk"
+            columns: ["organization_id", "valuation_case_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_cases"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "canonical_market_fk"
+            columns: [
+              "organization_id",
+              "valuation_case_id",
+              "market_property_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "market_properties"
+            referencedColumns: ["organization_id", "valuation_case_id", "id"]
+          },
+          {
+            foreignKeyName: "canonical_observation_fk"
+            columns: ["organization_id", "adopted_from_observation_id"]
+            isOneToOne: false
+            referencedRelation: "property_attribute_observations"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "canonical_subject_fk"
+            columns: ["organization_id", "subject_property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "property_canonical_facts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_match_candidates: {
+        Row: {
+          created_at: string
+          created_by: string
+          deterministic_signals: Json
+          id: string
+          left_market_property_id: string
+          match_status: Database["public"]["Enums"]["property_match_status"]
+          organization_id: string
+          reason_codes: string[]
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          right_market_property_id: string
+          valuation_case_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          deterministic_signals?: Json
+          id?: string
+          left_market_property_id: string
+          match_status?: Database["public"]["Enums"]["property_match_status"]
+          organization_id: string
+          reason_codes?: string[]
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          right_market_property_id: string
+          valuation_case_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          deterministic_signals?: Json
+          id?: string
+          left_market_property_id?: string
+          match_status?: Database["public"]["Enums"]["property_match_status"]
+          organization_id?: string
+          reason_codes?: string[]
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          right_market_property_id?: string
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_case_fk"
+            columns: ["organization_id", "valuation_case_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_cases"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "match_left_fk"
+            columns: [
+              "organization_id",
+              "valuation_case_id",
+              "left_market_property_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "market_properties"
+            referencedColumns: ["organization_id", "valuation_case_id", "id"]
+          },
+          {
+            foreignKeyName: "match_right_fk"
+            columns: [
+              "organization_id",
+              "valuation_case_id",
+              "right_market_property_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "market_properties"
+            referencedColumns: ["organization_id", "valuation_case_id", "id"]
+          },
+          {
+            foreignKeyName: "property_match_candidates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -1134,6 +2440,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      adopt_canonical_fact: {
+        Args: {
+          _attribute_name: string
+          _market_property_id: string
+          _observation_id: string
+          _reason: string
+          _subject_property_id: string
+        }
+        Returns: string
+      }
       audit_write_internal: {
         Args: {
           _after: Json
@@ -1153,6 +2469,27 @@ export type Database = {
         Args: { _org: string }
         Returns: Database["public"]["Enums"]["org_role"]
       }
+      decide_comparable: {
+        Args: {
+          _candidate_id: string
+          _candidate_status: Database["public"]["Enums"]["comparable_candidate_status"]
+          _inclusion_status: Database["public"]["Enums"]["comparable_inclusion_status"]
+          _notes: string
+          _reason_code: string
+        }
+        Returns: string
+      }
+      distance_between_properties_meters: {
+        Args: {
+          _left_market_property_id: string
+          _right_market_property_id: string
+        }
+        Returns: number
+      }
+      distance_subject_to_market_property_meters: {
+        Args: { _market_property_id: string; _subject_property_id: string }
+        Returns: number
+      }
       freeze_dataset: {
         Args: { _confirmation: string; _dataset_version_id: string }
         Returns: Json
@@ -1167,8 +2504,29 @@ export type Database = {
       in_privileged_op: { Args: never; Returns: boolean }
       is_org_admin: { Args: { _org: string }; Returns: boolean }
       is_org_member: { Args: { _org: string }; Returns: boolean }
+      record_price_observation: {
+        Args: {
+          _asking_monthly_rent: number
+          _asking_price: number
+          _evidence_field_id: string
+          _evidence_source_id: string
+          _notes: string
+          _observation_id: string
+          _observed_at: string
+          _status: Database["public"]["Enums"]["market_observation_status"]
+        }
+        Returns: string
+      }
       reject_evidence_field: {
         Args: { _field_id: string; _reason: string }
+        Returns: string
+      }
+      resolve_property_match: {
+        Args: {
+          _match_id: string
+          _notes: string
+          _status: Database["public"]["Enums"]["property_match_status"]
+        }
         Returns: string
       }
       revise_evidence_field: {
@@ -1212,6 +2570,12 @@ export type Database = {
       }
     }
     Enums: {
+      address_normalization_status:
+        | "NOT_ATTEMPTED"
+        | "CANDIDATE"
+        | "VERIFIED"
+        | "AMBIGUOUS"
+        | "FAILED"
       ai_run_status:
         | "PENDING"
         | "RUNNING"
@@ -1227,6 +2591,29 @@ export type Database = {
         | "REVIEW"
         | "COMPLETED"
         | "ARCHIVED"
+      comparable_candidate_status:
+        | "DISCOVERED"
+        | "UNDER_REVIEW"
+        | "ELIGIBLE"
+        | "INELIGIBLE"
+      comparable_inclusion_status: "NOT_DECIDED" | "INCLUDED" | "EXCLUDED"
+      condition_status:
+        | "UNKNOWN"
+        | "NEW"
+        | "RENOVATED"
+        | "GOOD"
+        | "REGULAR"
+        | "POOR"
+        | "UNDER_RENOVATION"
+        | "RUIN"
+      development_type:
+        | "BUILDING"
+        | "GATED_COMMUNITY"
+        | "CONDOMINIUM"
+        | "MIXED_USE_COMPLEX"
+        | "COMMERCIAL_COMPLEX"
+        | "INDUSTRIAL_COMPLEX"
+        | "OTHER"
       extraction_status:
         | "PENDING"
         | "PROCESSING"
@@ -1240,7 +2627,39 @@ export type Database = {
         | "NOT_VERIFIABLE"
         | "DIVERGENT"
         | "PENDING_VALIDATION"
+      furnished_status:
+        | "UNKNOWN"
+        | "UNFURNISHED"
+        | "PARTIALLY_FURNISHED"
+        | "FURNISHED"
+      knowledge_state:
+        | "KNOWN"
+        | "UNKNOWN"
+        | "NOT_APPLICABLE"
+        | "CONFLICTING"
+        | "PENDING_VERIFICATION"
+      market_observation_status:
+        | "ACTIVE"
+        | "INACTIVE"
+        | "REMOVED"
+        | "EXPIRED"
+        | "UNKNOWN"
+      market_observation_type:
+        | "SALE_LISTING"
+        | "CLOSED_SALE"
+        | "RENT_LISTING"
+        | "CLOSED_RENT"
+        | "BROKER_QUOTE"
+        | "APPRAISAL_REFERENCE"
+        | "OTHER"
       member_status: "ACTIVE" | "SUSPENDED" | "REMOVED"
+      occupancy_status:
+        | "UNKNOWN"
+        | "VACANT"
+        | "OWNER_OCCUPIED"
+        | "TENANT_OCCUPIED"
+        | "UNDER_CONSTRUCTION"
+        | "OTHER"
       org_role: "OWNER" | "ADMIN" | "VALUER" | "REVIEWER" | "VIEWER"
       processor_type:
         | "MANUAL"
@@ -1249,6 +2668,41 @@ export type Database = {
         | "LLM"
         | "COMPUTER_VISION"
         | "EXTERNAL_API"
+      property_match_status:
+        | "CANDIDATE"
+        | "CONFIRMED_SAME"
+        | "CONFIRMED_DIFFERENT"
+        | "UNRESOLVED"
+      property_type_code:
+        | "APARTMENT"
+        | "HOUSE"
+        | "CONDOMINIUM_HOUSE"
+        | "PENTHOUSE"
+        | "STUDIO"
+        | "RESIDENTIAL_LAND"
+        | "COMMERCIAL_ROOM"
+        | "OFFICE"
+        | "RETAIL"
+        | "WAREHOUSE"
+        | "LOGISTICS_PROPERTY"
+        | "INDUSTRIAL_PROPERTY"
+        | "COMMERCIAL_BUILDING"
+        | "MIXED_USE"
+        | "URBAN_LAND"
+        | "RURAL_PROPERTY"
+        | "OTHER"
+      quality_dimension_state:
+        | "NOT_ASSESSED"
+        | "LOW"
+        | "MEDIUM"
+        | "HIGH"
+        | "NOT_APPLICABLE"
+      seller_type:
+        | "OWNER"
+        | "BROKER"
+        | "REAL_ESTATE_AGENCY"
+        | "DEVELOPER"
+        | "UNKNOWN"
       source_type:
         | "OFFICIAL_PUBLIC_SOURCE"
         | "PUBLIC_REGISTRY"
@@ -1259,12 +2713,23 @@ export type Database = {
         | "USER_PROVIDED"
         | "FIELD_INSPECTION"
         | "OTHER"
+      transaction_evidence_status:
+        | "DOCUMENTED"
+        | "MULTI_SOURCE_CONFIRMED"
+        | "DECLARED"
+        | "UNVERIFIED"
       validation_status:
         | "CAPTURED"
         | "EXTRACTED"
         | "PENDING_REVIEW"
         | "VERIFIED"
         | "REJECTED"
+      value_origin:
+        | "MANUAL_USER_INPUT"
+        | "EVIDENCE_EXTRACTION"
+        | "EXTERNAL_API"
+        | "DETERMINISTIC_DERIVATION"
+        | "FIELD_INSPECTION"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1392,6 +2857,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      address_normalization_status: [
+        "NOT_ATTEMPTED",
+        "CANDIDATE",
+        "VERIFIED",
+        "AMBIGUOUS",
+        "FAILED",
+      ],
       ai_run_status: ["PENDING", "RUNNING", "COMPLETED", "FAILED", "DISCARDED"],
       case_status: [
         "DRAFT",
@@ -1402,6 +2874,32 @@ export const Constants = {
         "REVIEW",
         "COMPLETED",
         "ARCHIVED",
+      ],
+      comparable_candidate_status: [
+        "DISCOVERED",
+        "UNDER_REVIEW",
+        "ELIGIBLE",
+        "INELIGIBLE",
+      ],
+      comparable_inclusion_status: ["NOT_DECIDED", "INCLUDED", "EXCLUDED"],
+      condition_status: [
+        "UNKNOWN",
+        "NEW",
+        "RENOVATED",
+        "GOOD",
+        "REGULAR",
+        "POOR",
+        "UNDER_RENOVATION",
+        "RUIN",
+      ],
+      development_type: [
+        "BUILDING",
+        "GATED_COMMUNITY",
+        "CONDOMINIUM",
+        "MIXED_USE_COMPLEX",
+        "COMMERCIAL_COMPLEX",
+        "INDUSTRIAL_COMPLEX",
+        "OTHER",
       ],
       extraction_status: [
         "PENDING",
@@ -1418,7 +2916,44 @@ export const Constants = {
         "DIVERGENT",
         "PENDING_VALIDATION",
       ],
+      furnished_status: [
+        "UNKNOWN",
+        "UNFURNISHED",
+        "PARTIALLY_FURNISHED",
+        "FURNISHED",
+      ],
+      knowledge_state: [
+        "KNOWN",
+        "UNKNOWN",
+        "NOT_APPLICABLE",
+        "CONFLICTING",
+        "PENDING_VERIFICATION",
+      ],
+      market_observation_status: [
+        "ACTIVE",
+        "INACTIVE",
+        "REMOVED",
+        "EXPIRED",
+        "UNKNOWN",
+      ],
+      market_observation_type: [
+        "SALE_LISTING",
+        "CLOSED_SALE",
+        "RENT_LISTING",
+        "CLOSED_RENT",
+        "BROKER_QUOTE",
+        "APPRAISAL_REFERENCE",
+        "OTHER",
+      ],
       member_status: ["ACTIVE", "SUSPENDED", "REMOVED"],
+      occupancy_status: [
+        "UNKNOWN",
+        "VACANT",
+        "OWNER_OCCUPIED",
+        "TENANT_OCCUPIED",
+        "UNDER_CONSTRUCTION",
+        "OTHER",
+      ],
       org_role: ["OWNER", "ADMIN", "VALUER", "REVIEWER", "VIEWER"],
       processor_type: [
         "MANUAL",
@@ -1427,6 +2962,45 @@ export const Constants = {
         "LLM",
         "COMPUTER_VISION",
         "EXTERNAL_API",
+      ],
+      property_match_status: [
+        "CANDIDATE",
+        "CONFIRMED_SAME",
+        "CONFIRMED_DIFFERENT",
+        "UNRESOLVED",
+      ],
+      property_type_code: [
+        "APARTMENT",
+        "HOUSE",
+        "CONDOMINIUM_HOUSE",
+        "PENTHOUSE",
+        "STUDIO",
+        "RESIDENTIAL_LAND",
+        "COMMERCIAL_ROOM",
+        "OFFICE",
+        "RETAIL",
+        "WAREHOUSE",
+        "LOGISTICS_PROPERTY",
+        "INDUSTRIAL_PROPERTY",
+        "COMMERCIAL_BUILDING",
+        "MIXED_USE",
+        "URBAN_LAND",
+        "RURAL_PROPERTY",
+        "OTHER",
+      ],
+      quality_dimension_state: [
+        "NOT_ASSESSED",
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "NOT_APPLICABLE",
+      ],
+      seller_type: [
+        "OWNER",
+        "BROKER",
+        "REAL_ESTATE_AGENCY",
+        "DEVELOPER",
+        "UNKNOWN",
       ],
       source_type: [
         "OFFICIAL_PUBLIC_SOURCE",
@@ -1439,12 +3013,25 @@ export const Constants = {
         "FIELD_INSPECTION",
         "OTHER",
       ],
+      transaction_evidence_status: [
+        "DOCUMENTED",
+        "MULTI_SOURCE_CONFIRMED",
+        "DECLARED",
+        "UNVERIFIED",
+      ],
       validation_status: [
         "CAPTURED",
         "EXTRACTED",
         "PENDING_REVIEW",
         "VERIFIED",
         "REJECTED",
+      ],
+      value_origin: [
+        "MANUAL_USER_INPUT",
+        "EVIDENCE_EXTRACTION",
+        "EXTERNAL_API",
+        "DETERMINISTIC_DERIVATION",
+        "FIELD_INSPECTION",
       ],
     },
   },

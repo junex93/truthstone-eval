@@ -12,6 +12,7 @@ import {
 import {
   requireMembership,
   requireWriteAccess,
+  stripGeoPoint,
   writeAudit,
 } from "@/lib/workspace.server";
 
@@ -87,11 +88,16 @@ export const getCaseDetail = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     if (!valuationCase) throw new Error("Caso não encontrado.");
 
-    const { data: property } = await supabase
+    const { data: propertyRow } = await supabase
       .from("properties")
       .select("*")
       .eq("valuation_case_id", data.caseId)
       .maybeSingle();
+
+    // geo_point is a PostGIS value: not transport-serializable and redundant with
+    // latitude/longitude, which the trigger keeps in sync with it.
+    const property = propertyRow ? stripGeoPoint(propertyRow) : null;
+
 
     const [sources, datasets] = await Promise.all([
       supabase
