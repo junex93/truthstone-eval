@@ -19,6 +19,7 @@ import { Route as AuthenticatedShellReportsRouteImport } from './routes/_authent
 import { Route as AuthenticatedShellCasesIndexRouteImport } from './routes/_authenticated/_shell/cases/index'
 import { Route as AuthenticatedShellCasesCaseIdRouteImport } from './routes/_authenticated/_shell/cases/$caseId'
 import { Route as AuthenticatedShellDatasetsIndexRouteImport } from './routes/_authenticated/_shell/datasets/index'
+import { Route as AuthenticatedShellDatasetsDatasetIdRouteImport } from './routes/_authenticated/_shell/datasets/$datasetId'
 import { Route as AuthenticatedShellEvidenceIndexRouteImport } from './routes/_authenticated/_shell/evidence/index'
 import { Route as AuthenticatedShellEvidenceSourceIdRouteImport } from './routes/_authenticated/_shell/evidence/$sourceId'
 
@@ -75,6 +76,12 @@ const AuthenticatedShellDatasetsIndexRoute =
     path: '/datasets/',
     getParentRoute: () => AuthenticatedShellRoute,
   } as any)
+const AuthenticatedShellDatasetsDatasetIdRoute =
+  AuthenticatedShellDatasetsDatasetIdRouteImport.update({
+    id: '/datasets/$datasetId',
+    path: '/datasets/$datasetId',
+    getParentRoute: () => AuthenticatedShellRoute,
+  } as any)
 const AuthenticatedShellEvidenceIndexRoute =
   AuthenticatedShellEvidenceIndexRouteImport.update({
     id: '/evidence/',
@@ -95,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedShellDashboardRoute
   '/reports': typeof AuthenticatedShellReportsRoute
   '/cases/$caseId': typeof AuthenticatedShellCasesCaseIdRoute
+  '/datasets/$datasetId': typeof AuthenticatedShellDatasetsDatasetIdRoute
   '/evidence/$sourceId': typeof AuthenticatedShellEvidenceSourceIdRoute
   '/cases/': typeof AuthenticatedShellCasesIndexRoute
   '/datasets/': typeof AuthenticatedShellDatasetsIndexRoute
@@ -107,6 +115,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedShellDashboardRoute
   '/reports': typeof AuthenticatedShellReportsRoute
   '/cases/$caseId': typeof AuthenticatedShellCasesCaseIdRoute
+  '/datasets/$datasetId': typeof AuthenticatedShellDatasetsDatasetIdRoute
   '/evidence/$sourceId': typeof AuthenticatedShellEvidenceSourceIdRoute
   '/cases': typeof AuthenticatedShellCasesIndexRoute
   '/datasets': typeof AuthenticatedShellDatasetsIndexRoute
@@ -122,6 +131,7 @@ export interface FileRoutesById {
   '/_authenticated/_shell/dashboard': typeof AuthenticatedShellDashboardRoute
   '/_authenticated/_shell/reports': typeof AuthenticatedShellReportsRoute
   '/_authenticated/_shell/cases/$caseId': typeof AuthenticatedShellCasesCaseIdRoute
+  '/_authenticated/_shell/datasets/$datasetId': typeof AuthenticatedShellDatasetsDatasetIdRoute
   '/_authenticated/_shell/evidence/$sourceId': typeof AuthenticatedShellEvidenceSourceIdRoute
   '/_authenticated/_shell/cases/': typeof AuthenticatedShellCasesIndexRoute
   '/_authenticated/_shell/datasets/': typeof AuthenticatedShellDatasetsIndexRoute
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/reports'
     | '/cases/$caseId'
+    | '/datasets/$datasetId'
     | '/evidence/$sourceId'
     | '/cases/'
     | '/datasets/'
@@ -148,6 +159,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/reports'
     | '/cases/$caseId'
+    | '/datasets/$datasetId'
     | '/evidence/$sourceId'
     | '/cases'
     | '/datasets'
@@ -162,6 +174,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_shell/dashboard'
     | '/_authenticated/_shell/reports'
     | '/_authenticated/_shell/cases/$caseId'
+    | '/_authenticated/_shell/datasets/$datasetId'
     | '/_authenticated/_shell/evidence/$sourceId'
     | '/_authenticated/_shell/cases/'
     | '/_authenticated/_shell/datasets/'
@@ -246,6 +259,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellDatasetsIndexRouteImport
       parentRoute: typeof AuthenticatedShellRoute
     }
+    '/_authenticated/_shell/datasets/$datasetId': {
+      id: '/_authenticated/_shell/datasets/$datasetId'
+      path: '/datasets/$datasetId'
+      fullPath: '/datasets/$datasetId'
+      preLoaderRoute: typeof AuthenticatedShellDatasetsDatasetIdRouteImport
+      parentRoute: typeof AuthenticatedShellRoute
+    }
     '/_authenticated/_shell/evidence/': {
       id: '/_authenticated/_shell/evidence/'
       path: '/evidence'
@@ -268,6 +288,7 @@ interface AuthenticatedShellRouteChildren {
   AuthenticatedShellDashboardRoute: typeof AuthenticatedShellDashboardRoute
   AuthenticatedShellReportsRoute: typeof AuthenticatedShellReportsRoute
   AuthenticatedShellCasesCaseIdRoute: typeof AuthenticatedShellCasesCaseIdRoute
+  AuthenticatedShellDatasetsDatasetIdRoute: typeof AuthenticatedShellDatasetsDatasetIdRoute
   AuthenticatedShellEvidenceSourceIdRoute: typeof AuthenticatedShellEvidenceSourceIdRoute
   AuthenticatedShellCasesIndexRoute: typeof AuthenticatedShellCasesIndexRoute
   AuthenticatedShellDatasetsIndexRoute: typeof AuthenticatedShellDatasetsIndexRoute
@@ -279,6 +300,8 @@ const AuthenticatedShellRouteChildren: AuthenticatedShellRouteChildren = {
   AuthenticatedShellDashboardRoute: AuthenticatedShellDashboardRoute,
   AuthenticatedShellReportsRoute: AuthenticatedShellReportsRoute,
   AuthenticatedShellCasesCaseIdRoute: AuthenticatedShellCasesCaseIdRoute,
+  AuthenticatedShellDatasetsDatasetIdRoute:
+    AuthenticatedShellDatasetsDatasetIdRoute,
   AuthenticatedShellEvidenceSourceIdRoute:
     AuthenticatedShellEvidenceSourceIdRoute,
   AuthenticatedShellCasesIndexRoute: AuthenticatedShellCasesIndexRoute,
