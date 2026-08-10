@@ -182,7 +182,7 @@ export const changeCaseStatus = createServerFn({ method: "POST" })
     const { error } = await supabase.rpc("transition_case_status", {
       _case_id: data.caseId,
       _next_status: data.nextStatus,
-      _reason: data.reason ?? null,
+      _reason: data.reason ?? "",
     });
     if (error) throw new Error(error.message);
 
