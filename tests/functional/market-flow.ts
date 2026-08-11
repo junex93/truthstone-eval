@@ -194,6 +194,9 @@ async function main() {
       numeric_value: 78,
       unit: "m2",
       field_state: "PRESENT",
+      // Verification requires provenance: excerpt and locator into the source.
+      source_excerpt: "Área privativa: 78 m² (página 1, ficha do anúncio)",
+      source_locator: { page: 1, section: "ficha do anúncio" },
       created_by: valuer.id,
     })
     .select("id, validation_status")
