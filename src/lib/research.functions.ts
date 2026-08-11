@@ -815,6 +815,22 @@ export const extractResearchSource = createServerFn({ method: "POST" })
       throw new Error("Artefato sem conteúdo textual armazenado; extração impossível.");
     }
 
+    // Idempotency: an artifact is extracted once. Re-running would duplicate
+    // candidates over the same immutable bytes.
+    const { count: existingExtractions, error: existingError } = await supabase
+      .from("evidence_extractions")
+      .select("id", { count: "exact", head: true })
+      .eq("artifact_id", result.evidence_artifact_id)
+      .eq("status", "COMPLETED");
+    if (existingError) {
+      throw new Error(`Falha ao verificar extrações anteriores: ${existingError.message}`);
+    }
+    if ((existingExtractions ?? 0) > 0) {
+      throw new Error(
+        "Este artefato já foi extraído. Extrações são imutáveis; crie uma nova captura para reextrair.",
+      );
+    }
+
     const { provider } = resolveProvider();
     await setRunStatus(supabase, scope.runId, "EXTRACTING");
 
