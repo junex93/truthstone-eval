@@ -202,3 +202,24 @@ Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
   implementado" foi removida por ser falsa).
 - `docs/SECURITY.md`, `docs/THREAT_MODEL.md`, `tests/security/README.md`:
   contagens reais de asserções e referência ao teste funcional positivo.
+
+## Fase 5B — Market Evidence Intelligence & Sample Readiness (camada de aplicação)
+
+- Banco: `market_source_domain` com `search_path` fixo; novas RPCs somente-leitura
+  `verify_snapshot_integrity` (compara hash gravado com hash recalculado do manifesto)
+  e `market_intelligence_report` (diagnóstico factual agregado do caso). Ambas
+  `SECURITY DEFINER`, `search_path = public`, `EXECUTE` revogado de PUBLIC/`anon`.
+- TypeScript: `src/lib/domain/intelligence.ts` (vocabulário e contrato de leitura),
+  `src/lib/validation/intelligence-schemas.ts` (justificativa obrigatória em toda
+  decisão), `src/lib/market-intelligence.server.ts` e
+  `src/lib/market-intelligence.functions.ts` (retratos, identidade, seleção de
+  amostra, ocorrências de qualidade, prontidão, verificação de integridade).
+- UI: aba "Inteligência de Mercado" (`cases/$caseId/intelligence`) com matriz de
+  evidência por imóvel físico independente, independência de fontes, distribuição
+  temporal e de idade, diagnóstico espacial, cobertura de atributos
+  (conhecido != verificado), distribuições de preço pedido e transacionado
+  separadas, funil de evidência e perdas, lacunas de pesquisa, retratos com
+  verificação de hash, seleção de amostra, ocorrências e prontidão.
+- Limitação declarada: nenhum cálculo de valor, ajuste, fator ou inferência
+  estatística. Cerca de 1,5·IQR sinaliza "possível observação extrema" para
+  leitura humana; nada é removido do acervo.
