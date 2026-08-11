@@ -851,12 +851,63 @@ async function main() {
       !decide1.error,
       decide1.error?.message ?? "ok",
     );
-    await expectBlocked("comparable_decision_history cannot be UPDATEd by the client", () =>
-      owner.client
+    // Append-only proof with explicit before/after database state, so that a
+    // "0 rows affected" HTTP success is never mistaken for a silent mutation.
+    const beforeRows = await admin
+      .from("comparable_decision_history")
+      .select("id, notes, new_candidate_status, reason_code")
+      .eq("candidate_id", candidateAId)
+      .order("created_at", { ascending: true });
+    const beforeSnapshot = JSON.stringify(beforeRows.data ?? []);
+    const stateIntact = async () => {
+      const after = await admin
         .from("comparable_decision_history")
-        .update({ notes: "adulterado" })
-        .eq("candidate_id", candidateAId),
+        .select("id, notes, new_candidate_status, reason_code")
+        .eq("candidate_id", candidateAId)
+        .order("created_at", { ascending: true });
+      return JSON.stringify(after.data ?? []) === beforeSnapshot;
+    };
+    record(
+      "comparable_decision_history is readable by an authorized member (SELECT allowed)",
+      !beforeRows.error && (beforeRows.data?.length ?? 0) >= 1,
+      beforeRows.error?.message ?? `${beforeRows.data?.length ?? 0} row(s) visible`,
     );
+    await expectNoEffect(
+      "comparable_decision_history UPDATE by a REVIEWER-authority role (OWNER) leaves the row byte-identical",
+      () =>
+        owner.client
+          .from("comparable_decision_history")
+          .update({ notes: "adulterado" })
+          .eq("candidate_id", candidateAId),
+      stateIntact,
+    );
+    await expectNoEffect(
+      "comparable_decision_history UPDATE by a VALUER leaves the row byte-identical",
+      () =>
+        valuer.client
+          .from("comparable_decision_history")
+          .update({ notes: "adulterado pelo valuer", reason_code: null })
+          .eq("candidate_id", candidateAId),
+      stateIntact,
+    );
+    await expectNoEffect(
+      "comparable_decision_history DELETE by a VALUER leaves the history intact",
+      () => valuer.client.from("comparable_decision_history").delete().eq("candidate_id", candidateAId),
+      stateIntact,
+    );
+    await expectNoEffect(
+      "comparable_decision_history cannot be INSERTed directly (only decide_comparable writes it)",
+      () =>
+        owner.client.from("comparable_decision_history").insert({
+          organization_id: orgA,
+          valuation_case_id: caseA1,
+          candidate_id: candidateAId,
+          new_candidate_status: "ELIGIBLE",
+          notes: "decisão fabricada pelo cliente",
+        }),
+      stateIntact,
+    );
+
     await expectNoEffect(
       "comparable_decision_history cannot be DELETEd by the client",
       () => owner.client.from("comparable_decision_history").delete().eq("candidate_id", candidateAId),
