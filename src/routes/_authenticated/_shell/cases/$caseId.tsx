@@ -18,6 +18,7 @@ const CASE_TABS = [
   { to: "/cases/$caseId/market", label: "Mercado", exact: false },
   { to: "/cases/$caseId/comparables", label: "Comparáveis", exact: false },
   { to: "/cases/$caseId/duplicates", label: "Duplicidades", exact: false },
+  { to: "/cases/$caseId/research", label: "Pesquisa IA", exact: false },
 ] as const;
 
 function CaseLayout() {
