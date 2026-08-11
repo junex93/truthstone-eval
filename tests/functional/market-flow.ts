@@ -357,7 +357,7 @@ async function main() {
       numeric_value: 81,
       unit: "m2",
       knowledge_state: "CONFLICTING",
-      value_origin: "BROKER_INFORMATION" in {} ? "MANUAL_USER_INPUT" : "MANUAL_USER_INPUT",
+      value_origin: "MANUAL_USER_INPUT",
       created_by: valuer.id,
     })
     .select("id")
