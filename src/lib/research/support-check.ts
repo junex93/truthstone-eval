@@ -38,7 +38,13 @@ export interface RawExtractedField {
   supportStatus: ExtractionSupportStatus;
   sourceExcerpt: string | null;
   sourceLocator: string | null;
+  /**
+   * Number DECLARED by the model. Never trusted: it exists only so the system
+   * can compare it against its own deterministic parse and record a conflict.
+   */
+  aiNumericValue?: number | null;
 }
+
 
 export interface CheckedField {
   fieldName: string;
