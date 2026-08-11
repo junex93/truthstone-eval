@@ -931,15 +931,19 @@ export const promoteResearchCandidate = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await requireMembership(supabase, userId);
 
-    const { data: outcome, error } = await supabase.rpc("promote_research_candidate", {
+    // Optional arguments are omitted (not sent as empty strings) so the SQL
+    // defaults apply; the RPC decides what a missing market property means.
+    const args = {
       _candidate_id: data.candidateId,
       _field_ids: data.fieldIds,
       _observation_type: data.observationType,
       _observation_status: data.observationStatus,
-      _market_property_id: data.marketPropertyId ?? "",
-      _label: data.label ?? "",
-      _notes: data.notes ?? "",
-    });
+      ...(data.marketPropertyId ? { _market_property_id: data.marketPropertyId } : {}),
+      ...(data.label ? { _label: data.label } : {}),
+      ...(data.notes ? { _notes: data.notes } : {}),
+    } as Parameters<typeof supabase.rpc<"promote_research_candidate">>[1];
+
+    const { data: outcome, error } = await supabase.rpc("promote_research_candidate", args);
     if (error) throw new Error(error.message);
     return { outcome: JSON.stringify(outcome ?? null) };
   });
