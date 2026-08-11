@@ -27,7 +27,7 @@ import type {
   ResearchProvider,
 } from "@/lib/research/provider";
 import { checkExtractedFields, type RawExtractedField } from "@/lib/research/support-check";
-import { canonicalizeUrl, domainOf } from "@/lib/research/url";
+import { canonicalizeUrl, extractDomain } from "@/lib/research/url";
 import type { Db, Membership } from "@/lib/workspace.server";
 import { sha256Hex, writeAudit } from "@/lib/workspace.server";
 
@@ -295,13 +295,24 @@ export async function recordProviderCall(input: {
   });
   if (usageError) throw new Error(`Falha ao registrar consumo: ${usageError.message}`);
 
-  const { error: counterError } = await supabaseAdmin.rpc("increment_research_counters", {
-    _run_id: input.scope.runId,
-    _ai_calls: 1,
-    _search_uses: input.usageType === "SEARCH" ? 1 : 0,
-    _fetches: input.usageType === "FETCH" ? 1 : 0,
-    _extractions: input.usageType === "EXTRACT" ? 1 : 0,
-  });
+  // Counters are derived bookkeeping, not an invariant: the authoritative
+  // consumption record is research_usage_events (append-only, written above).
+  const { data: counters, error: readError } = await supabaseAdmin
+    .from("property_research_runs")
+    .select("ai_calls_actual, search_uses_actual, fetches_actual, extractions_actual")
+    .eq("id", input.scope.runId)
+    .single();
+  if (readError) throw new Error(`Falha ao ler contadores da pesquisa: ${readError.message}`);
+
+  const { error: counterError } = await supabaseAdmin
+    .from("property_research_runs")
+    .update({
+      ai_calls_actual: counters.ai_calls_actual + 1,
+      search_uses_actual: counters.search_uses_actual + (input.usageType === "SEARCH" ? 1 : 0),
+      fetches_actual: counters.fetches_actual + (input.usageType === "FETCH" ? 1 : 0),
+      extractions_actual: counters.extractions_actual + (input.usageType === "EXTRACT" ? 1 : 0),
+    })
+    .eq("id", input.scope.runId);
   if (counterError) throw new Error(`Falha ao atualizar contadores: ${counterError.message}`);
 
   return data.id;
@@ -497,7 +508,7 @@ export async function persistCapturedSource(input: {
       organization_id: input.scope.organizationId,
       valuation_case_id: input.scope.caseId,
       created_by: input.userId,
-      source_name: input.title ?? domainOf(input.canonicalUrl) ?? input.canonicalUrl,
+      source_name: input.title ?? extractDomain(input.canonicalUrl),
       source_type: "REAL_ESTATE_LISTING",
       source_url: input.canonicalUrl,
       accessed_at: input.retrievedAt ?? new Date().toISOString(),
@@ -765,8 +776,12 @@ export async function resolveDomainPolicy(
   organizationId: string,
   url: string,
 ): Promise<DomainDecision> {
-  const domain = domainOf(url);
-  if (!domain) throw new Error("URL sem domínio identificável.");
+  let domain: string;
+  try {
+    domain = extractDomain(url);
+  } catch {
+    throw new Error("URL sem domínio identificável.");
+  }
   const { data, error } = await supabase
     .from("research_source_domain_policies")
     .select("domain, policy_status")
@@ -809,8 +824,13 @@ export async function persistSearchResults(input: {
   let deduplicated = 0;
 
   for (const result of input.results) {
-    const canonical = canonicalizeUrl(result.url);
-    if (!canonical.ok) continue;
+    let canonical;
+    try {
+      canonical = canonicalizeUrl(result.url);
+    } catch {
+      // A malformed provider URL is not a source. It is skipped, never guessed.
+      continue;
+    }
 
     const { data: existing, error: existingError } = await input.supabase
       .from("research_search_results")
