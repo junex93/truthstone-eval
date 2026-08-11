@@ -93,7 +93,10 @@ export function parseArea(raw: string | null | undefined): ParsedArea {
     return { value: null, unit: "alqueire", reason: "unidade agrária exige decisão humana" };
   }
   const parsed = parsePtBrNumber(text);
-  return { value: parsed.value, unit: parsed.value === null ? null : "m2", reason: parsed.reason };
+  const unit = parsed.value === null ? null : "m2";
+  return parsed.reason === undefined
+    ? { value: parsed.value, unit }
+    : { value: parsed.value, unit, reason: parsed.reason };
 }
 
 const MONTHS_PT: Record<string, string> = {
