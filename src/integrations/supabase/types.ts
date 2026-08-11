@@ -859,6 +859,44 @@ export type Database = {
           },
         ]
       }
+      document_requirement_profiles: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          organization_id: string | null
+          profile_code: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          organization_id?: string | null
+          profile_code: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string | null
+          profile_code?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_requirement_profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       evidence_artifacts: {
         Row: {
           capture_method: Database["public"]["Enums"]["capture_method"]
@@ -2249,6 +2287,1564 @@ export type Database = {
             referencedColumns: ["organization_id", "valuation_case_id", "id"]
           },
         ]
+      }
+      method_applicability_rules: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          criterion_code: string
+          criterion_description: string
+          expected_result: Database["public"]["Enums"]["method_applicability_result"]
+          id: string
+          method_specification_id: string
+          notes: string | null
+          organization_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          criterion_code: string
+          criterion_description: string
+          expected_result: Database["public"]["Enums"]["method_applicability_result"]
+          id?: string
+          method_specification_id: string
+          notes?: string | null
+          organization_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          criterion_code?: string
+          criterion_description?: string
+          expected_result?: Database["public"]["Enums"]["method_applicability_result"]
+          id?: string
+          method_specification_id?: string
+          notes?: string | null
+          organization_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "method_applicability_rules_method_specification_id_fkey"
+            columns: ["method_specification_id"]
+            isOneToOne: false
+            referencedRelation: "method_specifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_applicability_rules_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      method_compliance_assessments: {
+        Row: {
+          created_at: string
+          id: string
+          method_specification_id: string
+          notes: string | null
+          organization_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          method_specification_id: string
+          notes?: string | null
+          organization_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          method_specification_id?: string
+          notes?: string | null
+          organization_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "method_compliance_assessments_method_specification_id_fkey"
+            columns: ["method_specification_id"]
+            isOneToOne: false
+            referencedRelation: "method_specifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_compliance_assessments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      method_implementations: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          checksum: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          implementation_code: string
+          method_specification_id: string
+          notes: string | null
+          organization_id: string | null
+          runtime: string | null
+          status: Database["public"]["Enums"]["method_implementation_status"]
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          checksum?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          implementation_code: string
+          method_specification_id: string
+          notes?: string | null
+          organization_id?: string | null
+          runtime?: string | null
+          status?: Database["public"]["Enums"]["method_implementation_status"]
+          updated_at?: string
+          version: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          checksum?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          implementation_code?: string
+          method_specification_id?: string
+          notes?: string | null
+          organization_id?: string | null
+          runtime?: string | null
+          status?: Database["public"]["Enums"]["method_implementation_status"]
+          updated_at?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "method_implementations_method_specification_id_fkey"
+            columns: ["method_specification_id"]
+            isOneToOne: false
+            referencedRelation: "method_specifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_implementations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      method_output_contracts: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          method_specification_id: string
+          organization_id: string | null
+          output_type: Database["public"]["Enums"]["methodology_output_type"]
+          required: boolean
+          unit_code: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          method_specification_id: string
+          organization_id?: string | null
+          output_type: Database["public"]["Enums"]["methodology_output_type"]
+          required?: boolean
+          unit_code?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          method_specification_id?: string
+          organization_id?: string | null
+          output_type?: Database["public"]["Enums"]["methodology_output_type"]
+          required?: boolean
+          unit_code?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "method_output_contracts_method_specification_id_fkey"
+            columns: ["method_specification_id"]
+            isOneToOne: false
+            referencedRelation: "method_specifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_output_contracts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_output_contracts_unit_code_fkey"
+            columns: ["unit_code"]
+            isOneToOne: false
+            referencedRelation: "methodology_units"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      method_parameter_sets: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string | null
+          effective_from: string | null
+          effective_until: string | null
+          id: string
+          method_specification_id: string
+          organization_id: string
+          scope_description: string | null
+          set_code: string
+          status: Database["public"]["Enums"]["method_spec_status"]
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string | null
+          effective_until?: string | null
+          id?: string
+          method_specification_id: string
+          organization_id: string
+          scope_description?: string | null
+          set_code: string
+          status?: Database["public"]["Enums"]["method_spec_status"]
+          updated_at?: string
+          version: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string | null
+          effective_until?: string | null
+          id?: string
+          method_specification_id?: string
+          organization_id?: string
+          scope_description?: string | null
+          set_code?: string
+          status?: Database["public"]["Enums"]["method_spec_status"]
+          updated_at?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "method_parameter_sets_method_specification_id_fkey"
+            columns: ["method_specification_id"]
+            isOneToOne: false
+            referencedRelation: "method_specifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_parameter_sets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      method_parameter_values: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          justification: string
+          numeric_value: number | null
+          organization_id: string
+          parameter_id: string
+          parameter_set_id: string
+          source_id: string | null
+          text_value: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          justification: string
+          numeric_value?: number | null
+          organization_id: string
+          parameter_id: string
+          parameter_set_id: string
+          source_id?: string | null
+          text_value?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          justification?: string
+          numeric_value?: number | null
+          organization_id?: string
+          parameter_id?: string
+          parameter_set_id?: string
+          source_id?: string | null
+          text_value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "method_parameter_values_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_parameter_values_parameter_id_fkey"
+            columns: ["parameter_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_parameters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_parameter_values_parameter_set_id_fkey"
+            columns: ["parameter_set_id"]
+            isOneToOne: false
+            referencedRelation: "method_parameter_sets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_parameter_values_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      method_specification_sections: {
+        Row: {
+          content: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          method_specification_id: string
+          ordinal: number
+          organization_id: string | null
+          section_key: Database["public"]["Enums"]["method_spec_section_key"]
+          updated_at: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          method_specification_id: string
+          ordinal?: number
+          organization_id?: string | null
+          section_key: Database["public"]["Enums"]["method_spec_section_key"]
+          updated_at?: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          method_specification_id?: string
+          ordinal?: number
+          organization_id?: string | null
+          section_key?: Database["public"]["Enums"]["method_spec_section_key"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "method_specification_sections_method_specification_id_fkey"
+            columns: ["method_specification_id"]
+            isOneToOne: false
+            referencedRelation: "method_specifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_specification_sections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      method_specification_source_requirements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          is_satisfied: boolean
+          method_specification_id: string
+          notes: string | null
+          organization_id: string | null
+          requirement_code: string
+          satisfied_by_source_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description: string
+          id?: string
+          is_satisfied?: boolean
+          method_specification_id: string
+          notes?: string | null
+          organization_id?: string | null
+          requirement_code: string
+          satisfied_by_source_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          is_satisfied?: boolean
+          method_specification_id?: string
+          notes?: string | null
+          organization_id?: string | null
+          requirement_code?: string
+          satisfied_by_source_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "method_specification_source_requir_method_specification_id_fkey"
+            columns: ["method_specification_id"]
+            isOneToOne: false
+            referencedRelation: "method_specifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_specification_source_require_satisfied_by_source_id_fkey"
+            columns: ["satisfied_by_source_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_specification_source_requirements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      method_specifications: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string | null
+          effective_from: string | null
+          effective_until: string | null
+          hash_algorithm: string | null
+          id: string
+          jurisdiction: Database["public"]["Enums"]["methodology_jurisdiction"]
+          manifest_schema_version: string | null
+          organization_id: string | null
+          purpose: string | null
+          review_notes: string | null
+          scope: string | null
+          specification_hash: string | null
+          specification_manifest: Json | null
+          status: Database["public"]["Enums"]["method_spec_status"]
+          submitted_by: string | null
+          submitted_for_review_at: string | null
+          supersedes_specification_id: string | null
+          title: string
+          updated_at: string
+          valuation_method_id: string
+          version: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string | null
+          effective_until?: string | null
+          hash_algorithm?: string | null
+          id?: string
+          jurisdiction?: Database["public"]["Enums"]["methodology_jurisdiction"]
+          manifest_schema_version?: string | null
+          organization_id?: string | null
+          purpose?: string | null
+          review_notes?: string | null
+          scope?: string | null
+          specification_hash?: string | null
+          specification_manifest?: Json | null
+          status?: Database["public"]["Enums"]["method_spec_status"]
+          submitted_by?: string | null
+          submitted_for_review_at?: string | null
+          supersedes_specification_id?: string | null
+          title: string
+          updated_at?: string
+          valuation_method_id: string
+          version: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string | null
+          effective_until?: string | null
+          hash_algorithm?: string | null
+          id?: string
+          jurisdiction?: Database["public"]["Enums"]["methodology_jurisdiction"]
+          manifest_schema_version?: string | null
+          organization_id?: string | null
+          purpose?: string | null
+          review_notes?: string | null
+          scope?: string | null
+          specification_hash?: string | null
+          specification_manifest?: Json | null
+          status?: Database["public"]["Enums"]["method_spec_status"]
+          submitted_by?: string | null
+          submitted_for_review_at?: string | null
+          supersedes_specification_id?: string | null
+          title?: string
+          updated_at?: string
+          valuation_method_id?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "method_specifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_specifications_supersedes_specification_id_fkey"
+            columns: ["supersedes_specification_id"]
+            isOneToOne: false
+            referencedRelation: "method_specifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_specifications_valuation_method_id_fkey"
+            columns: ["valuation_method_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_methods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      method_test_cases: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          expected_result: Json | null
+          expected_status: string | null
+          id: string
+          input_fixture: Json | null
+          method_specification_id: string
+          organization_id: string | null
+          source_reference: string | null
+          test_code: string
+          test_type: Database["public"]["Enums"]["method_test_type"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          expected_result?: Json | null
+          expected_status?: string | null
+          id?: string
+          input_fixture?: Json | null
+          method_specification_id: string
+          organization_id?: string | null
+          source_reference?: string | null
+          test_code: string
+          test_type: Database["public"]["Enums"]["method_test_type"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          expected_result?: Json | null
+          expected_status?: string | null
+          id?: string
+          input_fixture?: Json | null
+          method_specification_id?: string
+          organization_id?: string | null
+          source_reference?: string | null
+          test_code?: string
+          test_type?: Database["public"]["Enums"]["method_test_type"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "method_test_cases_method_specification_id_fkey"
+            columns: ["method_specification_id"]
+            isOneToOne: false
+            referencedRelation: "method_specifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_test_cases_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      methodology_change_requests: {
+        Row: {
+          change_type: Database["public"]["Enums"]["methodology_change_type"]
+          created_at: string
+          description: string
+          id: string
+          organization_id: string
+          proposed_by: string
+          reason: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["methodology_change_status"]
+          target_id: string | null
+          target_type: string
+          updated_at: string
+        }
+        Insert: {
+          change_type: Database["public"]["Enums"]["methodology_change_type"]
+          created_at?: string
+          description: string
+          id?: string
+          organization_id: string
+          proposed_by: string
+          reason: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["methodology_change_status"]
+          target_id?: string | null
+          target_type: string
+          updated_at?: string
+        }
+        Update: {
+          change_type?: Database["public"]["Enums"]["methodology_change_type"]
+          created_at?: string
+          description?: string
+          id?: string
+          organization_id?: string
+          proposed_by?: string
+          reason?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["methodology_change_status"]
+          target_id?: string | null
+          target_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "methodology_change_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      methodology_crosswalks: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          left_source_id: string | null
+          notes: string | null
+          organization_id: string | null
+          relationship: Database["public"]["Enums"]["methodology_crosswalk_relationship"]
+          right_source_id: string | null
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          left_source_id?: string | null
+          notes?: string | null
+          organization_id?: string | null
+          relationship: Database["public"]["Enums"]["methodology_crosswalk_relationship"]
+          right_source_id?: string | null
+          subject: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          left_source_id?: string | null
+          notes?: string | null
+          organization_id?: string | null
+          relationship?: Database["public"]["Enums"]["methodology_crosswalk_relationship"]
+          right_source_id?: string | null
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "methodology_crosswalks_left_source_id_fkey"
+            columns: ["left_source_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_crosswalks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_crosswalks_right_source_id_fkey"
+            columns: ["right_source_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      methodology_data_dictionary: {
+        Row: {
+          concept_code: string
+          created_at: string
+          created_by: string | null
+          data_type: Database["public"]["Enums"]["methodology_data_type"]
+          description: string | null
+          id: string
+          name: string
+          organization_id: string | null
+          semantic_notes: string | null
+          unit_code: string | null
+          updated_at: string
+        }
+        Insert: {
+          concept_code: string
+          created_at?: string
+          created_by?: string | null
+          data_type: Database["public"]["Enums"]["methodology_data_type"]
+          description?: string | null
+          id?: string
+          name: string
+          organization_id?: string | null
+          semantic_notes?: string | null
+          unit_code?: string | null
+          updated_at?: string
+        }
+        Update: {
+          concept_code?: string
+          created_at?: string
+          created_by?: string | null
+          data_type?: Database["public"]["Enums"]["methodology_data_type"]
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string | null
+          semantic_notes?: string | null
+          unit_code?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "methodology_data_dictionary_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_data_dictionary_unit_code_fkey"
+            columns: ["unit_code"]
+            isOneToOne: false
+            referencedRelation: "methodology_units"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      methodology_families: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          name: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          name: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          name?: string
+        }
+        Relationships: []
+      }
+      methodology_formula_variables: {
+        Row: {
+          constraints: string | null
+          created_at: string
+          data_type: Database["public"]["Enums"]["methodology_data_type"]
+          description: string | null
+          formula_id: string
+          id: string
+          input_semantic: string | null
+          name: string
+          organization_id: string | null
+          required: boolean
+          unit_code: string | null
+          updated_at: string
+          variable_code: string
+        }
+        Insert: {
+          constraints?: string | null
+          created_at?: string
+          data_type: Database["public"]["Enums"]["methodology_data_type"]
+          description?: string | null
+          formula_id: string
+          id?: string
+          input_semantic?: string | null
+          name: string
+          organization_id?: string | null
+          required?: boolean
+          unit_code?: string | null
+          updated_at?: string
+          variable_code: string
+        }
+        Update: {
+          constraints?: string | null
+          created_at?: string
+          data_type?: Database["public"]["Enums"]["methodology_data_type"]
+          description?: string | null
+          formula_id?: string
+          id?: string
+          input_semantic?: string | null
+          name?: string
+          organization_id?: string | null
+          required?: boolean
+          unit_code?: string | null
+          updated_at?: string
+          variable_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "methodology_formula_variables_formula_id_fkey"
+            columns: ["formula_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_formulas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_formula_variables_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_formula_variables_unit_code_fkey"
+            columns: ["unit_code"]
+            isOneToOne: false
+            referencedRelation: "methodology_units"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      methodology_formulas: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          expression: string
+          expression_language: Database["public"]["Enums"]["methodology_expression_language"]
+          formula_code: string
+          id: string
+          name: string
+          organization_id: string | null
+          rule_id: string
+          status: Database["public"]["Enums"]["methodology_formula_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          expression: string
+          expression_language?: Database["public"]["Enums"]["methodology_expression_language"]
+          formula_code: string
+          id?: string
+          name: string
+          organization_id?: string | null
+          rule_id: string
+          status?: Database["public"]["Enums"]["methodology_formula_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          expression?: string
+          expression_language?: Database["public"]["Enums"]["methodology_expression_language"]
+          formula_code?: string
+          id?: string
+          name?: string
+          organization_id?: string | null
+          rule_id?: string
+          status?: Database["public"]["Enums"]["methodology_formula_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "methodology_formulas_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_formulas_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      methodology_parameters: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          data_type: Database["public"]["Enums"]["methodology_data_type"]
+          default_value: number | null
+          description: string | null
+          id: string
+          max_value: number | null
+          method_specification_id: string | null
+          min_value: number | null
+          name: string
+          organization_id: string | null
+          parameter_code: string
+          source_required: boolean
+          unit_code: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          data_type: Database["public"]["Enums"]["methodology_data_type"]
+          default_value?: number | null
+          description?: string | null
+          id?: string
+          max_value?: number | null
+          method_specification_id?: string | null
+          min_value?: number | null
+          name: string
+          organization_id?: string | null
+          parameter_code: string
+          source_required?: boolean
+          unit_code?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          data_type?: Database["public"]["Enums"]["methodology_data_type"]
+          default_value?: number | null
+          description?: string | null
+          id?: string
+          max_value?: number | null
+          method_specification_id?: string | null
+          min_value?: number | null
+          name?: string
+          organization_id?: string | null
+          parameter_code?: string
+          source_required?: boolean
+          unit_code?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "methodology_parameters_method_specification_id_fkey"
+            columns: ["method_specification_id"]
+            isOneToOne: false
+            referencedRelation: "method_specifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_parameters_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_parameters_unit_code_fkey"
+            columns: ["unit_code"]
+            isOneToOne: false
+            referencedRelation: "methodology_units"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      methodology_rule_sources: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          interpretation_notes: string | null
+          organization_id: string | null
+          relationship_type: Database["public"]["Enums"]["methodology_source_relationship"]
+          rule_id: string
+          source_id: string
+          source_locator_id: string | null
+          support_excerpt: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          interpretation_notes?: string | null
+          organization_id?: string | null
+          relationship_type: Database["public"]["Enums"]["methodology_source_relationship"]
+          rule_id: string
+          source_id: string
+          source_locator_id?: string | null
+          support_excerpt?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          interpretation_notes?: string | null
+          organization_id?: string | null
+          relationship_type?: Database["public"]["Enums"]["methodology_source_relationship"]
+          rule_id?: string
+          source_id?: string
+          source_locator_id?: string | null
+          support_excerpt?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "methodology_rule_sources_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_rule_sources_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_rules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_rule_sources_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_rule_sources_source_locator_id_fkey"
+            columns: ["source_locator_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_source_locators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      methodology_rules: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          method_specification_id: string
+          normative_strength: Database["public"]["Enums"]["methodology_normative_strength"]
+          organization_id: string | null
+          priority: number
+          rule_code: string
+          rule_type: Database["public"]["Enums"]["methodology_rule_type"]
+          status: Database["public"]["Enums"]["methodology_rule_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          method_specification_id: string
+          normative_strength: Database["public"]["Enums"]["methodology_normative_strength"]
+          organization_id?: string | null
+          priority?: number
+          rule_code: string
+          rule_type: Database["public"]["Enums"]["methodology_rule_type"]
+          status?: Database["public"]["Enums"]["methodology_rule_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          method_specification_id?: string
+          normative_strength?: Database["public"]["Enums"]["methodology_normative_strength"]
+          organization_id?: string | null
+          priority?: number
+          rule_code?: string
+          rule_type?: Database["public"]["Enums"]["methodology_rule_type"]
+          status?: Database["public"]["Enums"]["methodology_rule_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "methodology_rules_method_specification_id_fkey"
+            columns: ["method_specification_id"]
+            isOneToOne: false
+            referencedRelation: "method_specifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_rules_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      methodology_source_artifacts: {
+        Row: {
+          access_basis: Database["public"]["Enums"]["methodology_access_status"]
+          created_at: string
+          created_by: string | null
+          evidence_artifact_id: string
+          id: string
+          notes: string | null
+          organization_id: string
+          source_id: string
+        }
+        Insert: {
+          access_basis: Database["public"]["Enums"]["methodology_access_status"]
+          created_at?: string
+          created_by?: string | null
+          evidence_artifact_id: string
+          id?: string
+          notes?: string | null
+          organization_id: string
+          source_id: string
+        }
+        Update: {
+          access_basis?: Database["public"]["Enums"]["methodology_access_status"]
+          created_at?: string
+          created_by?: string | null
+          evidence_artifact_id?: string
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          source_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "methodology_source_artifacts_evidence_artifact_id_fkey"
+            columns: ["evidence_artifact_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_artifacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_source_artifacts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_source_artifacts_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      methodology_source_conflicts: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_critical: boolean
+          organization_id: string
+          professional_resolution: string | null
+          resolution_status: Database["public"]["Enums"]["methodology_conflict_status"]
+          resolved_at: string | null
+          resolved_by: string | null
+          source_a_id: string
+          source_b_id: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_critical?: boolean
+          organization_id: string
+          professional_resolution?: string | null
+          resolution_status?: Database["public"]["Enums"]["methodology_conflict_status"]
+          resolved_at?: string | null
+          resolved_by?: string | null
+          source_a_id: string
+          source_b_id: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_critical?: boolean
+          organization_id?: string
+          professional_resolution?: string | null
+          resolution_status?: Database["public"]["Enums"]["methodology_conflict_status"]
+          resolved_at?: string | null
+          resolved_by?: string | null
+          source_a_id?: string
+          source_b_id?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "methodology_source_conflicts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_source_conflicts_source_a_id_fkey"
+            columns: ["source_a_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_source_conflicts_source_b_id_fkey"
+            columns: ["source_b_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      methodology_source_locators: {
+        Row: {
+          artifact_id: string | null
+          chapter: string | null
+          clause: string | null
+          created_at: string
+          created_by: string | null
+          external_anchor: string | null
+          figure: string | null
+          id: string
+          locator_type: Database["public"]["Enums"]["methodology_locator_type"]
+          notes: string | null
+          organization_id: string | null
+          page: string | null
+          section: string | null
+          source_id: string
+          support_excerpt: string | null
+          table_reference: string | null
+          updated_at: string
+        }
+        Insert: {
+          artifact_id?: string | null
+          chapter?: string | null
+          clause?: string | null
+          created_at?: string
+          created_by?: string | null
+          external_anchor?: string | null
+          figure?: string | null
+          id?: string
+          locator_type: Database["public"]["Enums"]["methodology_locator_type"]
+          notes?: string | null
+          organization_id?: string | null
+          page?: string | null
+          section?: string | null
+          source_id: string
+          support_excerpt?: string | null
+          table_reference?: string | null
+          updated_at?: string
+        }
+        Update: {
+          artifact_id?: string | null
+          chapter?: string | null
+          clause?: string | null
+          created_at?: string
+          created_by?: string | null
+          external_anchor?: string | null
+          figure?: string | null
+          id?: string
+          locator_type?: Database["public"]["Enums"]["methodology_locator_type"]
+          notes?: string | null
+          organization_id?: string | null
+          page?: string | null
+          section?: string | null
+          source_id?: string
+          support_excerpt?: string | null
+          table_reference?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "methodology_source_locators_artifact_id_fkey"
+            columns: ["artifact_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_artifacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_source_locators_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_source_locators_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      methodology_source_verifications: {
+        Row: {
+          id: string
+          locator_id: string | null
+          notes: string | null
+          organization_id: string
+          source_id: string
+          verification_type: Database["public"]["Enums"]["methodology_verification_type"]
+          verified_at: string
+          verified_by: string
+        }
+        Insert: {
+          id?: string
+          locator_id?: string | null
+          notes?: string | null
+          organization_id: string
+          source_id: string
+          verification_type: Database["public"]["Enums"]["methodology_verification_type"]
+          verified_at?: string
+          verified_by: string
+        }
+        Update: {
+          id?: string
+          locator_id?: string | null
+          notes?: string | null
+          organization_id?: string
+          source_id?: string
+          verification_type?: Database["public"]["Enums"]["methodology_verification_type"]
+          verified_at?: string
+          verified_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "methodology_source_verifications_locator_id_fkey"
+            columns: ["locator_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_source_locators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_source_verifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_source_verifications_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      methodology_sources: {
+        Row: {
+          access_status: Database["public"]["Enums"]["methodology_access_status"]
+          authority_level: Database["public"]["Enums"]["methodology_authority_level"]
+          authors: string | null
+          created_at: string
+          created_by: string | null
+          doi: string | null
+          edition: string | null
+          effective_from: string | null
+          effective_until: string | null
+          external_url: string | null
+          id: string
+          identifier: string | null
+          isbn: string | null
+          issuing_body: string | null
+          jurisdiction: Database["public"]["Enums"]["methodology_jurisdiction"]
+          jurisdiction_detail: string | null
+          language: string | null
+          notes: string | null
+          organization_id: string | null
+          publication_date: string | null
+          publication_year: number | null
+          short_title: string | null
+          source_type: Database["public"]["Enums"]["methodology_source_type"]
+          status: Database["public"]["Enums"]["methodology_source_status"]
+          supersedes_source_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          access_status?: Database["public"]["Enums"]["methodology_access_status"]
+          authority_level: Database["public"]["Enums"]["methodology_authority_level"]
+          authors?: string | null
+          created_at?: string
+          created_by?: string | null
+          doi?: string | null
+          edition?: string | null
+          effective_from?: string | null
+          effective_until?: string | null
+          external_url?: string | null
+          id?: string
+          identifier?: string | null
+          isbn?: string | null
+          issuing_body?: string | null
+          jurisdiction?: Database["public"]["Enums"]["methodology_jurisdiction"]
+          jurisdiction_detail?: string | null
+          language?: string | null
+          notes?: string | null
+          organization_id?: string | null
+          publication_date?: string | null
+          publication_year?: number | null
+          short_title?: string | null
+          source_type: Database["public"]["Enums"]["methodology_source_type"]
+          status?: Database["public"]["Enums"]["methodology_source_status"]
+          supersedes_source_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          access_status?: Database["public"]["Enums"]["methodology_access_status"]
+          authority_level?: Database["public"]["Enums"]["methodology_authority_level"]
+          authors?: string | null
+          created_at?: string
+          created_by?: string | null
+          doi?: string | null
+          edition?: string | null
+          effective_from?: string | null
+          effective_until?: string | null
+          external_url?: string | null
+          id?: string
+          identifier?: string | null
+          isbn?: string | null
+          issuing_body?: string | null
+          jurisdiction?: Database["public"]["Enums"]["methodology_jurisdiction"]
+          jurisdiction_detail?: string | null
+          language?: string | null
+          notes?: string | null
+          organization_id?: string | null
+          publication_date?: string | null
+          publication_year?: number | null
+          short_title?: string | null
+          source_type?: Database["public"]["Enums"]["methodology_source_type"]
+          status?: Database["public"]["Enums"]["methodology_source_status"]
+          supersedes_source_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "methodology_sources_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_sources_supersedes_source_id_fkey"
+            columns: ["supersedes_source_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      methodology_units: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          name: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          name: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          name?: string
+        }
+        Relationships: []
       }
       organization_members: {
         Row: {
@@ -3994,6 +5590,60 @@ export type Database = {
           },
         ]
       }
+      valuation_methods: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          family_code: string
+          id: string
+          name: string
+          organization_id: string | null
+          status: Database["public"]["Enums"]["method_lifecycle_status"]
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          family_code: string
+          id?: string
+          name: string
+          organization_id?: string | null
+          status?: Database["public"]["Enums"]["method_lifecycle_status"]
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          family_code?: string
+          id?: string
+          name?: string
+          organization_id?: string | null
+          status?: Database["public"]["Enums"]["method_lifecycle_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "valuation_methods_family_code_fkey"
+            columns: ["family_code"]
+            isOneToOne: false
+            referencedRelation: "methodology_families"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "valuation_methods_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -4336,6 +5986,207 @@ export type Database = {
         | "APPRAISAL_REFERENCE"
         | "OTHER"
       member_status: "ACTIVE" | "SUSPENDED" | "REMOVED"
+      method_applicability_result:
+        | "METHOD_APPLICABLE"
+        | "METHOD_APPLICABLE_WITH_CONDITIONS"
+        | "METHOD_NOT_APPLICABLE"
+        | "METHOD_REQUIRES_PROFESSIONAL_REVIEW"
+      method_implementation_status:
+        | "NOT_IMPLEMENTED"
+        | "IN_DEVELOPMENT"
+        | "AVAILABLE"
+        | "VALIDATED"
+        | "DEPRECATED"
+        | "SUSPENDED"
+      method_lifecycle_status:
+        | "CONCEPT"
+        | "SPECIFICATION_IN_PROGRESS"
+        | "SPECIFICATION_REVIEW"
+        | "APPROVED_FOR_IMPLEMENTATION"
+        | "IMPLEMENTED"
+        | "VALIDATED"
+        | "DEPRECATED"
+        | "SUSPENDED"
+      method_spec_section_key:
+        | "PURPOSE"
+        | "INTENDED_USE"
+        | "APPLICABILITY"
+        | "NON_APPLICABILITY"
+        | "REQUIRED_INPUTS"
+        | "OPTIONAL_INPUTS"
+        | "DATA_REQUIREMENTS"
+        | "RULES"
+        | "FORMULAS"
+        | "ASSUMPTIONS"
+        | "DIAGNOSTICS"
+        | "LIMITATIONS"
+        | "OUTPUTS"
+        | "UNCERTAINTY"
+        | "REPORTING_REQUIREMENTS"
+        | "SOURCE_REFERENCES"
+        | "TEST_REQUIREMENTS"
+        | "KNOWN_RISKS"
+      method_spec_status:
+        | "DRAFT"
+        | "UNDER_REVIEW"
+        | "APPROVED"
+        | "SUPERSEDED"
+        | "SUSPENDED"
+        | "REJECTED"
+      method_test_type:
+        | "UNIT"
+        | "BOUNDARY"
+        | "NEGATIVE"
+        | "COMPLIANCE"
+        | "REPRODUCIBILITY"
+        | "NUMERIC"
+        | "AUDITABILITY"
+      methodology_access_status:
+        | "METADATA_ONLY"
+        | "PUBLICLY_ACCESSIBLE"
+        | "USER_PROVIDED_COPY"
+        | "LICENSED_COPY"
+        | "INTERNAL_AUTHORIZED_COPY"
+      methodology_authority_level:
+        | "PRIMARY_NORMATIVE"
+        | "PRIMARY_REGULATORY"
+        | "PROFESSIONAL_STANDARD"
+        | "AUTHORITATIVE_GUIDANCE"
+        | "PEER_REVIEWED_RESEARCH"
+        | "ESTABLISHED_TECHNICAL_LITERATURE"
+        | "SECONDARY_GUIDANCE"
+        | "INTERNAL_SPECIFICATION"
+      methodology_change_status:
+        | "OPEN"
+        | "UNDER_REVIEW"
+        | "APPROVED"
+        | "REJECTED"
+        | "IMPLEMENTED"
+        | "WITHDRAWN"
+      methodology_change_type:
+        | "NEW_RULE"
+        | "MODIFY_RULE"
+        | "REMOVE_RULE"
+        | "NEW_SOURCE"
+        | "SOURCE_SUPERSEDED"
+        | "FORMULA_CHANGE"
+        | "PARAMETER_CHANGE"
+        | "SCOPE_CHANGE"
+        | "TEST_CHANGE"
+        | "BUG_FIX"
+      methodology_conflict_status:
+        | "OPEN"
+        | "UNDER_ANALYSIS"
+        | "RESOLVED"
+        | "NOT_A_CONFLICT"
+      methodology_crosswalk_relationship:
+        | "RELATED"
+        | "SIMILAR_CONCEPT"
+        | "COMPLEMENTARY"
+        | "POTENTIAL_CONFLICT"
+      methodology_data_type:
+        | "NUMBER"
+        | "INTEGER"
+        | "PERCENT"
+        | "RATIO"
+        | "MONEY"
+        | "DATE"
+        | "BOOLEAN"
+        | "TEXT"
+        | "ENUM"
+        | "COUNT"
+      methodology_expression_language: "SYMBOLIC"
+      methodology_formula_status:
+        | "DRAFT"
+        | "UNDER_REVIEW"
+        | "APPROVED"
+        | "SUPERSEDED"
+      methodology_jurisdiction:
+        | "BRAZIL"
+        | "INTERNATIONAL"
+        | "STATE"
+        | "MUNICIPAL"
+        | "ORGANIZATIONAL"
+        | "NOT_SPECIFIED"
+      methodology_locator_type:
+        | "CLAUSE"
+        | "SECTION"
+        | "PAGE"
+        | "CHAPTER"
+        | "FIGURE"
+        | "TABLE"
+        | "ANNEX"
+        | "EXTERNAL_ANCHOR"
+        | "OTHER"
+      methodology_normative_strength:
+        | "MANDATORY"
+        | "RECOMMENDED"
+        | "PERMITTED"
+        | "PROHIBITED"
+        | "INTERNAL_CONTROL"
+      methodology_output_type:
+        | "ESTIMATED_VALUE"
+        | "VALUE_INTERVAL"
+        | "UNIT_VALUE"
+        | "DIAGNOSTICS"
+        | "WARNINGS"
+        | "ASSUMPTIONS"
+        | "USED_EVIDENCE"
+        | "EXCLUDED_EVIDENCE"
+        | "UNCERTAINTY"
+        | "COMPLIANCE"
+      methodology_rule_status:
+        | "DRAFT"
+        | "UNDER_REVIEW"
+        | "APPROVED"
+        | "SUPERSEDED"
+        | "REJECTED"
+      methodology_rule_type:
+        | "APPLICABILITY"
+        | "REQUIREMENT"
+        | "INPUT_REQUIREMENT"
+        | "TRANSFORMATION"
+        | "FORMULA"
+        | "VALIDATION"
+        | "DIAGNOSTIC"
+        | "WARNING"
+        | "BLOCKER"
+        | "OUTPUT"
+        | "REPORTING"
+        | "PROHIBITION"
+        | "HUMAN_DECISION"
+        | "OTHER"
+      methodology_source_relationship:
+        | "DIRECT_REQUIREMENT"
+        | "DIRECT_PROHIBITION"
+        | "TECHNICAL_SUPPORT"
+        | "INTERPRETATION"
+        | "BACKGROUND"
+        | "INTERNAL_DESIGN"
+      methodology_source_status:
+        | "DRAFT"
+        | "ACTIVE"
+        | "SUPERSEDED"
+        | "REVOKED"
+        | "ARCHIVED"
+        | "PENDING_METADATA_REVIEW"
+      methodology_source_type:
+        | "TECHNICAL_STANDARD"
+        | "LAW"
+        | "REGULATION"
+        | "PROFESSIONAL_STANDARD"
+        | "PROFESSIONAL_GUIDANCE"
+        | "COURT_OR_OFFICIAL_RULE"
+        | "ACADEMIC_PAPER"
+        | "BOOK"
+        | "TECHNICAL_ARTICLE"
+        | "COURSE_MATERIAL"
+        | "INTERNAL_POLICY"
+        | "OTHER"
+      methodology_verification_type:
+        | "METADATA_VERIFIED"
+        | "CONTENT_VERIFIED"
+        | "LOCATOR_VERIFIED"
       occupancy_status:
         | "UNKNOWN"
         | "VACANT"
@@ -4739,6 +6590,231 @@ export const Constants = {
         "OTHER",
       ],
       member_status: ["ACTIVE", "SUSPENDED", "REMOVED"],
+      method_applicability_result: [
+        "METHOD_APPLICABLE",
+        "METHOD_APPLICABLE_WITH_CONDITIONS",
+        "METHOD_NOT_APPLICABLE",
+        "METHOD_REQUIRES_PROFESSIONAL_REVIEW",
+      ],
+      method_implementation_status: [
+        "NOT_IMPLEMENTED",
+        "IN_DEVELOPMENT",
+        "AVAILABLE",
+        "VALIDATED",
+        "DEPRECATED",
+        "SUSPENDED",
+      ],
+      method_lifecycle_status: [
+        "CONCEPT",
+        "SPECIFICATION_IN_PROGRESS",
+        "SPECIFICATION_REVIEW",
+        "APPROVED_FOR_IMPLEMENTATION",
+        "IMPLEMENTED",
+        "VALIDATED",
+        "DEPRECATED",
+        "SUSPENDED",
+      ],
+      method_spec_section_key: [
+        "PURPOSE",
+        "INTENDED_USE",
+        "APPLICABILITY",
+        "NON_APPLICABILITY",
+        "REQUIRED_INPUTS",
+        "OPTIONAL_INPUTS",
+        "DATA_REQUIREMENTS",
+        "RULES",
+        "FORMULAS",
+        "ASSUMPTIONS",
+        "DIAGNOSTICS",
+        "LIMITATIONS",
+        "OUTPUTS",
+        "UNCERTAINTY",
+        "REPORTING_REQUIREMENTS",
+        "SOURCE_REFERENCES",
+        "TEST_REQUIREMENTS",
+        "KNOWN_RISKS",
+      ],
+      method_spec_status: [
+        "DRAFT",
+        "UNDER_REVIEW",
+        "APPROVED",
+        "SUPERSEDED",
+        "SUSPENDED",
+        "REJECTED",
+      ],
+      method_test_type: [
+        "UNIT",
+        "BOUNDARY",
+        "NEGATIVE",
+        "COMPLIANCE",
+        "REPRODUCIBILITY",
+        "NUMERIC",
+        "AUDITABILITY",
+      ],
+      methodology_access_status: [
+        "METADATA_ONLY",
+        "PUBLICLY_ACCESSIBLE",
+        "USER_PROVIDED_COPY",
+        "LICENSED_COPY",
+        "INTERNAL_AUTHORIZED_COPY",
+      ],
+      methodology_authority_level: [
+        "PRIMARY_NORMATIVE",
+        "PRIMARY_REGULATORY",
+        "PROFESSIONAL_STANDARD",
+        "AUTHORITATIVE_GUIDANCE",
+        "PEER_REVIEWED_RESEARCH",
+        "ESTABLISHED_TECHNICAL_LITERATURE",
+        "SECONDARY_GUIDANCE",
+        "INTERNAL_SPECIFICATION",
+      ],
+      methodology_change_status: [
+        "OPEN",
+        "UNDER_REVIEW",
+        "APPROVED",
+        "REJECTED",
+        "IMPLEMENTED",
+        "WITHDRAWN",
+      ],
+      methodology_change_type: [
+        "NEW_RULE",
+        "MODIFY_RULE",
+        "REMOVE_RULE",
+        "NEW_SOURCE",
+        "SOURCE_SUPERSEDED",
+        "FORMULA_CHANGE",
+        "PARAMETER_CHANGE",
+        "SCOPE_CHANGE",
+        "TEST_CHANGE",
+        "BUG_FIX",
+      ],
+      methodology_conflict_status: [
+        "OPEN",
+        "UNDER_ANALYSIS",
+        "RESOLVED",
+        "NOT_A_CONFLICT",
+      ],
+      methodology_crosswalk_relationship: [
+        "RELATED",
+        "SIMILAR_CONCEPT",
+        "COMPLEMENTARY",
+        "POTENTIAL_CONFLICT",
+      ],
+      methodology_data_type: [
+        "NUMBER",
+        "INTEGER",
+        "PERCENT",
+        "RATIO",
+        "MONEY",
+        "DATE",
+        "BOOLEAN",
+        "TEXT",
+        "ENUM",
+        "COUNT",
+      ],
+      methodology_expression_language: ["SYMBOLIC"],
+      methodology_formula_status: [
+        "DRAFT",
+        "UNDER_REVIEW",
+        "APPROVED",
+        "SUPERSEDED",
+      ],
+      methodology_jurisdiction: [
+        "BRAZIL",
+        "INTERNATIONAL",
+        "STATE",
+        "MUNICIPAL",
+        "ORGANIZATIONAL",
+        "NOT_SPECIFIED",
+      ],
+      methodology_locator_type: [
+        "CLAUSE",
+        "SECTION",
+        "PAGE",
+        "CHAPTER",
+        "FIGURE",
+        "TABLE",
+        "ANNEX",
+        "EXTERNAL_ANCHOR",
+        "OTHER",
+      ],
+      methodology_normative_strength: [
+        "MANDATORY",
+        "RECOMMENDED",
+        "PERMITTED",
+        "PROHIBITED",
+        "INTERNAL_CONTROL",
+      ],
+      methodology_output_type: [
+        "ESTIMATED_VALUE",
+        "VALUE_INTERVAL",
+        "UNIT_VALUE",
+        "DIAGNOSTICS",
+        "WARNINGS",
+        "ASSUMPTIONS",
+        "USED_EVIDENCE",
+        "EXCLUDED_EVIDENCE",
+        "UNCERTAINTY",
+        "COMPLIANCE",
+      ],
+      methodology_rule_status: [
+        "DRAFT",
+        "UNDER_REVIEW",
+        "APPROVED",
+        "SUPERSEDED",
+        "REJECTED",
+      ],
+      methodology_rule_type: [
+        "APPLICABILITY",
+        "REQUIREMENT",
+        "INPUT_REQUIREMENT",
+        "TRANSFORMATION",
+        "FORMULA",
+        "VALIDATION",
+        "DIAGNOSTIC",
+        "WARNING",
+        "BLOCKER",
+        "OUTPUT",
+        "REPORTING",
+        "PROHIBITION",
+        "HUMAN_DECISION",
+        "OTHER",
+      ],
+      methodology_source_relationship: [
+        "DIRECT_REQUIREMENT",
+        "DIRECT_PROHIBITION",
+        "TECHNICAL_SUPPORT",
+        "INTERPRETATION",
+        "BACKGROUND",
+        "INTERNAL_DESIGN",
+      ],
+      methodology_source_status: [
+        "DRAFT",
+        "ACTIVE",
+        "SUPERSEDED",
+        "REVOKED",
+        "ARCHIVED",
+        "PENDING_METADATA_REVIEW",
+      ],
+      methodology_source_type: [
+        "TECHNICAL_STANDARD",
+        "LAW",
+        "REGULATION",
+        "PROFESSIONAL_STANDARD",
+        "PROFESSIONAL_GUIDANCE",
+        "COURT_OR_OFFICIAL_RULE",
+        "ACADEMIC_PAPER",
+        "BOOK",
+        "TECHNICAL_ARTICLE",
+        "COURSE_MATERIAL",
+        "INTERNAL_POLICY",
+        "OTHER",
+      ],
+      methodology_verification_type: [
+        "METADATA_VERIFIED",
+        "CONTENT_VERIFIED",
+        "LOCATOR_VERIFIED",
+      ],
       occupancy_status: [
         "UNKNOWN",
         "VACANT",
