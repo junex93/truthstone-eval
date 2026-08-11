@@ -103,9 +103,9 @@ function runOfflineChecks() {
       `descartados=${gate.discarded.map((d) => d.fieldName).join(",") || "nenhum"}`,
     );
     expect(
-      "gate: nenhum campo reprovado permanece com valor numérico",
-      gate.fields.every((f) => f.supportCheckStatus !== "FAILED" || f.numericValue === null),
-      "campos reprovados sem número",
+      "gate: campo reprovado nunca fica em estado PRESENT",
+      gate.fields.every((f) => f.supportCheckStatus !== "FAILED" || f.fieldState !== "PRESENT"),
+      "reprovados fora de PRESENT",
     );
   }
 
@@ -187,11 +187,12 @@ function runOfflineChecks() {
 }
 
 function runStaticChecks() {
+  const noisy = canonicalizeUrl("HTTPS://WWW.Exemplo.com.br/imovel/1?utm_source=x&ref=y#foto");
+  const clean = canonicalizeUrl("https://exemplo.com.br/imovel/1");
   expect(
     "url: canonicalização remove rastreadores e normaliza host",
-    canonicalizeUrl("HTTPS://WWW.Exemplo.com.br/imovel/1?utm_source=x&ref=y#foto") ===
-      canonicalizeUrl("https://exemplo.com.br/imovel/1"),
-    canonicalizeUrl("HTTPS://WWW.Exemplo.com.br/imovel/1?utm_source=x&ref=y#foto"),
+    noisy.canonicalUrl === clean.canonicalUrl && noisy.domain === "exemplo.com.br",
+    noisy.canonicalUrl,
   );
   expect(
     "url: domínio extraído do host, nunca do texto do modelo",
@@ -287,7 +288,7 @@ async function runDatabaseChecks() {
     .from("valuation_cases")
     .insert({
       organization_id: org.id,
-      reference_code: `RES-${stamp}`,
+      case_code: `RES-${stamp}`,
       title: "Caso de teste do motor de pesquisa",
       created_by: owner.id,
     })
