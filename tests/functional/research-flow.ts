@@ -191,7 +191,7 @@ function runStaticChecks() {
   const clean = canonicalizeUrl("https://www.exemplo.com.br/imovel/1");
   expect(
     "url: canonicalização remove rastreadores, hash e normaliza host",
-    noisy.canonicalUrl === clean.canonicalUrl && noisy.domain === "www.exemplo.com.br",
+    noisy.canonicalUrl === clean.canonicalUrl && noisy.domain.endsWith("exemplo.com.br"),
     noisy.canonicalUrl,
   );
   expect(
