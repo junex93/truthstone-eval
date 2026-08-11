@@ -254,6 +254,28 @@ export function checkExtractedFields(
       });
     }
 
+    // The model's own number is compared against the deterministic parse. A
+    // divergence is never resolved in favour of the model: the value becomes
+    // DIVERGENT and the conflict is recorded for human decision.
+    const aiNumeric = raw.aiNumericValue ?? null;
+    if (
+      aiNumeric !== null &&
+      numericValue !== null &&
+      Math.abs(aiNumeric - numericValue) > Math.max(0.01, Math.abs(numericValue) * 1e-9)
+    ) {
+      details["parser_numeric"] = numericValue;
+      details["ai_numeric"] = aiNumeric;
+      fieldState = "DIVERGENT";
+      supportCheckStatus = "FAILED";
+      fieldIssues.push({
+        issueType: "NUMERIC_CONFLICT_WITH_PARSER",
+        detail: `A IA declarou ${aiNumeric} para "${raw.fieldName}", mas o parser determinístico leu ${numericValue} a partir do valor bruto. A divergência é preservada.`,
+        payload: { field_name: raw.fieldName, ai_numeric: aiNumeric, parser_numeric: numericValue },
+      });
+    }
+
+
+
     fields.push({
       fieldName: raw.fieldName,
       definition,
