@@ -791,6 +791,7 @@ export type Database = {
       }
       evidence_artifacts: {
         Row: {
+          capture_method: Database["public"]["Enums"]["capture_method"]
           captured_at: string
           created_at: string
           created_by: string
@@ -801,11 +802,14 @@ export type Database = {
           id: string
           mime_type: string | null
           organization_id: string
+          provider_metadata: Json | null
           sha256_hash: string | null
+          source_content_text: string | null
           storage_bucket: string
           storage_path: string
         }
         Insert: {
+          capture_method?: Database["public"]["Enums"]["capture_method"]
           captured_at?: string
           created_at?: string
           created_by: string
@@ -816,11 +820,14 @@ export type Database = {
           id?: string
           mime_type?: string | null
           organization_id: string
+          provider_metadata?: Json | null
           sha256_hash?: string | null
+          source_content_text?: string | null
           storage_bucket?: string
           storage_path: string
         }
         Update: {
+          capture_method?: Database["public"]["Enums"]["capture_method"]
           captured_at?: string
           created_at?: string
           created_by?: string
@@ -831,7 +838,9 @@ export type Database = {
           id?: string
           mime_type?: string | null
           organization_id?: string
+          provider_metadata?: Json | null
           sha256_hash?: string | null
+          source_content_text?: string | null
           storage_bucket?: string
           storage_path?: string
         }
@@ -1033,6 +1042,9 @@ export type Database = {
       }
       evidence_fields: {
         Row: {
+          ai_support_status:
+            | Database["public"]["Enums"]["extraction_support_status"]
+            | null
           created_at: string
           created_by: string
           extraction_id: string
@@ -1049,6 +1061,10 @@ export type Database = {
           revision_number: number
           source_excerpt: string | null
           source_locator: Json | null
+          support_check_details: Json | null
+          support_check_status:
+            | Database["public"]["Enums"]["support_check_status"]
+            | null
           unit: string | null
           updated_at: string
           validation_status: Database["public"]["Enums"]["validation_status"]
@@ -1057,6 +1073,9 @@ export type Database = {
           verified_by: string | null
         }
         Insert: {
+          ai_support_status?:
+            | Database["public"]["Enums"]["extraction_support_status"]
+            | null
           created_at?: string
           created_by: string
           extraction_id: string
@@ -1073,6 +1092,10 @@ export type Database = {
           revision_number?: number
           source_excerpt?: string | null
           source_locator?: Json | null
+          support_check_details?: Json | null
+          support_check_status?:
+            | Database["public"]["Enums"]["support_check_status"]
+            | null
           unit?: string | null
           updated_at?: string
           validation_status?: Database["public"]["Enums"]["validation_status"]
@@ -1081,6 +1104,9 @@ export type Database = {
           verified_by?: string | null
         }
         Update: {
+          ai_support_status?:
+            | Database["public"]["Enums"]["extraction_support_status"]
+            | null
           created_at?: string
           created_by?: string
           extraction_id?: string
@@ -1097,6 +1123,10 @@ export type Database = {
           revision_number?: number
           source_excerpt?: string | null
           source_locator?: Json | null
+          support_check_details?: Json | null
+          support_check_status?:
+            | Database["public"]["Enums"]["support_check_status"]
+            | null
           unit?: string | null
           updated_at?: string
           validation_status?: Database["public"]["Enums"]["validation_status"]
@@ -2388,6 +2418,765 @@ export type Database = {
           },
         ]
       }
+      property_research_runs: {
+        Row: {
+          ai_calls_actual: number
+          completed_at: string | null
+          created_at: string
+          extraction_model: string | null
+          extractions_actual: number
+          failure_reason: string | null
+          fetches_actual: number
+          id: string
+          location_city: string | null
+          location_country: string | null
+          location_region: string | null
+          max_extractions: number
+          max_fetches: number
+          max_search_uses: number
+          max_sources: number
+          objective: string
+          organization_id: string
+          provider: string
+          requested_by: string
+          research_model: string | null
+          research_type: Database["public"]["Enums"]["research_type"]
+          search_uses_actual: number
+          started_at: string | null
+          status: Database["public"]["Enums"]["research_run_status"]
+          subject_property_id: string | null
+          updated_at: string
+          valuation_case_id: string
+        }
+        Insert: {
+          ai_calls_actual?: number
+          completed_at?: string | null
+          created_at?: string
+          extraction_model?: string | null
+          extractions_actual?: number
+          failure_reason?: string | null
+          fetches_actual?: number
+          id?: string
+          location_city?: string | null
+          location_country?: string | null
+          location_region?: string | null
+          max_extractions?: number
+          max_fetches?: number
+          max_search_uses?: number
+          max_sources?: number
+          objective: string
+          organization_id: string
+          provider?: string
+          requested_by: string
+          research_model?: string | null
+          research_type: Database["public"]["Enums"]["research_type"]
+          search_uses_actual?: number
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["research_run_status"]
+          subject_property_id?: string | null
+          updated_at?: string
+          valuation_case_id: string
+        }
+        Update: {
+          ai_calls_actual?: number
+          completed_at?: string | null
+          created_at?: string
+          extraction_model?: string | null
+          extractions_actual?: number
+          failure_reason?: string | null
+          fetches_actual?: number
+          id?: string
+          location_city?: string | null
+          location_country?: string | null
+          location_region?: string | null
+          max_extractions?: number
+          max_fetches?: number
+          max_search_uses?: number
+          max_sources?: number
+          objective?: string
+          organization_id?: string
+          provider?: string
+          requested_by?: string
+          research_model?: string | null
+          research_type?: Database["public"]["Enums"]["research_type"]
+          search_uses_actual?: number
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["research_run_status"]
+          subject_property_id?: string | null
+          updated_at?: string
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_research_runs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prr_case_fk"
+            columns: ["organization_id", "valuation_case_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_cases"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "prr_subject_fk"
+            columns: ["organization_id", "subject_property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      research_context_snapshots: {
+        Row: {
+          captured_at: string
+          created_at: string
+          created_by: string
+          fact_references: Json
+          facts: Json
+          id: string
+          organization_id: string
+          research_run_id: string
+          schema_version: string
+          subject_property_id: string | null
+          valuation_case_id: string
+        }
+        Insert: {
+          captured_at?: string
+          created_at?: string
+          created_by: string
+          fact_references?: Json
+          facts: Json
+          id?: string
+          organization_id: string
+          research_run_id: string
+          schema_version?: string
+          subject_property_id?: string | null
+          valuation_case_id: string
+        }
+        Update: {
+          captured_at?: string
+          created_at?: string
+          created_by?: string
+          fact_references?: Json
+          facts?: Json
+          id?: string
+          organization_id?: string
+          research_run_id?: string
+          schema_version?: string
+          subject_property_id?: string | null
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rcs_run_fk"
+            columns: ["organization_id", "valuation_case_id", "research_run_id"]
+            isOneToOne: false
+            referencedRelation: "property_research_runs"
+            referencedColumns: ["organization_id", "valuation_case_id", "id"]
+          },
+          {
+            foreignKeyName: "research_context_snapshots_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      research_entity_candidate_fields: {
+        Row: {
+          candidate_id: string
+          created_at: string
+          evidence_field_id: string
+          id: string
+          organization_id: string
+          semantic_role: string
+          valuation_case_id: string
+        }
+        Insert: {
+          candidate_id: string
+          created_at?: string
+          evidence_field_id: string
+          id?: string
+          organization_id: string
+          semantic_role: string
+          valuation_case_id: string
+        }
+        Update: {
+          candidate_id?: string
+          created_at?: string
+          evidence_field_id?: string
+          id?: string
+          organization_id?: string
+          semantic_role?: string
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recf_candidate_fk"
+            columns: ["organization_id", "valuation_case_id", "candidate_id"]
+            isOneToOne: false
+            referencedRelation: "research_entity_candidates"
+            referencedColumns: ["organization_id", "valuation_case_id", "id"]
+          },
+          {
+            foreignKeyName: "recf_field_fk"
+            columns: ["organization_id", "evidence_field_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_fields"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "research_entity_candidate_fields_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      research_entity_candidates: {
+        Row: {
+          candidate_type: Database["public"]["Enums"]["research_candidate_type"]
+          created_at: string
+          created_by: string
+          evidence_artifact_id: string | null
+          evidence_extraction_id: string | null
+          evidence_source_id: string | null
+          id: string
+          organization_id: string
+          promoted_market_observation_id: string | null
+          promoted_market_property_id: string | null
+          rejection_reason: string | null
+          research_run_id: string
+          research_search_result_id: string | null
+          status: Database["public"]["Enums"]["research_candidate_status"]
+          updated_at: string
+          valuation_case_id: string
+        }
+        Insert: {
+          candidate_type: Database["public"]["Enums"]["research_candidate_type"]
+          created_at?: string
+          created_by: string
+          evidence_artifact_id?: string | null
+          evidence_extraction_id?: string | null
+          evidence_source_id?: string | null
+          id?: string
+          organization_id: string
+          promoted_market_observation_id?: string | null
+          promoted_market_property_id?: string | null
+          rejection_reason?: string | null
+          research_run_id: string
+          research_search_result_id?: string | null
+          status?: Database["public"]["Enums"]["research_candidate_status"]
+          updated_at?: string
+          valuation_case_id: string
+        }
+        Update: {
+          candidate_type?: Database["public"]["Enums"]["research_candidate_type"]
+          created_at?: string
+          created_by?: string
+          evidence_artifact_id?: string | null
+          evidence_extraction_id?: string | null
+          evidence_source_id?: string | null
+          id?: string
+          organization_id?: string
+          promoted_market_observation_id?: string | null
+          promoted_market_property_id?: string | null
+          rejection_reason?: string | null
+          research_run_id?: string
+          research_search_result_id?: string | null
+          status?: Database["public"]["Enums"]["research_candidate_status"]
+          updated_at?: string
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rec_artifact_fk"
+            columns: ["organization_id", "evidence_artifact_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_artifacts"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "rec_extraction_fk"
+            columns: ["organization_id", "evidence_extraction_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_extractions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "rec_result_fk"
+            columns: [
+              "organization_id",
+              "valuation_case_id",
+              "research_search_result_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "research_search_results"
+            referencedColumns: ["organization_id", "valuation_case_id", "id"]
+          },
+          {
+            foreignKeyName: "rec_run_fk"
+            columns: ["organization_id", "valuation_case_id", "research_run_id"]
+            isOneToOne: false
+            referencedRelation: "property_research_runs"
+            referencedColumns: ["organization_id", "valuation_case_id", "id"]
+          },
+          {
+            foreignKeyName: "rec_source_fk"
+            columns: ["organization_id", "evidence_source_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_sources"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "research_entity_candidates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      research_extraction_issues: {
+        Row: {
+          created_at: string
+          detail: string | null
+          evidence_extraction_id: string | null
+          evidence_field_id: string | null
+          id: string
+          issue_type: string
+          organization_id: string
+          payload: Json | null
+          research_run_id: string | null
+          valuation_case_id: string
+        }
+        Insert: {
+          created_at?: string
+          detail?: string | null
+          evidence_extraction_id?: string | null
+          evidence_field_id?: string | null
+          id?: string
+          issue_type: string
+          organization_id: string
+          payload?: Json | null
+          research_run_id?: string | null
+          valuation_case_id: string
+        }
+        Update: {
+          created_at?: string
+          detail?: string | null
+          evidence_extraction_id?: string | null
+          evidence_field_id?: string | null
+          id?: string
+          issue_type?: string
+          organization_id?: string
+          payload?: Json | null
+          research_run_id?: string | null
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rei_field_fk"
+            columns: ["organization_id", "evidence_field_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_fields"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "research_extraction_issues_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      research_field_taxonomy: {
+        Row: {
+          applies_to: string
+          created_at: string
+          data_kind: string
+          field_name: string
+          taxonomy_version: string
+        }
+        Insert: {
+          applies_to: string
+          created_at?: string
+          data_kind: string
+          field_name: string
+          taxonomy_version?: string
+        }
+        Update: {
+          applies_to?: string
+          created_at?: string
+          data_kind?: string
+          field_name?: string
+          taxonomy_version?: string
+        }
+        Relationships: []
+      }
+      research_queries: {
+        Row: {
+          ai_run_id: string | null
+          created_at: string
+          created_by: string
+          executed_at: string | null
+          generated_by: Database["public"]["Enums"]["research_query_origin"]
+          id: string
+          input_fact_references: Json
+          organization_id: string
+          purpose: string | null
+          query_text: string
+          research_run_id: string
+          result_count: number
+          status: Database["public"]["Enums"]["research_query_status"]
+          valuation_case_id: string
+        }
+        Insert: {
+          ai_run_id?: string | null
+          created_at?: string
+          created_by: string
+          executed_at?: string | null
+          generated_by: Database["public"]["Enums"]["research_query_origin"]
+          id?: string
+          input_fact_references?: Json
+          organization_id: string
+          purpose?: string | null
+          query_text: string
+          research_run_id: string
+          result_count?: number
+          status?: Database["public"]["Enums"]["research_query_status"]
+          valuation_case_id: string
+        }
+        Update: {
+          ai_run_id?: string | null
+          created_at?: string
+          created_by?: string
+          executed_at?: string | null
+          generated_by?: Database["public"]["Enums"]["research_query_origin"]
+          id?: string
+          input_fact_references?: Json
+          organization_id?: string
+          purpose?: string | null
+          query_text?: string
+          research_run_id?: string
+          result_count?: number
+          status?: Database["public"]["Enums"]["research_query_status"]
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "research_queries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rq_run_fk"
+            columns: ["organization_id", "valuation_case_id", "research_run_id"]
+            isOneToOne: false
+            referencedRelation: "property_research_runs"
+            referencedColumns: ["organization_id", "valuation_case_id", "id"]
+          },
+        ]
+      }
+      research_result_query_hits: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          rank: number | null
+          research_query_id: string
+          research_search_result_id: string
+          returned_at: string
+          valuation_case_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          rank?: number | null
+          research_query_id: string
+          research_search_result_id: string
+          returned_at?: string
+          valuation_case_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          rank?: number | null
+          research_query_id?: string
+          research_search_result_id?: string
+          returned_at?: string
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "research_result_query_hits_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rqh_query_fk"
+            columns: [
+              "organization_id",
+              "valuation_case_id",
+              "research_query_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "research_queries"
+            referencedColumns: ["organization_id", "valuation_case_id", "id"]
+          },
+          {
+            foreignKeyName: "rqh_result_fk"
+            columns: [
+              "organization_id",
+              "valuation_case_id",
+              "research_search_result_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "research_search_results"
+            referencedColumns: ["organization_id", "valuation_case_id", "id"]
+          },
+        ]
+      }
+      research_search_results: {
+        Row: {
+          canonical_url: string
+          capture_failure_reason: string | null
+          capture_status: Database["public"]["Enums"]["research_capture_status"]
+          created_at: string
+          created_by: string
+          domain: string
+          evidence_artifact_id: string | null
+          evidence_source_id: string | null
+          id: string
+          organization_id: string
+          page_age: string | null
+          provider: string
+          provider_result_reference: string | null
+          rank: number | null
+          raw_payload_hash: string | null
+          raw_result_payload: Json | null
+          research_query_id: string | null
+          research_run_id: string
+          returned_at: string
+          selection_status: Database["public"]["Enums"]["research_selection_status"]
+          snippet: string | null
+          title: string | null
+          updated_at: string
+          url: string
+          valuation_case_id: string
+        }
+        Insert: {
+          canonical_url: string
+          capture_failure_reason?: string | null
+          capture_status?: Database["public"]["Enums"]["research_capture_status"]
+          created_at?: string
+          created_by: string
+          domain: string
+          evidence_artifact_id?: string | null
+          evidence_source_id?: string | null
+          id?: string
+          organization_id: string
+          page_age?: string | null
+          provider: string
+          provider_result_reference?: string | null
+          rank?: number | null
+          raw_payload_hash?: string | null
+          raw_result_payload?: Json | null
+          research_query_id?: string | null
+          research_run_id: string
+          returned_at?: string
+          selection_status?: Database["public"]["Enums"]["research_selection_status"]
+          snippet?: string | null
+          title?: string | null
+          updated_at?: string
+          url: string
+          valuation_case_id: string
+        }
+        Update: {
+          canonical_url?: string
+          capture_failure_reason?: string | null
+          capture_status?: Database["public"]["Enums"]["research_capture_status"]
+          created_at?: string
+          created_by?: string
+          domain?: string
+          evidence_artifact_id?: string | null
+          evidence_source_id?: string | null
+          id?: string
+          organization_id?: string
+          page_age?: string | null
+          provider?: string
+          provider_result_reference?: string | null
+          rank?: number | null
+          raw_payload_hash?: string | null
+          raw_result_payload?: Json | null
+          research_query_id?: string | null
+          research_run_id?: string
+          returned_at?: string
+          selection_status?: Database["public"]["Enums"]["research_selection_status"]
+          snippet?: string | null
+          title?: string | null
+          updated_at?: string
+          url?: string
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "research_search_results_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rsr_artifact_fk"
+            columns: ["organization_id", "evidence_artifact_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_artifacts"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "rsr_query_fk"
+            columns: [
+              "organization_id",
+              "valuation_case_id",
+              "research_query_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "research_queries"
+            referencedColumns: ["organization_id", "valuation_case_id", "id"]
+          },
+          {
+            foreignKeyName: "rsr_run_fk"
+            columns: ["organization_id", "valuation_case_id", "research_run_id"]
+            isOneToOne: false
+            referencedRelation: "property_research_runs"
+            referencedColumns: ["organization_id", "valuation_case_id", "id"]
+          },
+          {
+            foreignKeyName: "rsr_source_fk"
+            columns: ["organization_id", "evidence_source_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_sources"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      research_source_domain_policies: {
+        Row: {
+          created_at: string
+          created_by: string
+          domain: string
+          id: string
+          notes: string | null
+          organization_id: string
+          policy_status: Database["public"]["Enums"]["domain_policy_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          domain: string
+          id?: string
+          notes?: string | null
+          organization_id: string
+          policy_status?: Database["public"]["Enums"]["domain_policy_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          domain?: string
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          policy_status?: Database["public"]["Enums"]["domain_policy_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "research_source_domain_policies_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      research_usage_events: {
+        Row: {
+          actor_user_id: string
+          cache_read_tokens: number | null
+          cache_write_tokens: number | null
+          created_at: string
+          id: string
+          input_tokens: number | null
+          model: string | null
+          organization_id: string
+          output_tokens: number | null
+          provider: string | null
+          quantity: number
+          research_run_id: string | null
+          server_tool_uses: number | null
+          usage_type: string
+          valuation_case_id: string | null
+        }
+        Insert: {
+          actor_user_id: string
+          cache_read_tokens?: number | null
+          cache_write_tokens?: number | null
+          created_at?: string
+          id?: string
+          input_tokens?: number | null
+          model?: string | null
+          organization_id: string
+          output_tokens?: number | null
+          provider?: string | null
+          quantity?: number
+          research_run_id?: string | null
+          server_tool_uses?: number | null
+          usage_type: string
+          valuation_case_id?: string | null
+        }
+        Update: {
+          actor_user_id?: string
+          cache_read_tokens?: number | null
+          cache_write_tokens?: number | null
+          created_at?: string
+          id?: string
+          input_tokens?: number | null
+          model?: string | null
+          organization_id?: string
+          output_tokens?: number | null
+          provider?: string | null
+          quantity?: number
+          research_run_id?: string | null
+          server_tool_uses?: number | null
+          usage_type?: string
+          valuation_case_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "research_usage_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       valuation_cases: {
         Row: {
           case_code: string
@@ -2504,6 +3293,18 @@ export type Database = {
       in_privileged_op: { Args: never; Returns: boolean }
       is_org_admin: { Args: { _org: string }; Returns: boolean }
       is_org_member: { Args: { _org: string }; Returns: boolean }
+      promote_research_candidate: {
+        Args: {
+          _candidate_id: string
+          _field_ids: string[]
+          _label: string
+          _market_property_id: string
+          _notes: string
+          _observation_status: Database["public"]["Enums"]["market_observation_status"]
+          _observation_type: Database["public"]["Enums"]["market_observation_type"]
+        }
+        Returns: Json
+      }
       record_price_observation: {
         Args: {
           _asking_monthly_rent: number
@@ -2582,6 +3383,13 @@ export type Database = {
         | "COMPLETED"
         | "FAILED"
         | "DISCARDED"
+      capture_method:
+        | "ANTHROPIC_WEB_SEARCH_RESULT"
+        | "ANTHROPIC_WEB_FETCH"
+        | "DIRECT_HTTP"
+        | "USER_UPLOAD"
+        | "EXTERNAL_API"
+        | "OTHER"
       case_status:
         | "DRAFT"
         | "EVIDENCE_COLLECTION"
@@ -2614,12 +3422,20 @@ export type Database = {
         | "COMMERCIAL_COMPLEX"
         | "INDUSTRIAL_COMPLEX"
         | "OTHER"
+      domain_policy_status: "ALLOWED" | "REVIEW_REQUIRED" | "BLOCKED"
       extraction_status:
         | "PENDING"
         | "PROCESSING"
         | "COMPLETED"
         | "FAILED"
         | "REVIEW_REQUIRED"
+      extraction_support_status:
+        | "EXPLICIT_TEXT"
+        | "EXPLICIT_STRUCTURED_DATA"
+        | "VISUAL_EVIDENCE"
+        | "AMBIGUOUS"
+        | "NOT_FOUND"
+        | "UNSUPPORTED"
       field_state:
         | "PRESENT"
         | "NOT_FOUND"
@@ -2697,6 +3513,54 @@ export type Database = {
         | "MEDIUM"
         | "HIGH"
         | "NOT_APPLICABLE"
+      research_candidate_status:
+        | "DISCOVERED"
+        | "CAPTURED"
+        | "EXTRACTED"
+        | "REVIEW_REQUIRED"
+        | "READY_TO_PROMOTE"
+        | "PROMOTED"
+        | "REJECTED"
+      research_candidate_type:
+        | "MARKET_PROPERTY"
+        | "SALE_LISTING"
+        | "CLOSED_SALE"
+        | "RENT_LISTING"
+        | "CLOSED_RENT"
+        | "SUBJECT_PROPERTY_INFORMATION"
+      research_capture_status:
+        | "NOT_CAPTURED"
+        | "CAPTURING"
+        | "CAPTURED"
+        | "FAILED"
+        | "ACCESS_RESTRICTED"
+        | "BLOCKED_BY_POLICY"
+        | "DUPLICATE"
+      research_query_origin: "AI" | "USER"
+      research_query_status:
+        | "PROPOSED"
+        | "APPROVED"
+        | "EXECUTED"
+        | "DISCARDED"
+        | "FAILED"
+      research_run_status:
+        | "DRAFT"
+        | "PLANNING"
+        | "PLAN_READY"
+        | "SEARCHING"
+        | "RESULTS_READY"
+        | "CAPTURING"
+        | "EXTRACTING"
+        | "REVIEW_REQUIRED"
+        | "COMPLETED"
+        | "FAILED"
+        | "CANCELLED"
+      research_selection_status: "UNREVIEWED" | "SELECTED" | "REJECTED"
+      research_type:
+        | "SUBJECT_PROPERTY_FACTS"
+        | "COMPARABLE_DISCOVERY"
+        | "TRANSACTION_DISCOVERY"
+        | "MARKET_DISCOVERY"
       seller_type:
         | "OWNER"
         | "BROKER"
@@ -2713,6 +3577,12 @@ export type Database = {
         | "USER_PROVIDED"
         | "FIELD_INSPECTION"
         | "OTHER"
+      support_check_status:
+        | "EXACT_MATCH"
+        | "NORMALIZED_MATCH"
+        | "VISUAL_ONLY"
+        | "FAILED"
+        | "NOT_APPLICABLE"
       transaction_evidence_status:
         | "DOCUMENTED"
         | "MULTI_SOURCE_CONFIRMED"
@@ -2865,6 +3735,14 @@ export const Constants = {
         "FAILED",
       ],
       ai_run_status: ["PENDING", "RUNNING", "COMPLETED", "FAILED", "DISCARDED"],
+      capture_method: [
+        "ANTHROPIC_WEB_SEARCH_RESULT",
+        "ANTHROPIC_WEB_FETCH",
+        "DIRECT_HTTP",
+        "USER_UPLOAD",
+        "EXTERNAL_API",
+        "OTHER",
+      ],
       case_status: [
         "DRAFT",
         "EVIDENCE_COLLECTION",
@@ -2901,12 +3779,21 @@ export const Constants = {
         "INDUSTRIAL_COMPLEX",
         "OTHER",
       ],
+      domain_policy_status: ["ALLOWED", "REVIEW_REQUIRED", "BLOCKED"],
       extraction_status: [
         "PENDING",
         "PROCESSING",
         "COMPLETED",
         "FAILED",
         "REVIEW_REQUIRED",
+      ],
+      extraction_support_status: [
+        "EXPLICIT_TEXT",
+        "EXPLICIT_STRUCTURED_DATA",
+        "VISUAL_EVIDENCE",
+        "AMBIGUOUS",
+        "NOT_FOUND",
+        "UNSUPPORTED",
       ],
       field_state: [
         "PRESENT",
@@ -2995,6 +3882,60 @@ export const Constants = {
         "HIGH",
         "NOT_APPLICABLE",
       ],
+      research_candidate_status: [
+        "DISCOVERED",
+        "CAPTURED",
+        "EXTRACTED",
+        "REVIEW_REQUIRED",
+        "READY_TO_PROMOTE",
+        "PROMOTED",
+        "REJECTED",
+      ],
+      research_candidate_type: [
+        "MARKET_PROPERTY",
+        "SALE_LISTING",
+        "CLOSED_SALE",
+        "RENT_LISTING",
+        "CLOSED_RENT",
+        "SUBJECT_PROPERTY_INFORMATION",
+      ],
+      research_capture_status: [
+        "NOT_CAPTURED",
+        "CAPTURING",
+        "CAPTURED",
+        "FAILED",
+        "ACCESS_RESTRICTED",
+        "BLOCKED_BY_POLICY",
+        "DUPLICATE",
+      ],
+      research_query_origin: ["AI", "USER"],
+      research_query_status: [
+        "PROPOSED",
+        "APPROVED",
+        "EXECUTED",
+        "DISCARDED",
+        "FAILED",
+      ],
+      research_run_status: [
+        "DRAFT",
+        "PLANNING",
+        "PLAN_READY",
+        "SEARCHING",
+        "RESULTS_READY",
+        "CAPTURING",
+        "EXTRACTING",
+        "REVIEW_REQUIRED",
+        "COMPLETED",
+        "FAILED",
+        "CANCELLED",
+      ],
+      research_selection_status: ["UNREVIEWED", "SELECTED", "REJECTED"],
+      research_type: [
+        "SUBJECT_PROPERTY_FACTS",
+        "COMPARABLE_DISCOVERY",
+        "TRANSACTION_DISCOVERY",
+        "MARKET_DISCOVERY",
+      ],
       seller_type: [
         "OWNER",
         "BROKER",
@@ -3012,6 +3953,13 @@ export const Constants = {
         "USER_PROVIDED",
         "FIELD_INSPECTION",
         "OTHER",
+      ],
+      support_check_status: [
+        "EXACT_MATCH",
+        "NORMALIZED_MATCH",
+        "VISUAL_ONLY",
+        "FAILED",
+        "NOT_APPLICABLE",
       ],
       transaction_evidence_status: [
         "DOCUMENTED",
