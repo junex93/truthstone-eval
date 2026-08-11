@@ -12,6 +12,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
+import type { Database } from "@/integrations/supabase/types";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { RESEARCH_FIELD_NAMES } from "@/lib/domain/research";
 import type { ExtractionSupportStatus, ResearchCandidateType } from "@/lib/domain/research";
@@ -941,7 +942,7 @@ export const promoteResearchCandidate = createServerFn({ method: "POST" })
       ...(data.marketPropertyId ? { _market_property_id: data.marketPropertyId } : {}),
       ...(data.label ? { _label: data.label } : {}),
       ...(data.notes ? { _notes: data.notes } : {}),
-    } as Parameters<typeof supabase.rpc<"promote_research_candidate">>[1];
+    } as unknown as Database["public"]["Functions"]["promote_research_candidate"]["Args"];
 
     const { data: outcome, error } = await supabase.rpc("promote_research_candidate", args);
     if (error) throw new Error(error.message);
