@@ -45,16 +45,23 @@ export interface ResolvedProvider {
 }
 
 /**
- * Reads configuration inside the handler (never at module scope). With no
- * provider key configured the engine runs in deterministic FIXTURE mode instead
- * of failing — the state machine, the gate and the audit trail are identical.
+ * Reads configuration inside the handler (never at module scope).
+ *
+ * There is NO silent fallback: deterministic fixture mode must be requested
+ * explicitly with RESEARCH_PROVIDER=FIXTURE. A missing provider key is a
+ * configuration failure, never an unannounced change of data source.
  */
 export function resolveProvider(): ResolvedProvider {
   const apiKey = process.env["ANTHROPIC_API_KEY"];
   const forced = process.env["RESEARCH_PROVIDER"];
 
-  if (forced === "FIXTURE" || !apiKey) {
+  if (forced === "FIXTURE") {
     return { provider: new FixtureResearchProvider(), mode: "FIXTURE" };
+  }
+  if (!apiKey) {
+    throw new Error(
+      "Provedor de pesquisa não configurado: defina ANTHROPIC_API_KEY para uso real ou RESEARCH_PROVIDER=FIXTURE para o modo determinístico de demonstração.",
+    );
   }
 
   return {

@@ -855,6 +855,7 @@ export const extractResearchSource = createServerFn({ method: "POST" })
           supportStatus: field.support_status as ExtractionSupportStatus,
           sourceExcerpt: field.source_excerpt,
           sourceLocator: field.source_locator,
+          aiNumericValue: field.numeric_value,
         })),
       })),
       providerWarnings: extraction.output.warnings,
