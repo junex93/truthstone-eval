@@ -164,3 +164,24 @@ anteriores a esta renomeação (`20260810172137_...`, `20260810172605_...`)
 mantêm o texto literal `fluxa.*` porque descrevem o estado do banco no
 momento em que foram aplicadas; migrações são histórico imutável e não são
 editadas retroativamente.
+
+## ADR-0xx — IA é geradora de candidato, nunca de fato
+**Status:** aceito.
+**Decisão:** o provedor de IA está atrás da interface `ResearchProvider`, sem
+acesso a banco, storage, RPC ou segredo; toda saída passa por gate determinístico
+e por verificação humana registrada.
+**Consequência:** trocar modelo/fornecedor não toca regra de domínio; a
+plataforma nunca depende da honestidade do modelo.
+
+## ADR-0xx — Sem fallback silencioso de provedor
+**Status:** aceito.
+**Contexto:** cair automaticamente em fixture quando falta a chave mascara a
+origem do dado, o que é inaceitável em contexto pericial.
+**Decisão:** o modo determinístico exige `RESEARCH_PROVIDER=FIXTURE`; sem chave
+real a operação falha com mensagem explícita.
+
+## ADR-0xx — Número da IA é apenas hipótese; o parser é a autoridade
+**Status:** aceito.
+**Decisão:** o valor numérico é sempre recalculado do texto bruto por parser
+determinístico; divergência com o número declarado pela IA é preservada como
+`DIVERGENT` com inconsistência registrada, nunca resolvida automaticamente.

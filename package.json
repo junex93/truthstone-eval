@@ -10,7 +10,10 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "test:security": "bun run tests/security/negative-tests.ts",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test:research": "bun run tests/functional/research-flow.ts",
+    "test:market": "bun run tests/functional/market-flow.ts",
+    "test:all": "bun run tests/security/negative-tests.ts && bun run tests/functional/market-flow.ts && bun run tests/functional/research-flow.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
