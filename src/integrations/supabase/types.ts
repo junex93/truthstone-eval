@@ -4111,6 +4111,7 @@ export type Database = {
       in_privileged_op: { Args: never; Returns: boolean }
       is_org_admin: { Args: { _org: string }; Returns: boolean }
       is_org_member: { Args: { _org: string }; Returns: boolean }
+      market_intelligence_report: { Args: { _case_id: string }; Returns: Json }
       market_source_domain: {
         Args: { _portal: string; _publisher: string; _url: string }
         Returns: string
@@ -4195,6 +4196,10 @@ export type Database = {
       verify_evidence_field: {
         Args: { _field_id: string; _notes: string }
         Returns: string
+      }
+      verify_snapshot_integrity: {
+        Args: { _kind: string; _snapshot_id: string }
+        Returns: Json
       }
       write_audit_event: {
         Args: {
