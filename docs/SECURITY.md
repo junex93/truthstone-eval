@@ -114,9 +114,15 @@ vaze a existência/posição de um imóvel de outra organização.
 
 ## Testes negativos
 
-`tests/security/negative-tests.ts` — 49 asserções, execução real contra o banco.
-Ver `docs/THREAT_MODEL.md` para o resultado por ameaça.
+`tests/security/negative-tests.ts` — 84 asserções negativas, execução real
+contra o banco. Ver `docs/THREAT_MODEL.md` para o resultado por ameaça.
+
+`tests/functional/market-flow.ts` — 33 asserções positivas: prova que o caminho
+legítimo (avaliando → evidência verificada → imóvel de mercado → observação →
+histórico de preço → fato canônico → comparável → duplicidade) continua
+operando após o hardening.
 
 ```
 bun run tests/security/negative-tests.ts
+bun run tests/functional/market-flow.ts
 ```

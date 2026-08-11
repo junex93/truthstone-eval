@@ -851,12 +851,63 @@ async function main() {
       !decide1.error,
       decide1.error?.message ?? "ok",
     );
-    await expectBlocked("comparable_decision_history cannot be UPDATEd by the client", () =>
-      owner.client
+    // Append-only proof with explicit before/after database state, so that a
+    // "0 rows affected" HTTP success is never mistaken for a silent mutation.
+    const beforeRows = await admin
+      .from("comparable_decision_history")
+      .select("id, notes, new_candidate_status, reason_code")
+      .eq("candidate_id", candidateAId)
+      .order("created_at", { ascending: true });
+    const beforeSnapshot = JSON.stringify(beforeRows.data ?? []);
+    const stateIntact = async () => {
+      const after = await admin
         .from("comparable_decision_history")
-        .update({ notes: "adulterado" })
-        .eq("candidate_id", candidateAId),
+        .select("id, notes, new_candidate_status, reason_code")
+        .eq("candidate_id", candidateAId)
+        .order("created_at", { ascending: true });
+      return JSON.stringify(after.data ?? []) === beforeSnapshot;
+    };
+    record(
+      "comparable_decision_history is readable by an authorized member (SELECT allowed)",
+      !beforeRows.error && (beforeRows.data?.length ?? 0) >= 1,
+      beforeRows.error?.message ?? `${beforeRows.data?.length ?? 0} row(s) visible`,
     );
+    await expectNoEffect(
+      "comparable_decision_history UPDATE by a REVIEWER-authority role (OWNER) leaves the row byte-identical",
+      () =>
+        owner.client
+          .from("comparable_decision_history")
+          .update({ notes: "adulterado" })
+          .eq("candidate_id", candidateAId),
+      stateIntact,
+    );
+    await expectNoEffect(
+      "comparable_decision_history UPDATE by a VALUER leaves the row byte-identical",
+      () =>
+        valuer.client
+          .from("comparable_decision_history")
+          .update({ notes: "adulterado pelo valuer", reason_code: null })
+          .eq("candidate_id", candidateAId),
+      stateIntact,
+    );
+    await expectNoEffect(
+      "comparable_decision_history DELETE by a VALUER leaves the history intact",
+      () => valuer.client.from("comparable_decision_history").delete().eq("candidate_id", candidateAId),
+      stateIntact,
+    );
+    await expectNoEffect(
+      "comparable_decision_history cannot be INSERTed directly (only decide_comparable writes it)",
+      () =>
+        owner.client.from("comparable_decision_history").insert({
+          organization_id: orgA,
+          valuation_case_id: caseA1,
+          candidate_id: candidateAId,
+          new_candidate_status: "ELIGIBLE",
+          notes: "decisão fabricada pelo cliente",
+        }),
+      stateIntact,
+    );
+
     await expectNoEffect(
       "comparable_decision_history cannot be DELETEd by the client",
       () => owner.client.from("comparable_decision_history").delete().eq("candidate_id", candidateAId),
@@ -1008,23 +1059,120 @@ async function main() {
     }),
   );
 
-  const crossCaseFieldGap = await owner.client.rpc("record_price_observation", {
+  // A) same case + same org evidence_field = allowed
+  const sameCaseField = await owner.client.rpc("record_price_observation", {
     _observation_id: obsA1,
-    _asking_price: 511000,
+    _asking_price: 505000,
     _asking_monthly_rent: null,
     _observed_at: new Date().toISOString(),
     _status: "ACTIVE",
     _evidence_source_id: null,
-    _evidence_field_id: crossCaseField,
-    _notes: "campo de evidência de outro caso (A2) referenciado a partir de A1",
+    _evidence_field_id: candidateField,
+    _notes: "campo de evidência do próprio caso (A1)",
   });
   record(
-    "GAP (documented, not fixed): record_price_observation does not verify that evidence_field_id belongs to the same case as the observation",
-    !!crossCaseFieldGap.error,
-    crossCaseFieldGap.error
-      ? `blocked: ${crossCaseFieldGap.error.message.slice(0, 200)}`
-      : "SECURITY GAP: insert succeeded with a cross-case evidence_field_id — only organization scope is enforced by the FK, not case scope",
+    "record_price_observation ACCEPTS an evidence_field of the same org and same case",
+    !sameCaseField.error,
+    sameCaseField.error?.message ?? "accepted (legitimate lineage still works)",
   );
+
+  // B) cross-case evidence_field = blocked
+  await expectBlocked(
+    "record_price_observation refuses an evidence_field_id from another case (same org)",
+    () =>
+      owner.client.rpc("record_price_observation", {
+        _observation_id: obsA1,
+        _asking_price: 511000,
+        _asking_monthly_rent: null,
+        _observed_at: new Date().toISOString(),
+        _status: "ACTIVE",
+        _evidence_source_id: null,
+        _evidence_field_id: crossCaseField,
+        _notes: "campo de evidência de outro caso (A2)",
+      }),
+  );
+
+  // C) cross-org evidence_field = blocked
+  const crossOrgField = await seedCandidateField(orgB, caseB1, outsider.id, "cross_org_area");
+  await expectBlocked(
+    "record_price_observation refuses an evidence_field_id from another organization",
+    () =>
+      owner.client.rpc("record_price_observation", {
+        _observation_id: obsA1,
+        _asking_price: 512000,
+        _asking_monthly_rent: null,
+        _observed_at: new Date().toISOString(),
+        _status: "ACTIVE",
+        _evidence_source_id: null,
+        _evidence_field_id: crossOrgField,
+        _notes: "campo de evidência de outra organização",
+      }),
+  );
+
+  // D) non-existent evidence_field = blocked
+  await expectBlocked("record_price_observation refuses a non-existent evidence_field_id", () =>
+    owner.client.rpc("record_price_observation", {
+      _observation_id: obsA1,
+      _asking_price: 513000,
+      _asking_monthly_rent: null,
+      _observed_at: new Date().toISOString(),
+      _status: "ACTIVE",
+      _evidence_source_id: null,
+      _evidence_field_id: "00000000-0000-0000-0000-000000000000",
+      _notes: "campo inexistente",
+    }),
+  );
+
+  // E) NULL evidence_field = allowed (model permits price reading without field)
+  const nullField = await owner.client.rpc("record_price_observation", {
+    _observation_id: obsA1,
+    _asking_price: 514000,
+    _asking_monthly_rent: null,
+    _observed_at: new Date().toISOString(),
+    _status: "ACTIVE",
+    _evidence_source_id: null,
+    _evidence_field_id: null,
+    _notes: "leitura de preço sem campo de evidência",
+  });
+  record(
+    "record_price_observation ACCEPTS a NULL evidence_field_id (permitted by the model)",
+    !nullField.error,
+    nullField.error?.message ?? "accepted",
+  );
+
+  // F) lineage of a persisted price history row is immutable
+  const historyRow = await admin
+    .from("market_observation_price_history")
+    .select("id, market_observation_id, valuation_case_id, asking_price")
+    .eq("market_observation_id", obsA1)
+    .limit(1)
+    .maybeSingle();
+  const historyRowId = historyRow.data?.id as string | undefined;
+  if (historyRowId) {
+    await expectNoEffect(
+      "a persisted price history row cannot have its lineage changed after creation",
+      () =>
+        owner.client
+          .from("market_observation_price_history")
+          .update({ market_observation_id: obsA2, valuation_case_id: caseA2, asking_price: 1 })
+          .eq("id", historyRowId),
+      async () => {
+        const after = await admin
+          .from("market_observation_price_history")
+          .select("market_observation_id, valuation_case_id, asking_price")
+          .eq("id", historyRowId)
+          .single();
+        return (
+          after.data?.market_observation_id === historyRow.data?.market_observation_id &&
+          after.data?.valuation_case_id === historyRow.data?.valuation_case_id &&
+          String(after.data?.asking_price) === String(historyRow.data?.asking_price)
+        );
+      },
+    );
+  } else {
+    record("price history lineage immutability fixture", false, "no price history row available");
+  }
+
 
   await expectBlocked(
     "property_attribute_observations cannot reference both subject_property_id and market_property_id",

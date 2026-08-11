@@ -24,20 +24,23 @@ src/
     cases.functions.ts         casos, imóvel avaliando, transição de status
     evidence.functions.ts      fontes, artefatos, extrações, campos, revisão
     datasets.functions.ts      composição e congelamento de dataset
-    (não implementado)         camada de aplicação para market_properties,
-                                market_observations, comparable_candidates e
-                                property_match_candidates ainda não existe:
-                                só há schema, triggers e RPCs no banco (ver
-                                docs/PROPERTY_DATA_MODEL.md, docs/MARKET_
-                                OBSERVATION_MODEL.md, docs/COMPARABLE_
-                                GOVERNANCE.md, docs/GEO_MODEL.md)
+    market.functions.ts        imóveis de mercado, observações, preço pedido
+                                (record_price_observation), avaliação de fonte
+    comparables.functions.ts   candidatos a comparável, decisão (decide_
+                                comparable), duplicidade (resolve_property_
+                                match), fato canônico (adopt_canonical_fact)
+    market.server.ts           escopo de caso/organização e tradução de colunas
+    domain/derivation.ts       divergência entre observações e preço unitário
+    validation/market-schemas.ts contratos Zod da camada de mercado
   routes/
     __root.tsx                 shell raiz + captura de erro técnico
     index.tsx                  landing (princípios da plataforma)
     auth.tsx                   e-mail/senha + Google OAuth
     _authenticated/route.tsx   gate de sessão
     _authenticated/_shell/     dashboard, cases, evidence, datasets, admin, reports
-                                (sem rotas de mercado/comparáveis nesta fase)
+    .../cases/$caseId/         abas: resumo, imóvel avaliando, mercado,
+                                comparáveis, duplicidades
+
   integrations/supabase/       clientes gerados (não editar)
 supabase/migrations/           histórico versionado do schema
 tests/security/                testes negativos executáveis
