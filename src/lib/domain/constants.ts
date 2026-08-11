@@ -164,7 +164,9 @@ export const AUDIT_EVENT_TYPES = [
 export type AuditEventType =
   | (typeof AUDIT_EVENT_TYPES)[number]
   | "FIELD_REVISED"
-  | MarketAuditEventType;
+  | MarketAuditEventType
+  | ResearchAuditEventType;
+
 
 /* ==========================================================================
  * PHASE 3 — property & comparable intelligence vocabulary.
@@ -544,3 +546,28 @@ export const MARKET_AUDIT_EVENT_TYPES = [
   "DEVELOPMENT_CREATED",
 ] as const;
 export type MarketAuditEventType = (typeof MARKET_AUDIT_EVENT_TYPES)[number];
+
+/* ==========================================================================
+ * PHASE 4 — research engine audit vocabulary.
+ * AI actions are auditable events like any other. None of them verifies data.
+ * ========================================================================== */
+
+export const RESEARCH_AUDIT_EVENT_TYPES = [
+  "RESEARCH_RUN_CREATED",
+  "RESEARCH_CONTEXT_SNAPSHOT_CREATED",
+  "RESEARCH_PLAN_GENERATED",
+  "RESEARCH_QUERY_EDITED",
+  "RESEARCH_QUERY_ADDED",
+  "RESEARCH_QUERY_DISCARDED",
+  "RESEARCH_QUERY_EXECUTED",
+  "RESEARCH_RESULT_SELECTION_CHANGED",
+  "RESEARCH_MANUAL_URL_ADDED",
+  "RESEARCH_SOURCE_CAPTURED",
+  "RESEARCH_SOURCE_CAPTURE_FAILED",
+  "RESEARCH_EXTRACTION_COMPLETED",
+  "RESEARCH_CANDIDATE_REJECTED",
+  "RESEARCH_CANDIDATE_PROMOTED",
+  "RESEARCH_RUN_CANCELLED",
+  "RESEARCH_DOMAIN_POLICY_SET",
+] as const;
+export type ResearchAuditEventType = (typeof RESEARCH_AUDIT_EVENT_TYPES)[number];
