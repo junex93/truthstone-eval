@@ -15,7 +15,10 @@
 import { createClient } from "@supabase/supabase-js";
 
 import { FIXTURE_SOURCES, FixtureResearchProvider } from "../../src/lib/research/fixture-provider";
-import { checkExtractedFields, detectAdversarialContent } from "../../src/lib/research/support-check";
+import {
+  checkExtractedFields,
+  detectAdversarialContent,
+} from "../../src/lib/research/support-check";
 import type { RawExtractedField } from "../../src/lib/research/support-check";
 import { canonicalizeUrl, extractDomain } from "../../src/lib/research/url";
 import { RESEARCH_BUDGET_LIMITS, RESEARCH_FIELD_NAMES } from "../../src/lib/domain/research";
@@ -256,7 +259,11 @@ async function runDatabaseChecks() {
     try {
       const { error } = await run();
       if (error) {
-        record(name, true, `bloqueado: ${String((error as { message?: string }).message).slice(0, 200)}`);
+        record(
+          name,
+          true,
+          `bloqueado: ${String((error as { message?: string }).message).slice(0, 200)}`,
+        );
       } else {
         record(name, false, "REGRESSÃO: operação proibida foi aceita");
       }

@@ -131,7 +131,9 @@ export const getResearchRun = createServerFn({ method: "GET" })
           .order("captured_at", { ascending: false }),
         supabase
           .from("research_usage_events")
-          .select("usage_type, provider, model, input_tokens, output_tokens, server_tool_uses, created_at")
+          .select(
+            "usage_type, provider, model, input_tokens, output_tokens, server_tool_uses, created_at",
+          )
           .eq("research_run_id", data.runId)
           .order("created_at", { ascending: false }),
       ]);
@@ -463,9 +465,12 @@ export const executeResearchQuery = createServerFn({ method: "POST" })
       throw new Error("Consulta fora do escopo da organização atual.");
     }
     if (query.status === "EXECUTED") throw new Error("Esta consulta já foi executada.");
-    if (query.status === "DISCARDED") throw new Error("Consulta descartada não pode ser executada.");
+    if (query.status === "DISCARDED")
+      throw new Error("Consulta descartada não pode ser executada.");
 
-    const scope = requireActiveRun(await requireRunScope(supabase, query.research_run_id, membership));
+    const scope = requireActiveRun(
+      await requireRunScope(supabase, query.research_run_id, membership),
+    );
     assertBudgetAvailable(scope, "SEARCH");
     await enforceRateLimits(supabase, membership, userId, "SEARCH");
 
@@ -666,11 +671,17 @@ export const captureResearchSource = createServerFn({ method: "POST" })
       throw new Error("Esta fonte já foi capturada. Artefatos são imutáveis.");
     }
 
-    const scope = requireActiveRun(await requireRunScope(supabase, result.research_run_id, membership));
+    const scope = requireActiveRun(
+      await requireRunScope(supabase, result.research_run_id, membership),
+    );
     assertBudgetAvailable(scope, "FETCH");
     await enforceRateLimits(supabase, membership, userId, "FETCH");
 
-    const policy = await resolveDomainPolicy(supabase, membership.organizationId, result.canonical_url);
+    const policy = await resolveDomainPolicy(
+      supabase,
+      membership.organizationId,
+      result.canonical_url,
+    );
     if (policy.status === "BLOCKED") {
       await supabase
         .from("research_search_results")
@@ -707,9 +718,8 @@ export const captureResearchSource = createServerFn({ method: "POST" })
 
     if (!fetched.retrieved || !fetched.contentText) {
       const failure = fetched.failureReason ?? "Conteúdo não recuperado.";
-      const status = failure.includes("restrict") || failure.includes("403")
-        ? "ACCESS_RESTRICTED"
-        : "FAILED";
+      const status =
+        failure.includes("restrict") || failure.includes("403") ? "ACCESS_RESTRICTED" : "FAILED";
       await supabase
         .from("research_search_results")
         .update({ capture_status: status, capture_failure_reason: failure })
@@ -801,7 +811,9 @@ export const extractResearchSource = createServerFn({ method: "POST" })
       throw new Error("Só é possível extrair de uma fonte efetivamente capturada.");
     }
 
-    const scope = requireActiveRun(await requireRunScope(supabase, result.research_run_id, membership));
+    const scope = requireActiveRun(
+      await requireRunScope(supabase, result.research_run_id, membership),
+    );
     assertBudgetAvailable(scope, "EXTRACT");
     await enforceRateLimits(supabase, membership, userId, "EXTRACT");
 
@@ -915,7 +927,9 @@ export const rejectResearchCandidate = createServerFn({ method: "POST" })
       throw new Error("Candidato fora do escopo da organização atual.");
     }
     if (candidate.status === "PROMOTED") {
-      throw new Error("Um candidato promovido não pode ser rejeitado. Decida no acervo de mercado.");
+      throw new Error(
+        "Um candidato promovido não pode ser rejeitado. Decida no acervo de mercado.",
+      );
     }
 
     const { error } = await supabase

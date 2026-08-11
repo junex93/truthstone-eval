@@ -46,7 +46,6 @@ const ASKING_PRICE_LANGUAGE: readonly RegExp[] = [
   /asking price/,
 ];
 
-
 export interface RawExtractedField {
   fieldName: string;
   rawValue: string | null;
@@ -59,7 +58,6 @@ export interface RawExtractedField {
    */
   aiNumericValue?: number | null;
 }
-
 
 export interface CheckedField {
   fieldName: string;
@@ -97,11 +95,17 @@ export interface SupportCheckResult {
 const ADVERSARIAL_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
   { pattern: /ignore (as |todas as )?instru(c|ç)(o|õ)es/i, label: "instrução para ignorar regras" },
   { pattern: /ignore (all |previous |prior )?instructions/i, label: "prompt injection (en)" },
-  { pattern: /you are (now )?(an? )?(ai|assistant|system)/i, label: "tentativa de redefinir papel" },
+  {
+    pattern: /you are (now )?(an? )?(ai|assistant|system)/i,
+    label: "tentativa de redefinir papel",
+  },
   { pattern: /system prompt/i, label: "referência a system prompt" },
   { pattern: /disregard (the )?(above|previous)/i, label: "instrução para desconsiderar contexto" },
   { pattern: /responda (apenas|somente) (com|que)/i, label: "instrução de resposta forçada" },
-  { pattern: /considere (este|esse) im(ó|o)vel como/i, label: "instrução de classificação forçada" },
+  {
+    pattern: /considere (este|esse) im(ó|o)vel como/i,
+    label: "instrução de classificação forçada",
+  },
 ];
 
 export function detectAdversarialContent(content: string): ResearchIssue[] {
@@ -154,7 +158,11 @@ function parseByKind(definition: ResearchFieldDefinition, raw: string | null) {
         return { numeric: parsed.value, unit: parsed.unit, reason: parsed.reason ?? null };
       }
       const parsed = parsePtBrNumber(raw);
-      return { numeric: parsed.value, unit: definition.unit ?? null, reason: parsed.reason ?? null };
+      return {
+        numeric: parsed.value,
+        unit: definition.unit ?? null,
+        reason: parsed.reason ?? null,
+      };
     }
     case "DATE": {
       const parsed = parsePtBrDate(raw);
@@ -289,8 +297,6 @@ export function checkExtractedFields(
       });
     }
 
-
-
     fields.push({
       fieldName: raw.fieldName,
       definition,
@@ -345,7 +351,6 @@ export function checkExtractedFields(
       payload: { field_name: field.fieldName, excerpt: field.sourceExcerpt },
     });
   }
-
 
   for (const field of fields) issues.push(...field.issues);
   for (const item of discarded) issues.push(item.issue);
