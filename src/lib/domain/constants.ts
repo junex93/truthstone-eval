@@ -165,7 +165,8 @@ export type AuditEventType =
   | (typeof AUDIT_EVENT_TYPES)[number]
   | "FIELD_REVISED"
   | MarketAuditEventType
-  | ResearchAuditEventType;
+  | ResearchAuditEventType
+  | IntelligenceAuditEventType;
 
 
 /* ==========================================================================
@@ -571,3 +572,26 @@ export const RESEARCH_AUDIT_EVENT_TYPES = [
   "RESEARCH_DOMAIN_POLICY_SET",
 ] as const;
 export type ResearchAuditEventType = (typeof RESEARCH_AUDIT_EVENT_TYPES)[number];
+
+/* ==========================================================================
+ * PHASE 5 — market evidence intelligence & sample readiness vocabulary.
+ * Diagnóstico factual e governança de amostra. Nenhum destes eventos implica
+ * cálculo de valor, ajuste, fator ou inferência estatística.
+ * ========================================================================== */
+
+export const INTELLIGENCE_AUDIT_EVENT_TYPES = [
+  "DIAGNOSTIC_POLICY_CREATED",
+  "MARKET_EVIDENCE_SNAPSHOT_CREATED",
+  "MARKET_IDENTITY_CLUSTER_CONFIRMED",
+  "COMPARABLE_FEATURE_SNAPSHOT_BUILT",
+  "SAMPLE_SELECTION_STARTED",
+  "SAMPLE_SELECTION_ITEM_DECIDED",
+  "SAMPLE_SELECTION_COMPLETED",
+  "MARKET_DATA_ISSUES_REFRESHED",
+  "MARKET_DATA_ISSUE_ACKNOWLEDGED",
+  "MARKET_DATA_ISSUE_RESOLVED",
+  "SAMPLE_READINESS_ASSESSED",
+  "SAMPLE_READINESS_WARNINGS_ACKNOWLEDGED",
+  "SNAPSHOT_INTEGRITY_VERIFIED",
+] as const;
+export type IntelligenceAuditEventType = (typeof INTELLIGENCE_AUDIT_EVENT_TYPES)[number];
