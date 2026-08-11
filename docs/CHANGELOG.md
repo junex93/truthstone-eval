@@ -141,3 +141,35 @@ Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
 - Não há geocoding, regra de raio/elegibilidade geográfica, merge de imóveis
   duplicados, promoção de imóvel de mercado a avaliando, nem score de
   completude/confiança sobre atributos ou fontes.
+
+## [Fase 3C] Closeout — Property & Comparable Intelligence — 2026-08-11
+
+### Banco de dados
+- `record_price_observation` passou a validar a linhagem completa de
+  `_evidence_field_id` (campo → extração → artefato → fonte → organização e
+  caso): campo de outro caso, de outra organização ou inexistente é recusado.
+  `NULL` continua aceito por desenho do modelo.
+- Menor privilégio explícito: `REVOKE INSERT, UPDATE, DELETE` da role
+  `authenticated` em `comparable_decision_history`,
+  `property_canonical_facts`, `property_attribute_observations` (mantido
+  `INSERT`) e `market_observation_price_history` (mantido `INSERT`). Escrita de
+  decisão e de fato canônico só pelas RPCs oficiais.
+
+### Testes
+- `tests/security/negative-tests.ts`: 84 asserções (antes 75). Novas provas de
+  linhagem cross-case/cross-org em `record_price_observation` e de
+  append-only em `comparable_decision_history` com comparação de estado
+  antes/depois — resposta HTTP de sucesso com 0 linhas afetadas não é aceita
+  como prova; o conteúdo é relido e comparado byte a byte.
+- `tests/functional/market-flow.ts` (novo): 33 asserções positivas cobrindo o
+  ciclo completo do caso, incluindo `UNKNOWN != ZERO`,
+  `ASKING != TRANSACTION`, histórico de preço append-only, divergência
+  preservada, adoção de fato canônico e `EXCLUDED != DELETED`.
+- Execução: 84/84 e 33/33 aprovadas, 0 falhas.
+
+### Documentação
+- `docs/ARCHITECTURE.md`: mapa de arquivos atualizado com a camada de aplicação
+  de mercado e comparáveis e as rotas por aba do caso (a nota "não
+  implementado" foi removida por ser falsa).
+- `docs/SECURITY.md`, `docs/THREAT_MODEL.md`, `tests/security/README.md`:
+  contagens reais de asserções e referência ao teste funcional positivo.

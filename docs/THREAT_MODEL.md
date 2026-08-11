@@ -6,7 +6,11 @@ ignorando totalmente a interface. Também consideramos um visitante anônimo e u
 membro de outra organização.
 
 Resultado de execução real: `bun run tests/security/negative-tests.ts` —
-**49 asserções, 49 aprovadas, 0 falhas** (2026-08-10).
+**84 asserções, 84 aprovadas, 0 falhas** (2026-08-11).
+
+Contraprova de que o hardening não bloqueou o uso legítimo:
+`bun run tests/functional/market-flow.ts` — **33 asserções, 33 aprovadas,
+0 falhas** (2026-08-11).
 
 ## T1 — Visitante anônimo lê o acervo
 
