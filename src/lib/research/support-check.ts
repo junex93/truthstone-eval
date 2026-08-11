@@ -25,6 +25,16 @@ import {
   SUPPORT_STATUS_TO_FIELD_STATE,
   TRANSACTION_FIELD_NAMES,
 } from "@/lib/domain/research";
+import type { FieldState } from "@/lib/domain/constants";
+import {
+  digitsOf,
+  foldForCompare,
+  normalizeWhitespace,
+  parseArea,
+  parseBrlMoney,
+  parsePtBrDate,
+  parsePtBrNumber,
+} from "@/lib/research/normalize";
 
 /** Language that unambiguously describes an OFFER, never a closed transaction. */
 const ASKING_PRICE_LANGUAGE: readonly RegExp[] = [
@@ -36,16 +46,6 @@ const ASKING_PRICE_LANGUAGE: readonly RegExp[] = [
   /asking price/,
 ];
 
-import type { FieldState } from "@/lib/domain/constants";
-import {
-  digitsOf,
-  foldForCompare,
-  normalizeWhitespace,
-  parseArea,
-  parseBrlMoney,
-  parsePtBrDate,
-  parsePtBrNumber,
-} from "@/lib/research/normalize";
 
 export interface RawExtractedField {
   fieldName: string;
