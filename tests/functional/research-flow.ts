@@ -187,11 +187,11 @@ function runOfflineChecks() {
 }
 
 function runStaticChecks() {
-  const noisy = canonicalizeUrl("HTTPS://WWW.Exemplo.com.br/imovel/1?utm_source=x&ref=y#foto");
-  const clean = canonicalizeUrl("https://exemplo.com.br/imovel/1");
+  const noisy = canonicalizeUrl("HTTPS://WWW.Exemplo.com.br/imovel/1/?utm_source=x&ref=y#foto");
+  const clean = canonicalizeUrl("https://www.exemplo.com.br/imovel/1");
   expect(
-    "url: canonicalização remove rastreadores e normaliza host",
-    noisy.canonicalUrl === clean.canonicalUrl && noisy.domain === "exemplo.com.br",
+    "url: canonicalização remove rastreadores, hash e normaliza host",
+    noisy.canonicalUrl === clean.canonicalUrl && noisy.domain === "www.exemplo.com.br",
     noisy.canonicalUrl,
   );
   expect(
