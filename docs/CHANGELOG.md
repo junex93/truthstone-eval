@@ -2,6 +2,35 @@
 
 Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
 
+## [Fase 4] Property Intelligence Research Engine — closeout
+
+### Motor de pesquisa
+- `resolveProvider` sem fallback silencioso: o modo determinístico exige
+  `RESEARCH_PROVIDER=FIXTURE`; ausência de `ANTHROPIC_API_KEY` falha com mensagem
+  explícita em vez de trocar a origem do dado sem avisar.
+- Gate determinístico ampliado: o número declarado pela IA passa a ser comparado
+  ao parser determinístico (`NUMERIC_CONFLICT_WITH_PARSER`, estado `DIVERGENT`) e
+  preço transacionado apoiado em linguagem de preço pedido é reprovado
+  (`TRANSACTION_CLAIM_FROM_ASKING_PRICE`).
+- Idempotência: artefato já extraído não é reextraído; fonte já capturada não é
+  recapturada.
+- Fixture determinística ganhou a página de conflito numérico
+  (IA declara 125.000 onde o texto diz R$ 1.250.000).
+
+### Testes
+- Nova suíte `tests/functional/research-flow.ts` (28/28): gate offline
+  (trecho fabricado, número ausente, conflito numérico, campo fora da allowlist,
+  injeção de prompt, oferta ≠ transação, URL inventada) e invariantes de banco
+  das tabelas de pesquisa (anon, cross-org, verificação de campo reprovado,
+  promoção sem campo verificado, venda sem preço transacionado, UPDATE direto de
+  status, delete, escrita de inconsistências e de consumo).
+- Reexecutadas sem regressão: `tests/security/negative-tests.ts` (84/84) e
+  `tests/functional/market-flow.ts` (33/33).
+- Scripts `test:research`, `test:market` e `test:all` adicionados.
+
+### Documentação
+- Novos: `RESEARCH_ENGINE.md`, `AI_GOVERNANCE.md`, `PROMPT_INJECTION_DEFENSE.md`.
+
 ## [Fase 2] Forensic Integrity Hardening — 2026-08-10
 
 ### Banco de dados

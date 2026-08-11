@@ -19,13 +19,13 @@ import {
   TRANSACTION_FIELD_NAMES,
   type ResearchUsageType,
 } from "@/lib/domain/research";
-import { AnthropicResearchProvider, DEFAULT_WEB_FETCH_TOOL, DEFAULT_WEB_SEARCH_TOOL } from "@/lib/research/anthropic-provider.server";
+import {
+  AnthropicResearchProvider,
+  DEFAULT_WEB_FETCH_TOOL,
+  DEFAULT_WEB_SEARCH_TOOL,
+} from "@/lib/research/anthropic-provider.server";
 import { FixtureResearchProvider } from "@/lib/research/fixture-provider";
-import type {
-  ContextFact,
-  ProviderCall,
-  ResearchProvider,
-} from "@/lib/research/provider";
+import type { ContextFact, ProviderCall, ResearchProvider } from "@/lib/research/provider";
 import { checkExtractedFields, type RawExtractedField } from "@/lib/research/support-check";
 import { canonicalizeUrl, extractDomain } from "@/lib/research/url";
 import type { Db, Membership } from "@/lib/workspace.server";
@@ -45,16 +45,23 @@ export interface ResolvedProvider {
 }
 
 /**
- * Reads configuration inside the handler (never at module scope). With no
- * provider key configured the engine runs in deterministic FIXTURE mode instead
- * of failing — the state machine, the gate and the audit trail are identical.
+ * Reads configuration inside the handler (never at module scope).
+ *
+ * There is NO silent fallback: deterministic fixture mode must be requested
+ * explicitly with RESEARCH_PROVIDER=FIXTURE. A missing provider key is a
+ * configuration failure, never an unannounced change of data source.
  */
 export function resolveProvider(): ResolvedProvider {
   const apiKey = process.env["ANTHROPIC_API_KEY"];
   const forced = process.env["RESEARCH_PROVIDER"];
 
-  if (forced === "FIXTURE" || !apiKey) {
+  if (forced === "FIXTURE") {
     return { provider: new FixtureResearchProvider(), mode: "FIXTURE" };
+  }
+  if (!apiKey) {
+    throw new Error(
+      "Provedor de pesquisa não configurado: defina ANTHROPIC_API_KEY para uso real ou RESEARCH_PROVIDER=FIXTURE para o modo determinístico de demonstração.",
+    );
   }
 
   return {
@@ -205,8 +212,10 @@ export async function enforceRateLimits(
       .gte("created_at", since),
   ]);
 
-  if (userCalls.error) throw new Error(`Falha ao verificar limite de uso: ${userCalls.error.message}`);
-  if (orgCalls.error) throw new Error(`Falha ao verificar limite de uso: ${orgCalls.error.message}`);
+  if (userCalls.error)
+    throw new Error(`Falha ao verificar limite de uso: ${userCalls.error.message}`);
+  if (orgCalls.error)
+    throw new Error(`Falha ao verificar limite de uso: ${orgCalls.error.message}`);
 
   if ((userCalls.count ?? 0) >= RESEARCH_BUDGET_LIMITS.aiCallsPerUserPerHour) {
     throw new ResearchBudgetError(
@@ -419,10 +428,7 @@ export async function buildContextFacts(
     )
     .eq("validation_status", "VERIFIED")
     .eq("field_state", "PRESENT")
-    .eq(
-      "evidence_extractions.evidence_artifacts.evidence_sources.valuation_case_id",
-      scope.caseId,
-    )
+    .eq("evidence_extractions.evidence_artifacts.evidence_sources.valuation_case_id", scope.caseId)
     .limit(200);
 
   if (fieldsError) throw new Error(`Falha ao carregar campos verificados: ${fieldsError.message}`);
@@ -486,7 +492,8 @@ export async function persistCapturedSource(input: {
   const { error: uploadError } = await supabaseAdmin.storage
     .from(RESEARCH_BUCKET)
     .upload(storagePath, bytes, { contentType: "text/plain; charset=utf-8", upsert: true });
-  if (uploadError) throw new Error(`Falha ao armazenar o conteúdo capturado: ${uploadError.message}`);
+  if (uploadError)
+    throw new Error(`Falha ao armazenar o conteúdo capturado: ${uploadError.message}`);
 
   // Hash is recomputed from the stored object, never from the client payload.
   const { data: stored, error: downloadError } = await supabaseAdmin.storage
@@ -625,9 +632,7 @@ export async function persistExtraction(input: {
       valuation_case_id: input.scope.caseId,
       research_run_id: input.scope.runId,
       evidence_extraction_id: extraction.id,
-      issue_type: input.injectionSuspected
-        ? "ADVERSARIAL_CONTENT_SUSPECTED"
-        : "AMBIGUOUS_SUPPORT",
+      issue_type: input.injectionSuspected ? "ADVERSARIAL_CONTENT_SUSPECTED" : "AMBIGUOUS_SUPPORT",
       detail: input.injectionSuspected
         ? "A extração sinalizou suspeita de instruções embutidas na fonte."
         : input.providerWarnings.join(" | ").slice(0, 1000),
@@ -695,7 +700,8 @@ export async function persistExtraction(input: {
           evidence_field_id: fieldRow.id,
           semantic_role: field.definition.appliesTo,
         });
-      if (linkError) throw new Error(`Falha ao vincular o campo ao candidato: ${linkError.message}`);
+      if (linkError)
+        throw new Error(`Falha ao vincular o campo ao candidato: ${linkError.message}`);
 
       for (const issue of field.issues) {
         issueRows.push({

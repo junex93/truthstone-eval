@@ -20,7 +20,11 @@ import type {
   ResearchIssueType,
   SupportCheckStatus,
 } from "@/lib/domain/research";
-import { findResearchField, SUPPORT_STATUS_TO_FIELD_STATE } from "@/lib/domain/research";
+import {
+  findResearchField,
+  SUPPORT_STATUS_TO_FIELD_STATE,
+  TRANSACTION_FIELD_NAMES,
+} from "@/lib/domain/research";
 import type { FieldState } from "@/lib/domain/constants";
 import {
   digitsOf,
@@ -32,12 +36,27 @@ import {
   parsePtBrNumber,
 } from "@/lib/research/normalize";
 
+/** Language that unambiguously describes an OFFER, never a closed transaction. */
+const ASKING_PRICE_LANGUAGE: readonly RegExp[] = [
+  /preco (pedido|anunciado|de venda|sob consulta)/,
+  /ultimo preco/,
+  /valor (pedido|anunciado|de venda)/,
+  /a venda por/,
+  /anuncio/,
+  /asking price/,
+];
+
 export interface RawExtractedField {
   fieldName: string;
   rawValue: string | null;
   supportStatus: ExtractionSupportStatus;
   sourceExcerpt: string | null;
   sourceLocator: string | null;
+  /**
+   * Number DECLARED by the model. Never trusted: it exists only so the system
+   * can compare it against its own deterministic parse and record a conflict.
+   */
+  aiNumericValue?: number | null;
 }
 
 export interface CheckedField {
@@ -76,11 +95,17 @@ export interface SupportCheckResult {
 const ADVERSARIAL_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
   { pattern: /ignore (as |todas as )?instru(c|ç)(o|õ)es/i, label: "instrução para ignorar regras" },
   { pattern: /ignore (all |previous |prior )?instructions/i, label: "prompt injection (en)" },
-  { pattern: /you are (now )?(an? )?(ai|assistant|system)/i, label: "tentativa de redefinir papel" },
+  {
+    pattern: /you are (now )?(an? )?(ai|assistant|system)/i,
+    label: "tentativa de redefinir papel",
+  },
   { pattern: /system prompt/i, label: "referência a system prompt" },
   { pattern: /disregard (the )?(above|previous)/i, label: "instrução para desconsiderar contexto" },
   { pattern: /responda (apenas|somente) (com|que)/i, label: "instrução de resposta forçada" },
-  { pattern: /considere (este|esse) im(ó|o)vel como/i, label: "instrução de classificação forçada" },
+  {
+    pattern: /considere (este|esse) im(ó|o)vel como/i,
+    label: "instrução de classificação forçada",
+  },
 ];
 
 export function detectAdversarialContent(content: string): ResearchIssue[] {
@@ -133,7 +158,11 @@ function parseByKind(definition: ResearchFieldDefinition, raw: string | null) {
         return { numeric: parsed.value, unit: parsed.unit, reason: parsed.reason ?? null };
       }
       const parsed = parsePtBrNumber(raw);
-      return { numeric: parsed.value, unit: definition.unit ?? null, reason: parsed.reason ?? null };
+      return {
+        numeric: parsed.value,
+        unit: definition.unit ?? null,
+        reason: parsed.reason ?? null,
+      };
     }
     case "DATE": {
       const parsed = parsePtBrDate(raw);
@@ -248,6 +277,26 @@ export function checkExtractedFields(
       });
     }
 
+    // The model's own number is compared against the deterministic parse. A
+    // divergence is never resolved in favour of the model: the value becomes
+    // DIVERGENT and the conflict is recorded for human decision.
+    const aiNumeric = raw.aiNumericValue ?? null;
+    if (
+      aiNumeric !== null &&
+      numericValue !== null &&
+      Math.abs(aiNumeric - numericValue) > Math.max(0.01, Math.abs(numericValue) * 1e-9)
+    ) {
+      details["parser_numeric"] = numericValue;
+      details["ai_numeric"] = aiNumeric;
+      fieldState = "DIVERGENT";
+      supportCheckStatus = "FAILED";
+      fieldIssues.push({
+        issueType: "NUMERIC_CONFLICT_WITH_PARSER",
+        detail: `A IA declarou ${aiNumeric} para "${raw.fieldName}", mas o parser determinístico leu ${numericValue} a partir do valor bruto. A divergência é preservada.`,
+        payload: { field_name: raw.fieldName, ai_numeric: aiNumeric, parser_numeric: numericValue },
+      });
+    }
+
     fields.push({
       fieldName: raw.fieldName,
       definition,
@@ -284,6 +333,23 @@ export function checkExtractedFields(
         payload: { values: Array.from(distinct) },
       });
     }
+  }
+
+  // A transacted price can never be supported by an ASKING price excerpt, even
+  // when the excerpt really exists in the page. Offer never becomes transaction.
+  for (const field of fields) {
+    if (!TRANSACTION_FIELD_NAMES.includes(field.fieldName)) continue;
+    if (field.fieldState !== "PRESENT") continue;
+    const excerpt = foldForCompare(field.sourceExcerpt ?? "");
+    const matched = ASKING_PRICE_LANGUAGE.find((p) => p.test(excerpt));
+    if (!matched) continue;
+    field.fieldState = "NOT_VERIFIABLE";
+    field.supportCheckStatus = "FAILED";
+    field.issues.push({
+      issueType: "TRANSACTION_CLAIM_FROM_ASKING_PRICE",
+      detail: `O trecho citado para "${field.fieldName}" descreve preço pedido/anunciado, não preço transacionado. A alegação de transação não é aceita.`,
+      payload: { field_name: field.fieldName, excerpt: field.sourceExcerpt },
+    });
   }
 
   for (const field of fields) issues.push(...field.issues);

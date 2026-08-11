@@ -319,11 +319,52 @@ const REMOVED_LISTING: FixtureSource = {
   },
 };
 
+/** 5 — the model's own number disagrees with the deterministic parser. */
+const NUMERIC_CONFLICT_PAGE: FixtureSource = {
+  url: "https://exemplo-imoveis.com.br/apartamento-moema-33",
+  title: "Apartamento em Moema",
+  snippet: "Apartamento com 95 m² em Moema.",
+  content: [
+    "Apartamento à venda em Moema, São Paulo - SP",
+    "Área privativa: 95 m²",
+    "Preço: R$ 1.250.000",
+  ].join("\n"),
+  extraction: {
+    document_assessment: emptyAssessment("REAL_ESTATE_LISTING"),
+    entity_candidates: [
+      {
+        candidate_type: "SALE_LISTING",
+        fields: [
+          field({
+            name: "private_area",
+            status: "EXPLICIT_TEXT",
+            raw: "95 m²",
+            numeric: 95,
+            unit: "m2",
+            excerpt: "Área privativa: 95 m²",
+          }),
+          // The model declares 125.000 while the raw text says R$ 1.250.000.
+          field({
+            name: "asking_price",
+            status: "EXPLICIT_TEXT",
+            raw: "R$ 1.250.000",
+            numeric: 125000,
+            unit: "BRL",
+            excerpt: "Preço: R$ 1.250.000",
+          }),
+        ],
+      },
+    ],
+    warnings: [],
+  },
+};
+
 export const FIXTURE_SOURCES: readonly FixtureSource[] = [
   GOOD_LISTING,
   INJECTION_PAGE,
   FABRICATION_PAGE,
   REMOVED_LISTING,
+  NUMERIC_CONFLICT_PAGE,
 ];
 
 export interface FixtureProviderOptions {
