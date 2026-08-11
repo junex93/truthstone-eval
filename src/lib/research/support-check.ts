@@ -314,6 +314,24 @@ export function checkExtractedFields(
     }
   }
 
+  // A transacted price can never be supported by an ASKING price excerpt, even
+  // when the excerpt really exists in the page. Offer never becomes transaction.
+  for (const field of fields) {
+    if (!TRANSACTION_FIELD_NAMES.includes(field.fieldName)) continue;
+    if (field.fieldState !== "PRESENT") continue;
+    const excerpt = foldForCompare(field.sourceExcerpt ?? "");
+    const matched = ASKING_PRICE_LANGUAGE.find((p) => p.test(excerpt));
+    if (!matched) continue;
+    field.fieldState = "NOT_VERIFIABLE";
+    field.supportCheckStatus = "FAILED";
+    field.issues.push({
+      issueType: "TRANSACTION_CLAIM_FROM_ASKING_PRICE",
+      detail: `O trecho citado para "${field.fieldName}" descreve preço pedido/anunciado, não preço transacionado. A alegação de transação não é aceita.`,
+      payload: { field_name: field.fieldName, excerpt: field.sourceExcerpt },
+    });
+  }
+
+
   for (const field of fields) issues.push(...field.issues);
   for (const item of discarded) issues.push(item.issue);
 
