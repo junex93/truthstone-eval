@@ -151,7 +151,10 @@ async function main() {
     .single();
   expectOk("VALUER registers an evidence source", source.error);
 
-  const artifact = await valuer.client
+  // Artifacts and extractions are written by the controlled server-side flow
+  // (server computes the SHA-256 from the stored bytes), so authenticated users
+  // have no direct INSERT grant. This mirrors that server path.
+  const artifact = await admin
     .from("evidence_artifacts")
     .insert({
       organization_id: orgId,
@@ -164,9 +167,9 @@ async function main() {
     })
     .select("id")
     .single();
-  expectOk("VALUER registers an evidence artifact", artifact.error);
+  expectOk("server-side controlled flow registers an evidence artifact", artifact.error);
 
-  const extraction = await valuer.client
+  const extraction = await admin
     .from("evidence_extractions")
     .insert({
       organization_id: orgId,
@@ -178,7 +181,7 @@ async function main() {
     })
     .select("id")
     .single();
-  expectOk("VALUER registers a manual extraction", extraction.error);
+  expectOk("server-side controlled flow registers a manual extraction", extraction.error);
 
   const field = await valuer.client
     .from("evidence_fields")
