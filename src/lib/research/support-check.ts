@@ -20,7 +20,22 @@ import type {
   ResearchIssueType,
   SupportCheckStatus,
 } from "@/lib/domain/research";
-import { findResearchField, SUPPORT_STATUS_TO_FIELD_STATE } from "@/lib/domain/research";
+import {
+  findResearchField,
+  SUPPORT_STATUS_TO_FIELD_STATE,
+  TRANSACTION_FIELD_NAMES,
+} from "@/lib/domain/research";
+
+/** Language that unambiguously describes an OFFER, never a closed transaction. */
+const ASKING_PRICE_LANGUAGE: readonly RegExp[] = [
+  /preco (pedido|anunciado|de venda|sob consulta)/,
+  /ultimo preco/,
+  /valor (pedido|anunciado|de venda)/,
+  /a venda por/,
+  /anuncio/,
+  /asking price/,
+];
+
 import type { FieldState } from "@/lib/domain/constants";
 import {
   digitsOf,
