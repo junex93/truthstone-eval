@@ -354,6 +354,76 @@ export type Database = {
         }
         Relationships: []
       }
+      comparable_feature_snapshots: {
+        Row: {
+          calculated_at: string
+          comparable_candidate_id: string
+          created_at: string
+          created_by: string | null
+          derivation_version: string
+          features: Json
+          id: string
+          input_references: Json
+          market_observation_id: string
+          market_property_id: string
+          organization_id: string
+          subject_property_id: string
+          valuation_case_id: string
+        }
+        Insert: {
+          calculated_at?: string
+          comparable_candidate_id: string
+          created_at?: string
+          created_by?: string | null
+          derivation_version: string
+          features: Json
+          id?: string
+          input_references: Json
+          market_observation_id: string
+          market_property_id: string
+          organization_id: string
+          subject_property_id: string
+          valuation_case_id: string
+        }
+        Update: {
+          calculated_at?: string
+          comparable_candidate_id?: string
+          created_at?: string
+          created_by?: string | null
+          derivation_version?: string
+          features?: Json
+          id?: string
+          input_references?: Json
+          market_observation_id?: string
+          market_property_id?: string
+          organization_id?: string
+          subject_property_id?: string
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comparable_feature_snapshots_comparable_candidate_id_fkey"
+            columns: ["comparable_candidate_id"]
+            isOneToOne: false
+            referencedRelation: "comparable_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comparable_feature_snapshots_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comparable_feature_snapshots_organization_id_valuation_cas_fkey"
+            columns: ["organization_id", "valuation_case_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_cases"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       dataset_item_snapshots: {
         Row: {
           artifact_id: string
@@ -1293,6 +1363,388 @@ export type Database = {
           },
           {
             foreignKeyName: "sources_case_org_fk"
+            columns: ["organization_id", "valuation_case_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_cases"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      market_data_issue_events: {
+        Row: {
+          actor_user_id: string | null
+          created_at: string
+          id: string
+          issue_id: string
+          new_status: Database["public"]["Enums"]["market_data_issue_status"]
+          notes: string | null
+          organization_id: string
+          previous_status:
+            | Database["public"]["Enums"]["market_data_issue_status"]
+            | null
+          resolution_type:
+            | Database["public"]["Enums"]["issue_resolution_type"]
+            | null
+          rule_version: string | null
+          valuation_case_id: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          issue_id: string
+          new_status: Database["public"]["Enums"]["market_data_issue_status"]
+          notes?: string | null
+          organization_id: string
+          previous_status?:
+            | Database["public"]["Enums"]["market_data_issue_status"]
+            | null
+          resolution_type?:
+            | Database["public"]["Enums"]["issue_resolution_type"]
+            | null
+          rule_version?: string | null
+          valuation_case_id: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          issue_id?: string
+          new_status?: Database["public"]["Enums"]["market_data_issue_status"]
+          notes?: string | null
+          organization_id?: string
+          previous_status?:
+            | Database["public"]["Enums"]["market_data_issue_status"]
+            | null
+          resolution_type?:
+            | Database["public"]["Enums"]["issue_resolution_type"]
+            | null
+          rule_version?: string | null
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_data_issue_events_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "market_data_issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_data_issues: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          detail: string
+          entity_id: string | null
+          entity_type: string
+          facts: Json | null
+          id: string
+          issue_type: Database["public"]["Enums"]["market_data_issue_type"]
+          opened_at: string
+          organization_id: string
+          resolution_notes: string | null
+          resolution_type:
+            | Database["public"]["Enums"]["issue_resolution_type"]
+            | null
+          resolved_at: string | null
+          resolved_by: string | null
+          rule_version: string
+          severity: Database["public"]["Enums"]["market_data_issue_severity"]
+          status: Database["public"]["Enums"]["market_data_issue_status"]
+          valuation_case_id: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          detail: string
+          entity_id?: string | null
+          entity_type: string
+          facts?: Json | null
+          id?: string
+          issue_type: Database["public"]["Enums"]["market_data_issue_type"]
+          opened_at?: string
+          organization_id: string
+          resolution_notes?: string | null
+          resolution_type?:
+            | Database["public"]["Enums"]["issue_resolution_type"]
+            | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          rule_version: string
+          severity: Database["public"]["Enums"]["market_data_issue_severity"]
+          status?: Database["public"]["Enums"]["market_data_issue_status"]
+          valuation_case_id: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          detail?: string
+          entity_id?: string | null
+          entity_type?: string
+          facts?: Json | null
+          id?: string
+          issue_type?: Database["public"]["Enums"]["market_data_issue_type"]
+          opened_at?: string
+          organization_id?: string
+          resolution_notes?: string | null
+          resolution_type?:
+            | Database["public"]["Enums"]["issue_resolution_type"]
+            | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          rule_version?: string
+          severity?: Database["public"]["Enums"]["market_data_issue_severity"]
+          status?: Database["public"]["Enums"]["market_data_issue_status"]
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_data_issues_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_data_issues_organization_id_valuation_case_id_fkey"
+            columns: ["organization_id", "valuation_case_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_cases"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      market_diagnostic_policies: {
+        Row: {
+          configuration: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          organization_id: string | null
+          status: Database["public"]["Enums"]["diagnostic_policy_status"]
+          version: string
+        }
+        Insert: {
+          configuration: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          organization_id?: string | null
+          status?: Database["public"]["Enums"]["diagnostic_policy_status"]
+          version: string
+        }
+        Update: {
+          configuration?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          organization_id?: string | null
+          status?: Database["public"]["Enums"]["diagnostic_policy_status"]
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_diagnostic_policies_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_evidence_snapshots: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          domain_count: number
+          hash_algorithm: string
+          id: string
+          identity_cluster_count: number
+          independent_property_count: number
+          market_property_count: number
+          observation_count: number
+          organization_id: string
+          schema_version: string
+          snapshot_hash: string
+          snapshot_manifest: Json
+          source_count: number
+          valuation_case_id: string
+          version_number: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          domain_count: number
+          hash_algorithm?: string
+          id?: string
+          identity_cluster_count: number
+          independent_property_count: number
+          market_property_count: number
+          observation_count: number
+          organization_id: string
+          schema_version: string
+          snapshot_hash: string
+          snapshot_manifest: Json
+          source_count: number
+          valuation_case_id: string
+          version_number: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          domain_count?: number
+          hash_algorithm?: string
+          id?: string
+          identity_cluster_count?: number
+          independent_property_count?: number
+          market_property_count?: number
+          observation_count?: number
+          organization_id?: string
+          schema_version?: string
+          snapshot_hash?: string
+          snapshot_manifest?: Json
+          source_count?: number
+          valuation_case_id?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_evidence_snapshots_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_evidence_snapshots_organization_id_valuation_case_i_fkey"
+            columns: ["organization_id", "valuation_case_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_cases"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      market_identity_cluster_members: {
+        Row: {
+          added_at: string
+          added_by: string | null
+          cluster_id: string
+          id: string
+          market_property_id: string
+          organization_id: string
+          source_match_candidate_id: string | null
+          valuation_case_id: string
+        }
+        Insert: {
+          added_at?: string
+          added_by?: string | null
+          cluster_id: string
+          id?: string
+          market_property_id: string
+          organization_id: string
+          source_match_candidate_id?: string | null
+          valuation_case_id: string
+        }
+        Update: {
+          added_at?: string
+          added_by?: string | null
+          cluster_id?: string
+          id?: string
+          market_property_id?: string
+          organization_id?: string
+          source_match_candidate_id?: string | null
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_identity_cluster_membe_organization_id_market_prope_fkey"
+            columns: ["organization_id", "market_property_id"]
+            isOneToOne: false
+            referencedRelation: "market_properties"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "market_identity_cluster_members_cluster_id_fkey"
+            columns: ["cluster_id"]
+            isOneToOne: false
+            referencedRelation: "market_identity_clusters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_identity_cluster_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_identity_cluster_members_source_match_candidate_id_fkey"
+            columns: ["source_match_candidate_id"]
+            isOneToOne: false
+            referencedRelation: "property_match_candidates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_identity_clusters: {
+        Row: {
+          confirmation_reason: string
+          confirmed_at: string
+          confirmed_by: string | null
+          created_at: string
+          id: string
+          label: string | null
+          organization_id: string
+          representative_market_property_id: string
+          valuation_case_id: string
+        }
+        Insert: {
+          confirmation_reason: string
+          confirmed_at?: string
+          confirmed_by?: string | null
+          created_at?: string
+          id?: string
+          label?: string | null
+          organization_id: string
+          representative_market_property_id: string
+          valuation_case_id: string
+        }
+        Update: {
+          confirmation_reason?: string
+          confirmed_at?: string
+          confirmed_by?: string | null
+          created_at?: string
+          id?: string
+          label?: string | null
+          organization_id?: string
+          representative_market_property_id?: string
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_identity_clusters_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_identity_clusters_organization_id_representative_ma_fkey"
+            columns: ["organization_id", "representative_market_property_id"]
+            isOneToOne: false
+            referencedRelation: "market_properties"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "market_identity_clusters_organization_id_valuation_case_id_fkey"
             columns: ["organization_id", "valuation_case_id"]
             isOneToOne: false
             referencedRelation: "valuation_cases"
@@ -3177,6 +3629,324 @@ export type Database = {
           },
         ]
       }
+      sample_readiness_assessments: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          acknowledgement_notes: string | null
+          computed_by: string
+          created_at: string
+          created_by: string | null
+          diagnostic_policy_id: string | null
+          diagnostic_policy_version: string
+          feature_derivation_version: string
+          hard_blockers: Json
+          id: string
+          market_evidence_snapshot_id: string | null
+          metrics: Json
+          organization_id: string
+          readiness_state: Database["public"]["Enums"]["sample_readiness_state"]
+          sample_selection_snapshot_id: string | null
+          valuation_case_id: string
+          version_number: number
+          warnings: Json
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          acknowledgement_notes?: string | null
+          computed_by?: string
+          created_at?: string
+          created_by?: string | null
+          diagnostic_policy_id?: string | null
+          diagnostic_policy_version: string
+          feature_derivation_version: string
+          hard_blockers: Json
+          id?: string
+          market_evidence_snapshot_id?: string | null
+          metrics: Json
+          organization_id: string
+          readiness_state: Database["public"]["Enums"]["sample_readiness_state"]
+          sample_selection_snapshot_id?: string | null
+          valuation_case_id: string
+          version_number: number
+          warnings: Json
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          acknowledgement_notes?: string | null
+          computed_by?: string
+          created_at?: string
+          created_by?: string | null
+          diagnostic_policy_id?: string | null
+          diagnostic_policy_version?: string
+          feature_derivation_version?: string
+          hard_blockers?: Json
+          id?: string
+          market_evidence_snapshot_id?: string | null
+          metrics?: Json
+          organization_id?: string
+          readiness_state?: Database["public"]["Enums"]["sample_readiness_state"]
+          sample_selection_snapshot_id?: string | null
+          valuation_case_id?: string
+          version_number?: number
+          warnings?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_readiness_assessments_diagnostic_policy_id_fkey"
+            columns: ["diagnostic_policy_id"]
+            isOneToOne: false
+            referencedRelation: "market_diagnostic_policies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_readiness_assessments_market_evidence_snapshot_id_fkey"
+            columns: ["market_evidence_snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "market_evidence_snapshots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_readiness_assessments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_readiness_assessments_organization_id_valuation_cas_fkey"
+            columns: ["organization_id", "valuation_case_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_cases"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "sample_readiness_assessments_sample_selection_snapshot_id_fkey"
+            columns: ["sample_selection_snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "sample_selection_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sample_selection_items: {
+        Row: {
+          actor_user_id: string | null
+          comparable_candidate_id: string | null
+          created_at: string
+          decided_at: string | null
+          final_state: Database["public"]["Enums"]["sample_selection_state"]
+          id: string
+          initial_state: Database["public"]["Enums"]["sample_selection_state"]
+          market_observation_id: string
+          market_property_id: string
+          organization_id: string
+          reason: string | null
+          reason_code: string | null
+          selection_run_id: string
+          valuation_case_id: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          comparable_candidate_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          final_state?: Database["public"]["Enums"]["sample_selection_state"]
+          id?: string
+          initial_state?: Database["public"]["Enums"]["sample_selection_state"]
+          market_observation_id: string
+          market_property_id: string
+          organization_id: string
+          reason?: string | null
+          reason_code?: string | null
+          selection_run_id: string
+          valuation_case_id: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          comparable_candidate_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          final_state?: Database["public"]["Enums"]["sample_selection_state"]
+          id?: string
+          initial_state?: Database["public"]["Enums"]["sample_selection_state"]
+          market_observation_id?: string
+          market_property_id?: string
+          organization_id?: string
+          reason?: string | null
+          reason_code?: string | null
+          selection_run_id?: string
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_selection_items_comparable_candidate_id_fkey"
+            columns: ["comparable_candidate_id"]
+            isOneToOne: false
+            referencedRelation: "comparable_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_selection_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_selection_items_selection_run_id_fkey"
+            columns: ["selection_run_id"]
+            isOneToOne: false
+            referencedRelation: "sample_selection_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sample_selection_runs: {
+        Row: {
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          market_evidence_snapshot_id: string
+          notes: string | null
+          organization_id: string
+          purpose: string
+          selection_policy_version: string
+          status: Database["public"]["Enums"]["sample_selection_run_status"]
+          valuation_case_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          market_evidence_snapshot_id: string
+          notes?: string | null
+          organization_id: string
+          purpose: string
+          selection_policy_version?: string
+          status?: Database["public"]["Enums"]["sample_selection_run_status"]
+          valuation_case_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          market_evidence_snapshot_id?: string
+          notes?: string | null
+          organization_id?: string
+          purpose?: string
+          selection_policy_version?: string
+          status?: Database["public"]["Enums"]["sample_selection_run_status"]
+          valuation_case_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_selection_runs_market_evidence_snapshot_id_fkey"
+            columns: ["market_evidence_snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "market_evidence_snapshots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_selection_runs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_selection_runs_organization_id_valuation_case_id_fkey"
+            columns: ["organization_id", "valuation_case_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_cases"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      sample_selection_snapshots: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          excluded_count: number
+          feature_derivation_version: string
+          hash_algorithm: string
+          id: string
+          market_evidence_snapshot_id: string
+          organization_id: string
+          schema_version: string
+          selected_count: number
+          selection_run_id: string
+          snapshot_hash: string
+          snapshot_manifest: Json
+          valuation_case_id: string
+          version_number: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          excluded_count: number
+          feature_derivation_version: string
+          hash_algorithm?: string
+          id?: string
+          market_evidence_snapshot_id: string
+          organization_id: string
+          schema_version: string
+          selected_count: number
+          selection_run_id: string
+          snapshot_hash: string
+          snapshot_manifest: Json
+          valuation_case_id: string
+          version_number: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          excluded_count?: number
+          feature_derivation_version?: string
+          hash_algorithm?: string
+          id?: string
+          market_evidence_snapshot_id?: string
+          organization_id?: string
+          schema_version?: string
+          selected_count?: number
+          selection_run_id?: string
+          snapshot_hash?: string
+          snapshot_manifest?: Json
+          valuation_case_id?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_selection_snapshots_market_evidence_snapshot_id_fkey"
+            columns: ["market_evidence_snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "market_evidence_snapshots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_selection_snapshots_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_selection_snapshots_selection_run_id_fkey"
+            columns: ["selection_run_id"]
+            isOneToOne: true
+            referencedRelation: "sample_selection_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       valuation_cases: {
         Row: {
           case_code: string
@@ -3229,6 +3999,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      acknowledge_market_data_issue: {
+        Args: { _issue_id: string; _notes: string }
+        Returns: string
+      }
+      acknowledge_readiness_warnings: {
+        Args: { _assessment_id: string; _notes: string }
+        Returns: string
+      }
       adopt_canonical_fact: {
         Args: {
           _attribute_name: string
@@ -3236,6 +4014,15 @@ export type Database = {
           _observation_id: string
           _reason: string
           _subject_property_id: string
+        }
+        Returns: string
+      }
+      assess_sample_readiness: {
+        Args: {
+          _case_id: string
+          _market_evidence_snapshot_id: string
+          _policy_id: string
+          _sample_selection_snapshot_id: string
         }
         Returns: string
       }
@@ -3252,8 +4039,29 @@ export type Database = {
         }
         Returns: string
       }
+      build_comparable_feature_snapshot: {
+        Args: { _candidate_id: string }
+        Returns: string
+      }
       can_review: { Args: { _org: string }; Returns: boolean }
       can_write: { Args: { _org: string }; Returns: boolean }
+      complete_sample_selection: {
+        Args: { _notes: string; _run_id: string }
+        Returns: string
+      }
+      confirm_market_identity_cluster: {
+        Args: {
+          _case_id: string
+          _market_property_ids: string[]
+          _reason: string
+          _representative_market_property_id: string
+        }
+        Returns: string
+      }
+      create_market_evidence_snapshot: {
+        Args: { _case_id: string; _description: string }
+        Returns: string
+      }
       current_org_role: {
         Args: { _org: string }
         Returns: Database["public"]["Enums"]["org_role"]
@@ -3265,6 +4073,16 @@ export type Database = {
           _inclusion_status: Database["public"]["Enums"]["comparable_inclusion_status"]
           _notes: string
           _reason_code: string
+        }
+        Returns: string
+      }
+      decide_sample_selection_item: {
+        Args: {
+          _final_state: Database["public"]["Enums"]["sample_selection_state"]
+          _market_observation_id: string
+          _reason: string
+          _reason_code: string
+          _run_id: string
         }
         Returns: string
       }
@@ -3293,6 +4111,11 @@ export type Database = {
       in_privileged_op: { Args: never; Returns: boolean }
       is_org_admin: { Args: { _org: string }; Returns: boolean }
       is_org_member: { Args: { _org: string }; Returns: boolean }
+      market_source_domain: {
+        Args: { _portal: string; _publisher: string; _url: string }
+        Returns: string
+      }
+      market_universe_metrics: { Args: { _case_id: string }; Returns: Json }
       promote_research_candidate: {
         Args: {
           _candidate_id: string
@@ -3318,8 +4141,16 @@ export type Database = {
         }
         Returns: string
       }
+      refresh_market_data_issues: {
+        Args: { _case_id: string; _policy_id: string }
+        Returns: Json
+      }
       reject_evidence_field: {
         Args: { _field_id: string; _reason: string }
+        Returns: string
+      }
+      resolve_market_data_issue: {
+        Args: { _issue_id: string; _notes: string }
         Returns: string
       }
       resolve_property_match: {
@@ -3341,6 +4172,15 @@ export type Database = {
           _source_excerpt: string
           _source_locator: Json
           _unit: string
+        }
+        Returns: string
+      }
+      start_sample_selection: {
+        Args: {
+          _case_id: string
+          _market_evidence_snapshot_id: string
+          _notes: string
+          _purpose: string
         }
         Returns: string
       }
@@ -3422,6 +4262,7 @@ export type Database = {
         | "COMMERCIAL_COMPLEX"
         | "INDUSTRIAL_COMPLEX"
         | "OTHER"
+      diagnostic_policy_status: "ACTIVE" | "SUPERSEDED"
       domain_policy_status: "ALLOWED" | "REVIEW_REQUIRED" | "BLOCKED"
       extraction_status:
         | "PENDING"
@@ -3448,12 +4289,33 @@ export type Database = {
         | "UNFURNISHED"
         | "PARTIALLY_FURNISHED"
         | "FURNISHED"
+      issue_resolution_type: "SYSTEM" | "HUMAN"
       knowledge_state:
         | "KNOWN"
         | "UNKNOWN"
         | "NOT_APPLICABLE"
         | "CONFLICTING"
         | "PENDING_VERIFICATION"
+      market_data_issue_severity: "INFO" | "WARNING" | "BLOCKER"
+      market_data_issue_status:
+        | "OPEN"
+        | "ACKNOWLEDGED"
+        | "RESOLVED"
+        | "NOT_APPLICABLE"
+      market_data_issue_type:
+        | "MISSING_CRITICAL_FIELD"
+        | "CONFLICTING_ATTRIBUTE"
+        | "UNRESOLVED_DUPLICATE"
+        | "SOURCE_CONCENTRATION"
+        | "TEMPORAL_CONCENTRATION"
+        | "SPATIAL_CONCENTRATION"
+        | "UNVERIFIED_PRICE"
+        | "UNVERIFIED_TRANSACTION"
+        | "MISSING_GEO"
+        | "MISSING_DATE"
+        | "BROKEN_LINEAGE"
+        | "SUPPORT_CHECK_FAILED"
+        | "OTHER"
       market_observation_status:
         | "ACTIVE"
         | "INACTIVE"
@@ -3561,6 +4423,21 @@ export type Database = {
         | "COMPARABLE_DISCOVERY"
         | "TRANSACTION_DISCOVERY"
         | "MARKET_DISCOVERY"
+      sample_readiness_state:
+        | "NOT_ASSESSED"
+        | "READY_FOR_METHOD_REVIEW"
+        | "READY_WITH_WARNINGS"
+        | "NOT_READY"
+      sample_selection_run_status:
+        | "DRAFT"
+        | "IN_PROGRESS"
+        | "COMPLETED"
+        | "ABANDONED"
+      sample_selection_state:
+        | "AVAILABLE"
+        | "REVIEWING"
+        | "SELECTED"
+        | "EXCLUDED"
       seller_type:
         | "OWNER"
         | "BROKER"
@@ -3779,6 +4656,7 @@ export const Constants = {
         "INDUSTRIAL_COMPLEX",
         "OTHER",
       ],
+      diagnostic_policy_status: ["ACTIVE", "SUPERSEDED"],
       domain_policy_status: ["ALLOWED", "REVIEW_REQUIRED", "BLOCKED"],
       extraction_status: [
         "PENDING",
@@ -3809,12 +4687,35 @@ export const Constants = {
         "PARTIALLY_FURNISHED",
         "FURNISHED",
       ],
+      issue_resolution_type: ["SYSTEM", "HUMAN"],
       knowledge_state: [
         "KNOWN",
         "UNKNOWN",
         "NOT_APPLICABLE",
         "CONFLICTING",
         "PENDING_VERIFICATION",
+      ],
+      market_data_issue_severity: ["INFO", "WARNING", "BLOCKER"],
+      market_data_issue_status: [
+        "OPEN",
+        "ACKNOWLEDGED",
+        "RESOLVED",
+        "NOT_APPLICABLE",
+      ],
+      market_data_issue_type: [
+        "MISSING_CRITICAL_FIELD",
+        "CONFLICTING_ATTRIBUTE",
+        "UNRESOLVED_DUPLICATE",
+        "SOURCE_CONCENTRATION",
+        "TEMPORAL_CONCENTRATION",
+        "SPATIAL_CONCENTRATION",
+        "UNVERIFIED_PRICE",
+        "UNVERIFIED_TRANSACTION",
+        "MISSING_GEO",
+        "MISSING_DATE",
+        "BROKEN_LINEAGE",
+        "SUPPORT_CHECK_FAILED",
+        "OTHER",
       ],
       market_observation_status: [
         "ACTIVE",
@@ -3935,6 +4836,24 @@ export const Constants = {
         "COMPARABLE_DISCOVERY",
         "TRANSACTION_DISCOVERY",
         "MARKET_DISCOVERY",
+      ],
+      sample_readiness_state: [
+        "NOT_ASSESSED",
+        "READY_FOR_METHOD_REVIEW",
+        "READY_WITH_WARNINGS",
+        "NOT_READY",
+      ],
+      sample_selection_run_status: [
+        "DRAFT",
+        "IN_PROGRESS",
+        "COMPLETED",
+        "ABANDONED",
+      ],
+      sample_selection_state: [
+        "AVAILABLE",
+        "REVIEWING",
+        "SELECTED",
+        "EXCLUDED",
       ],
       seller_type: [
         "OWNER",
