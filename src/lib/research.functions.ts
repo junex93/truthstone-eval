@@ -14,6 +14,7 @@ import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { RESEARCH_FIELD_NAMES } from "@/lib/domain/research";
+import type { ExtractionSupportStatus, ResearchCandidateType } from "@/lib/domain/research";
 import { requireCaseInOrg, requireOpenCase } from "@/lib/market.server";
 import {
   addManualUrlSchema,
@@ -846,11 +847,11 @@ export const extractResearchSource = createServerFn({ method: "POST" })
       processorName: `${provider.id}:${provider.extractionModel}`,
       processorVersion: extraction.call.model,
       candidates: extraction.output.entity_candidates.map((candidate) => ({
-        candidateType: candidate.candidate_type,
+        candidateType: candidate.candidate_type as ResearchCandidateType,
         fields: candidate.fields.map((field) => ({
           fieldName: field.field_name,
           rawValue: field.raw_value,
-          supportStatus: field.support_status,
+          supportStatus: field.support_status as ExtractionSupportStatus,
           sourceExcerpt: field.source_excerpt,
           sourceLocator: field.source_locator,
         })),
@@ -935,12 +936,12 @@ export const promoteResearchCandidate = createServerFn({ method: "POST" })
       _field_ids: data.fieldIds,
       _observation_type: data.observationType,
       _observation_status: data.observationStatus,
-      _market_property_id: data.marketPropertyId ?? undefined,
-      _label: data.label ?? undefined,
-      _notes: data.notes ?? undefined,
+      _market_property_id: data.marketPropertyId ?? "",
+      _label: data.label ?? "",
+      _notes: data.notes ?? "",
     });
     if (error) throw new Error(error.message);
-    return outcome as Record<string, unknown>;
+    return { outcome: JSON.stringify(outcome ?? null) };
   });
 
 export const cancelResearchRun = createServerFn({ method: "POST" })
