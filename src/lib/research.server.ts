@@ -343,6 +343,7 @@ export async function recordRunStarted(input: {
 
 const CONTEXT_ATTRIBUTE_ALLOWLIST: readonly string[] = [
   "property_type",
+  "property_type_code",
   "street_name",
   "district",
   "city",
@@ -386,7 +387,7 @@ export async function buildContextFacts(
     const { data: property, error } = await supabase
       .from("properties")
       .select(
-        "id, property_type, street_name, district, city, state, postal_code, private_area, built_area, land_area, bedrooms, suites, bathrooms, parking_spaces, floor_number, construction_year, condition_status",
+        "id, property_type_code, street_name, district, city, state, postal_code, private_area, built_area, land_area, bedrooms, suites, bathrooms, parking_spaces, floor_number, construction_year, condition_status",
       )
       .eq("id", scope.subjectPropertyId)
       .maybeSingle();
