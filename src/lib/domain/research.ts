@@ -186,25 +186,30 @@ export const SUPPORT_CHECK_STATUS_LABELS: Record<SupportCheckStatus, string> = {
 export const RESEARCH_ISSUE_TYPES = [
   "EXCERPT_NOT_FOUND_IN_SOURCE",
   "NUMERIC_VALUE_NOT_IN_EXCERPT",
+  "NUMERIC_CONFLICT_WITH_PARSER",
   "FIELD_NAME_OUTSIDE_ALLOWLIST",
   "CONFLICTING_VALUES_IN_SOURCE",
   "AMBIGUOUS_SUPPORT",
   "ADVERSARIAL_CONTENT_SUSPECTED",
   "UNPARSABLE_VALUE",
   "TRANSACTION_CLAIM_WITHOUT_DOCUMENT",
+  "TRANSACTION_CLAIM_FROM_ASKING_PRICE",
 ] as const;
 export type ResearchIssueType = (typeof RESEARCH_ISSUE_TYPES)[number];
 
 export const RESEARCH_ISSUE_TYPE_LABELS: Record<ResearchIssueType, string> = {
   EXCERPT_NOT_FOUND_IN_SOURCE: "Trecho citado não existe no conteúdo capturado",
   NUMERIC_VALUE_NOT_IN_EXCERPT: "Número extraído não aparece no trecho citado",
+  NUMERIC_CONFLICT_WITH_PARSER: "Número declarado pela IA divergente do parser determinístico",
   FIELD_NAME_OUTSIDE_ALLOWLIST: "Campo fora do vocabulário permitido",
   CONFLICTING_VALUES_IN_SOURCE: "Valores divergentes na mesma fonte",
   AMBIGUOUS_SUPPORT: "Suporte declarado como ambíguo",
   ADVERSARIAL_CONTENT_SUSPECTED: "Suspeita de conteúdo adversarial na fonte",
   UNPARSABLE_VALUE: "Valor não interpretável de forma determinística",
   TRANSACTION_CLAIM_WITHOUT_DOCUMENT: "Alegação de transação sem documento de suporte",
+  TRANSACTION_CLAIM_FROM_ASKING_PRICE: "Alegação de transação apoiada em preço pedido",
 };
+
 
 /** Data kinds drive the deterministic parser used for a field. */
 export type ResearchFieldKind = "TEXT" | "NUMBER" | "MONEY" | "DATE";
