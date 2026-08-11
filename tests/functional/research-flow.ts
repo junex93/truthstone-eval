@@ -455,6 +455,9 @@ async function runDatabaseChecks() {
       _field_ids: [pendingFieldId],
       _observation_type: "SALE_LISTING",
       _observation_status: "ACTIVE",
+      _market_property_id: null,
+      _label: null,
+      _notes: null,
     }),
   );
 
@@ -475,6 +478,9 @@ async function runDatabaseChecks() {
       _field_ids: [pendingFieldId],
       _observation_type: "CLOSED_SALE",
       _observation_status: "INACTIVE",
+      _market_property_id: null,
+      _label: null,
+      _notes: null,
     }),
   );
 
@@ -526,7 +532,6 @@ async function runDatabaseChecks() {
       valuation_case_id: kase.id,
       research_run_id: run.id,
       usage_type: "SEARCH",
-      created_by: owner.id,
     }),
   );
 
