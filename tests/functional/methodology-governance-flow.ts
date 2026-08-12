@@ -1775,6 +1775,52 @@ async function main() {
   });
   expectFail("org B não insere regra em especificação da org A", crossRule.error);
 
+  /* fixture legítima da org B (identificadores exclusivos por execução) */
+  const { data: outsiderMethod } = await outsider.client
+    .from("valuation_methods")
+    .insert({
+      organization_id: orgB,
+      code: `TEST_ONLY_M_B_${stamp}`,
+      name: "Método TEST_ONLY (org B)",
+      family: "TEST_ONLY",
+      lifecycle_status: "DRAFT",
+      created_by: outsider.id,
+    })
+    .select("id")
+    .single();
+  const { data: outsiderSpec } = await outsider.client
+    .from("method_specifications")
+    .insert({
+      organization_id: orgB,
+      valuation_method_id: outsiderMethod!.id,
+      version: `1.0.0-test-b-${stamp}`,
+      title: "Especificação TEST_ONLY da org B",
+      jurisdiction: "TEST_ONLY",
+      status: "DRAFT",
+      created_by: outsider.id,
+    })
+    .select("id")
+    .single();
+  const { data: outsiderRule } = await outsider.client
+    .from("methodology_rules")
+    .insert({
+      organization_id: orgB,
+      method_specification_id: outsiderSpec!.id,
+      rule_code: `TEST_R_B_${stamp}`,
+      title: "Regra TEST_ONLY da org B",
+      rule_type: "VALIDATION",
+      normative_strength: "INTERNAL_CONTROL",
+      created_by: outsider.id,
+    })
+    .select("id")
+    .single();
+  const outsiderRuleId = outsiderRule!.id;
+  record(
+    "fixture org B criada com identificadores exclusivos desta execução",
+    !!outsiderRuleId,
+    `spec=${outsiderSpec!.id} rule=${outsiderRuleId}`,
+  );
+
   const { data: crossOrgRuleForFormula } = await admin
     .from("methodology_rules")
     .select("id, organization_id, method_specification_id")
@@ -2074,23 +2120,111 @@ async function main() {
   /* ================================================== 23. AUDITORIA */
 
   console.log("\n=== 23. TRILHA DE AUDITORIA ===");
-  const { data: auditEvents } = await admin
+  const auditExpectations: Array<{
+    label: string;
+    eventType: string;
+    entityId: string;
+    actorId: string;
+  }> = [
+    {
+      label: "submissão da especificação principal",
+      eventType: "METHOD_SPECIFICATION_SUBMITTED",
+      entityId: main.specId,
+      actorId: valuer.id,
+    },
+    {
+      label: "aprovação da especificação principal",
+      eventType: "METHOD_SPECIFICATION_APPROVED",
+      entityId: main.specId,
+      actorId: reviewer.id,
+    },
+    {
+      label: "rejeição pelo fluxo oficial",
+      eventType: "METHOD_SPECIFICATION_REJECTED",
+      entityId: rejectable.specId,
+      actorId: reviewer.id,
+    },
+    {
+      label: "verificação de fonte metodológica",
+      eventType: "METHODOLOGY_SOURCE_VERIFIED",
+      entityId: mainSourceId,
+      actorId: reviewer.id,
+    },
+    {
+      label: "resolução de conflito entre fontes",
+      eventType: "METHODOLOGY_SOURCE_CONFLICT_RESOLVED",
+      entityId: conflict!.id,
+      actorId: reviewer.id,
+    },
+  ];
+
+  for (const expectation of auditExpectations) {
+    const { data: rows } = await admin
+      .from("audit_log")
+      .select("event_type, actor_user_id, entity_id, organization_id, created_at")
+      .eq("organization_id", orgA)
+      .eq("event_type", expectation.eventType)
+      .eq("entity_id", expectation.entityId);
+    const match = (rows ?? []).find(
+      (row: Record<string, unknown>) => row["actor_user_id"] === expectation.actorId,
+    );
+    record(
+      `auditoria: ${expectation.label} registra evento, autor, organização e alvo corretos`,
+      !!match && typeof match["created_at"] === "string",
+      match
+        ? `${expectation.eventType} entity=${expectation.entityId.slice(0, 8)} actor=ok`
+        : `evento ausente ou autor divergente (${(rows ?? []).length} linhas)`,
+    );
+  }
+
+  /* atomicidade: operação de negócio e evento de auditoria na mesma RPC */
+  const atomic = await buildApprovableSpec({
+    tag: "V-audit",
+    version: `1.9.0-test-${stamp}`,
+    methodId,
+    sourceId: mainSourceId,
+    locatorId: mainLocatorId,
+    relationship: "TECHNICAL_SUPPORT",
+  });
+  const { count: preSubmitAudit } = await admin
     .from("audit_log")
-    .select("action, actor_user_id, entity_id")
-    .eq("organization_id", orgA)
-    .in("event_type", [
-      "METHOD_SPECIFICATION_SUBMITTED",
-      "METHOD_SPECIFICATION_APPROVED",
-      "METHOD_SPECIFICATION_REJECTED",
-      "METHODOLOGY_SOURCE_VERIFIED",
-      "METHODOLOGY_SOURCE_CONFLICT_RESOLVED",
-    ]);
-  const actions = new Set((auditEvents ?? []).map((e: Record<string, unknown>) => e["event_type"]));
+    .select("id", { count: "exact", head: true })
+    .eq("entity_id", atomic.specId);
+  const atomicSubmit = await valuer.client.rpc("submit_method_specification", {
+    _spec_id: atomic.specId,
+    _notes: "Submissão TEST_ONLY (auditoria atômica).",
+  });
+  expectOk("submissão TEST_ONLY para verificação atômica de auditoria", atomicSubmit.error);
+  const atomicApprove = await reviewer.client.rpc("approve_method_specification", {
+    _spec_id: atomic.specId,
+    _notes: "Aprovação TEST_ONLY (auditoria atômica).",
+  });
+  expectOk("aprovação TEST_ONLY para verificação atômica de auditoria", atomicApprove.error);
+  const { data: atomicAudit } = await admin
+    .from("audit_log")
+    .select("event_type, actor_user_id, created_at")
+    .eq("entity_id", atomic.specId)
+    .order("created_at", { ascending: true });
+  const { data: atomicSpec } = await admin
+    .from("method_specifications")
+    .select("status, approved_by, approved_at, manifest_hash")
+    .eq("id", atomic.specId)
+    .single();
   record(
-    "cada operação oficial gravou evento de auditoria com autor",
-    actions.size === 5 &&
-      (auditEvents ?? []).every((e: Record<string, unknown>) => !!e["actor_user_id"]),
-    Array.from(actions).join(", "),
+    "operação e auditoria acontecem juntas: PRE=0 evento, POST=submissão + aprovação",
+    (preSubmitAudit ?? 0) === 0 &&
+      (atomicAudit ?? []).map((e: Record<string, unknown>) => e["event_type"]).join(",") ===
+        "METHOD_SPECIFICATION_SUBMITTED,METHOD_SPECIFICATION_APPROVED",
+    `pre=${preSubmitAudit ?? 0} post=${(atomicAudit ?? []).length}`,
+  );
+  record(
+    "auditoria de aprovação corresponde ao estado final APPROVED com selo SHA-256",
+    atomicSpec?.status === "APPROVED" &&
+      atomicSpec?.approved_by === reviewer.id &&
+      !!atomicSpec?.approved_at &&
+      typeof atomicSpec?.manifest_hash === "string" &&
+      (atomicSpec?.manifest_hash as string).length === 64,
+    `status=${atomicSpec?.status} hash=${String(atomicSpec?.manifest_hash).slice(0, 12)}…`,
   );
 
   const auditTamper = await valuer.client
