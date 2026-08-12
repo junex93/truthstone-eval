@@ -506,14 +506,13 @@ async function main() {
 
   console.log("\n=== F. NENHUMA METODOLOGIA MATEMÁTICA FOI CRIADA ===");
   {
-    const params = await admin
-      .from("methodology_parameters")
-      .select("id", { count: "exact", head: true })
-      .not("numeric_value", "is", null);
+    const params = await admin.from("methodology_parameters").select("id, value_numeric");
+    if (params.error) throw new Error(`methodology_parameters: ${params.error.message}`);
+    const numeric = (params.data ?? []).filter((r: any) => r.value_numeric !== null);
     expectTrue(
       "F1 nenhum parâmetro numérico de produção existe",
-      !params.error && (params.count ?? 0) === 0,
-      `parâmetros numéricos=${params.count ?? 0}`,
+      numeric.length === 0,
+      `parâmetros numéricos=${numeric.length}`,
     );
   }
   {
