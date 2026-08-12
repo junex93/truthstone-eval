@@ -11,6 +11,7 @@ import {
   updateCaseSchema,
 } from "@/lib/validation/schemas";
 import {
+  getMembership,
   requireMembership,
   requireWriteAccess,
   stripGeoPoint,
@@ -21,7 +22,10 @@ export const listCases = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    const membership = await requireMembership(supabase, userId);
+    // No active membership is a legitimate first-access state, not an error:
+    // the UI directs the user to create the organization.
+    const membership = await getMembership(supabase, userId);
+    if (!membership) return { role: null, cases: [], hasOrganization: false as const };
 
     const { data, error } = await supabase
       .from("valuation_cases")
@@ -30,7 +34,7 @@ export const listCases = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
 
-    return { role: membership.role, cases: data ?? [] };
+    return { role: membership.role, cases: data ?? [], hasOrganization: true as const };
   });
 
 export const createCase = createServerFn({ method: "POST" })
