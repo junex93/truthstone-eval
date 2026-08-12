@@ -1777,29 +1777,94 @@ async function main() {
 
   const { data: crossOrgRuleForFormula } = await admin
     .from("methodology_rules")
-    .select("id")
+    .select("id, organization_id, method_specification_id")
     .eq("method_specification_id", main.specId)
     .limit(1)
     .single();
+  const crossFormulaCode = `TEST_CROSS_F_${stamp}`;
+  const { count: preCrossFormula } = await admin
+    .from("methodology_formulas")
+    .select("id", { count: "exact", head: true })
+    .eq("formula_code", crossFormulaCode);
+  record(
+    "PRE-STATE: marcador de fórmula cross-tenant inexistente antes da tentativa",
+    (preCrossFormula ?? 0) === 0,
+    `pre-count=${preCrossFormula ?? 0} code=${crossFormulaCode}`,
+  );
   const crossFormula = await outsider.client.from("methodology_formulas").insert({
     organization_id: orgB,
     rule_id: crossOrgRuleForFormula!.id,
-    formula_code: "TEST_CROSS_F",
+    formula_code: crossFormulaCode,
     name: "fórmula cruzada",
     expression: "TEST_A",
     expression_language: "SYMBOLIC",
     created_by: outsider.id,
   });
-  const { count: crossFormulaCount } = await admin
+  const { data: postCrossFormula } = await admin
     .from("methodology_formulas")
-    .select("id", { count: "exact", head: true })
-    .eq("formula_code", "TEST_CROSS_F");
+    .select("id, organization_id, rule_id")
+    .eq("formula_code", crossFormulaCode);
   record(
-    "org B não insere fórmula em regra da org A",
-    crossFormula.error !== null || (crossFormulaCount ?? 0) === 0,
+    "POST-STATE: nenhuma fórmula cross-tenant persistida (estado do banco inalterado)",
+    (postCrossFormula ?? []).length === 0,
     crossFormula.error
-      ? `recusado: ${crossFormula.error.message.slice(0, 120)}`
-      : "nenhuma linha gravada (RLS cross-tenant)",
+      ? `recusado no banco: ${crossFormula.error.message.slice(0, 140)}`
+      : `REGRESSÃO: ${(postCrossFormula ?? []).length} linha(s) gravada(s)`,
+  );
+  record(
+    "mecanismo de recusa é erro explícito do banco, não filtragem silenciosa",
+    crossFormula.error !== null,
+    crossFormula.error ? crossFormula.error.message.slice(0, 140) : "insert aceito sem erro",
+  );
+
+  const legitOutsiderFormula = await outsider.client.from("methodology_formulas").insert({
+    organization_id: orgB,
+    rule_id: outsiderRuleId,
+    formula_code: `TEST_OWN_F_${stamp}`,
+    name: "fórmula própria da org B",
+    expression: "TEST_A",
+    expression_language: "SYMBOLIC",
+    created_by: outsider.id,
+  });
+  expectOk(
+    "org B registra fórmula na própria especificação (caminho legítimo preservado)",
+    legitOutsiderFormula.error,
+  );
+
+  const { data: ownFormula } = await admin
+    .from("methodology_formulas")
+    .select("id")
+    .eq("formula_code", `TEST_OWN_F_${stamp}`)
+    .single();
+  const reparent = await outsider.client
+    .from("methodology_formulas")
+    .update({ rule_id: crossOrgRuleForFormula!.id })
+    .eq("id", ownFormula!.id);
+  const { data: afterReparent } = await admin
+    .from("methodology_formulas")
+    .select("rule_id")
+    .eq("id", ownFormula!.id)
+    .single();
+  record(
+    "fórmula não pode ser repontada para regra/especificação de outra organização",
+    afterReparent?.rule_id === outsiderRuleId,
+    reparent.error
+      ? `recusado: ${reparent.error.message.slice(0, 120)}`
+      : "nenhuma linha alterada",
+  );
+  const orgMigrate = await outsider.client
+    .from("methodology_formulas")
+    .update({ organization_id: orgA })
+    .eq("id", ownFormula!.id);
+  const { data: afterOrgMigrate } = await admin
+    .from("methodology_formulas")
+    .select("organization_id")
+    .eq("id", ownFormula!.id)
+    .single();
+  record(
+    "organization_id de fórmula não pode ser migrado depois da criação",
+    afterOrgMigrate?.organization_id === orgB,
+    orgMigrate.error ? `recusado: ${orgMigrate.error.message.slice(0, 120)}` : "nenhuma linha alterada",
   );
 
   const crossConflict = await outsider.client.from("methodology_source_conflicts").insert({
