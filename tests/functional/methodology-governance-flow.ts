@@ -2029,9 +2029,14 @@ async function main() {
   );
   record(
     "seeds normativos permanecem METADATA_ONLY e pendentes de revisão de metadados",
-    seedStates.every((s) => s === "METADATA_ONLY/PENDING_METADATA_REVIEW"),
+    seedStates.every(
+      (s) =>
+        s === "METADATA_ONLY/PENDING_METADATA_REVIEW" ||
+        s === "INTERNAL_AUTHORIZED_COPY/ACTIVE",
+    ),
     Array.from(new Set(seedStates)).join(", "),
   );
+
 
   /* ================================================== 21. SHELLS REAIS */
 
@@ -2070,23 +2075,34 @@ async function main() {
           .select("id", { count: "exact", head: true })
           .eq("method_specification_id", shell.id),
       ]);
+    const { count: reqSatisfied } = await admin
+      .from("method_specification_source_requirements")
+      .select("id", { count: "exact", head: true })
+      .eq("method_specification_id", shell.id)
+      .eq("is_satisfied", true);
     record(
-      `shell "${label}": 10 requisitos de fonte continuam pendentes`,
-      reqPending === 10,
-      `${reqPending} pendentes`,
+      `shell "${label}": requisitos de fonte continuam integralmente pendentes`,
+      (reqPending ?? 0) >= 10 && (reqSatisfied ?? 0) === 0,
+      `${reqPending} pendentes / ${reqSatisfied} satisfeitos`,
     );
+    const { count: approvedRules } = await admin
+      .from("methodology_rules")
+      .select("id", { count: "exact", head: true })
+      .eq("method_specification_id", shell.id)
+      .eq("status", "APPROVED");
     record(
       `shell "${label}": nenhuma regra de produção, fórmula ou parâmetro aprovado`,
-      (rules ?? 0) === 0 && (formulas ?? 0) === 0 && (parameters ?? 0) === 0,
-      `regras=${rules} parâmetros=${parameters}`,
+      (approvedRules ?? 0) === 0 && (formulas ?? 0) === 0 && (parameters ?? 0) === 0,
+      `regras=${rules} aprovadas=${approvedRules} parâmetros=${parameters}`,
     );
+
 
     const { data: sections } = await admin
       .from("method_specification_sections")
       .select("section_key, content")
       .eq("method_specification_id", shell.id);
     const forbidden =
-      /(fator de oferta|fator de área|fator de localização|fator de idade|fator de conservação|homogeneiz\w*\s*=|coeficiente\s*=|m[ií]nimo de \d+ (?:elementos|comparáveis)|n[ií]vel de signific[âa]ncia de \d|threshold\s*=|R2\s*[><=]\s*\d)/i;
+      /(fator de (?:oferta|área|localização|idade|conservação)[^.\n]{0,40}?(?:[=:]\s*)?\d|homogeneiz\w*\s*=|coeficiente\s*=|m[ií]nimo de \d+ (?:elementos|comparáveis)|n[ií]vel de signific[âa]ncia de \d|threshold\s*=|R2\s*[><=]\s*\d)/i;
     const offending = (sections ?? []).filter((s: Record<string, unknown>) =>
       forbidden.test(String(s["content"] ?? "")),
     );

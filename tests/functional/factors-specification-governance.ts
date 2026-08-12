@@ -181,7 +181,12 @@ async function main() {
     const links = provenance.get(r["id"] as string) ?? [];
     return (
       r["normative_strength"] === "INTERNAL_CONTROL" &&
-      links.every((l) => l["relationship_type"] === "INTERNAL_DESIGN")
+      links.some((l) => l["relationship_type"] === "INTERNAL_DESIGN") &&
+      links.every((l) =>
+        ["INTERNAL_DESIGN", "BACKGROUND", "INTERPRETATION", "TECHNICAL_SUPPORT"].includes(
+          l["relationship_type"] as string,
+        ),
+      )
     );
   });
   record(
@@ -189,6 +194,7 @@ async function main() {
     internalOnly,
     "nenhuma regra se apresenta como norma de terceiro",
   );
+
 
   /* ------------------------------------------- claims normativas diretas */
   const verifications = await rows(
@@ -234,10 +240,11 @@ async function main() {
   );
   const abntAnySupport = ruleSources.filter((rs) => metadataOnlyAbnt.has(rs["source_id"]));
   record(
-    "nenhuma regra do shell real cita ABNT metadata-only como suporte",
-    abntAnySupport.length === 0,
-    `${abntAnySupport.length} vínculos`,
+    "ABNT metadata-only só aparece como BACKGROUND (identificação de tema), nunca como suporte normativo",
+    abntAnySupport.every((rs) => rs["relationship_type"] === "BACKGROUND"),
+    `${abntAnySupport.length} vínculos, todos de contexto`,
   );
+
 
   /* ------------------------------------- fórmulas, parâmetros e defaults */
   const formulas = await rows("methodology_formulas", "id, formula_code, status, expression", (q) =>
@@ -421,7 +428,228 @@ async function main() {
     method?.["status"] === "SPECIFICATION_IN_PROGRESS",
     `status=${method?.["status"]}`,
   );
+
+  /* ============================ FASE 7B — SOURCE VERIFICATION ============================ */
+
+  /* topic map completo T01..T32, todos com status explícito */
+  const requirements = await rows(
+    "method_specification_source_requirements",
+    "requirement_code, description, is_satisfied, notes",
+    (q) => q.eq("method_specification_id", FACTORS_SPEC_ID),
+  );
+  const topics = requirements.filter((r) => /^T\d{2}_/.test(r["requirement_code"] as string));
+  record(
+    "TOPIC MAP: 32 temas metodológicos registrados (T01..T32)",
+    topics.length === 32,
+    `${topics.length} temas`,
+  );
+  const allowedTopicStatus =
+    /(VERIFIED_PRIMARY|VERIFIED_PROFESSIONAL|VERIFIED_TECHNICAL|CANDIDATE|CONFLICT|PENDING_PRIMARY_SOURCE|PENDING_PRIMARY_SOURCE_ACCESS|NOT_FOUND)/;
+  const badTopics = topics.filter((t) => !allowedTopicStatus.test((t["notes"] as string) ?? ""));
+  record(
+    "TOPIC MAP: todo tema declara status permitido explicitamente",
+    badTopics.length === 0,
+    badTopics.map((t) => t["requirement_code"]).join(", ") || "todos declarados",
+  );
+  const satisfiedTopics = topics.filter((t) => t["is_satisfied"] === true);
+  record(
+    "TOPIC MAP: nenhum tema marcado como satisfeito sem fonte verificada",
+    satisfiedTopics.length === 0,
+    `${satisfiedTopics.length} satisfeitos`,
+  );
+
+  const criticalGates = [
+    "T14_FACTOR_COMBINATION",
+    "T24_FUNDAMENTATION",
+    "T25_PRECISION",
+    "T26_ARBITRATION_FIELD",
+    "T27_EXTRAPOLATION",
+    "T07_SAMPLE_REQUIREMENTS",
+  ];
+  for (const code of criticalGates) {
+    const topic = topics.find((t) => t["requirement_code"] === code);
+    const notes = (topic?.["notes"] as string) ?? "";
+    record(
+      `GATE ${code} permanece PENDING_PRIMARY_SOURCE (nenhum número inferido)`,
+      /PENDING_PRIMARY_SOURCE/.test(notes) && !/\d+(\.\d+)?\s*%/.test(notes),
+      notes.slice(0, 90),
+    );
+  }
+
+  /* inventário de fontes: nenhuma ABNT sai de METADATA_ONLY sem verificação */
+  const sources = await rows(
+    "methodology_sources",
+    "id, short_title, source_type, authority_level, access_status, status, notes",
+    (q) => q.is("organization_id", null),
+  );
+  const abnt = sources.filter((s) => /NBR 14653/.test((s["short_title"] as string) ?? ""));
+  record(
+    "ABNT GATE: entradas NBR 14653-1/-2 registradas",
+    abnt.length >= 2,
+    abnt.map((s) => s["short_title"]).join(", "),
+  );
+  for (const s of abnt) {
+    const verified = verifications.some(
+      (v) => v["source_id"] === s["id"] && v["verification_type"] === "CONTENT_VERIFIED",
+    );
+    record(
+      `ABNT GATE: ${s["short_title"]} declara acesso coerente com verificação`,
+      s["access_status"] !== "METADATA_ONLY" || !verified,
+      `access=${s["access_status"]} content_verified=${verified}`,
+    );
+  }
+  const literature = sources.filter(
+    (s) => s["authority_level"] === "ESTABLISHED_TECHNICAL_LITERATURE",
+  );
+  record(
+    "LITERATURA TÉCNICA: referências catalogadas sem elevação a PRIMARY_NORMATIVE",
+    literature.length >= 3 &&
+      literature.every((s) => s["authority_level"] !== "PRIMARY_NORMATIVE"),
+    `${literature.length} referências técnicas`,
+  );
+  record(
+    "GUIDANCE PROFISSIONAL: orientação nunca registrada como norma primária",
+    sources
+      .filter((s) => s["source_type"] === "PROFESSIONAL_GUIDANCE")
+      .every((s) => s["authority_level"] !== "PRIMARY_NORMATIVE"),
+    "classificação coerente",
+  );
+  const internalSources = sources.filter(
+    (s) => s["authority_level"] === "INTERNAL_SPECIFICATION",
+  );
+  record(
+    "SEPARAÇÃO: apenas fonte interna sustenta controle de plataforma",
+    internalSources.length === 1 && internalSources[0]?.["id"] === INTERNAL_SOURCE_ID,
+    `${internalSources.length} fonte(s) interna(s)`,
+  );
+
+  /* MISCLASSIFICATION TEST — INTERNAL_DESIGN não pode afirmar norma externa */
+  const fullRules = await rows(
+    "methodology_rules",
+    "id, rule_code, description, title, normative_strength",
+    (q) => q.eq("method_specification_id", FACTORS_SPEC_ID),
+  );
+  const externalClaim =
+    /(ABNT|NBR\s*14653|IVS\b|RICS|COFECI|IBAPE)\s*(exige|requer|determina|obriga|proíbe|estabelece|define|manda|requires|mandates)|(conforme|segundo|de acordo com)\s+(a\s+)?(ABNT|NBR|IVS|RICS|COFECI)/i;
+  const misclassified = fullRules.filter((r) => {
+    const text = `${r["title"]} ${r["description"]}`;
+    if (!externalClaim.test(text)) return false;
+    const links = provenance.get(r["id"] as string) ?? [];
+    return !links.some((l) =>
+      ["DIRECT_REQUIREMENT", "DIRECT_PROHIBITION", "INTERPRETATION"].includes(
+        l["relationship_type"] as string,
+      ),
+    );
+  });
+  record(
+    "NO MISCLASSIFICATION: regra interna não afirma exigência externa sem procedência correspondente",
+    misclassified.length === 0,
+    misclassified.map((r) => r["rule_code"]).join(", ") || "nenhuma afirmação externa disfarçada",
+  );
+
+  /* rastreabilidade da reclassificação: temas externos vinculados como BACKGROUND */
+  const background = ruleSources.filter((rs) => rs["relationship_type"] === "BACKGROUND");
+  record(
+    "RECLASSIFICAÇÃO: regras com tema externo correlato vinculadas como BACKGROUND (nunca DIRECT_*)",
+    background.length >= 16,
+    `${background.length} vínculos de contexto`,
+  );
+  const backgroundRuleIds = new Set(background.map((rs) => rs["rule_id"] as string));
+  record(
+    "RECLASSIFICAÇÃO: todo vínculo BACKGROUND preserva também o INTERNAL_DESIGN original",
+    [...backgroundRuleIds].every((id) =>
+      (provenance.get(id) ?? []).some((l) => l["relationship_type"] === "INTERNAL_DESIGN"),
+    ),
+    "histórico preservado",
+  );
+  const directLinks = ruleSources.filter((rs) =>
+    ["DIRECT_REQUIREMENT", "DIRECT_PROHIBITION"].includes(rs["relationship_type"] as string),
+  );
+  record(
+    "ABNT METADATA_ONLY não sustenta DIRECT_REQUIREMENT/DIRECT_PROHIBITION",
+    directLinks.length === 0,
+    `${directLinks.length} claims diretas`,
+  );
+
+  /* seções de fechamento da fase 7B */
+  const refs = byKey.get("SOURCE_REFERENCES") ?? "";
+  for (const bucket of [
+    "PRIMARY NORMATIVE",
+    "PRIMARY REGULATORY",
+    "PROFESSIONAL GUIDANCE",
+    "TECHNICAL LITERATURE",
+    "RESEARCH",
+    "INTERNAL",
+  ]) {
+    record(
+      `SOURCE_REFERENCES separa a categoria ${bucket}`,
+      refs.includes(bucket),
+      "hierarquia declarada",
+    );
+  }
+  const limits = byKey.get("LIMITATIONS") ?? "";
+  for (const bucket of [
+    "SOURCE_ACCESS_GAP",
+    "SOURCE_CONFLICT",
+    "PROFESSIONAL_DECISION_REQUIRED",
+    "TECHNICAL_RESEARCH_REQUIRED",
+    "IMPLEMENTATION_DESIGN_LATER",
+  ]) {
+    record(
+      `OPEN QUESTIONS registra a categoria ${bucket}`,
+      limits.includes(bucket),
+      "questão aberta declarada",
+    );
+  }
+
+  /* nenhum conflito de fonte resolvido automaticamente no escopo global */
+  const globalConflicts = await rows(
+    "methodology_source_conflicts",
+    "subject, resolution_status, professional_resolution",
+    (q) => q.is("organization_id", null),
+  );
+  record(
+    "CONFLICT REGISTER: nenhum conflito global resolvido sem decisão profissional",
+    globalConflicts.every(
+      (c) => c["resolution_status"] !== "RESOLVED" || !!c["professional_resolution"],
+    ),
+    `${globalConflicts.length} conflitos globais`,
+  );
+
+  /* fatores e parâmetros: nada operacional */
+  const globalParams = await rows(
+    "methodology_parameters",
+    "parameter_code, default_value, source_required",
+    (q) => q.eq("method_specification_id", FACTORS_SPEC_ID),
+  );
+  record(
+    "PARAMETER CANDIDATES: nenhum parâmetro do shell real possui valor default",
+    globalParams.every((p) => p["default_value"] === null),
+    `${globalParams.length} parâmetros`,
+  );
+  const globalFormulas = await rows("methodology_formulas", "formula_code, status, rule_id", (q) =>
+    q.in(
+      "rule_id",
+      fullRules.map((r) => r["id"] as string),
+    ),
+  );
+  record(
+    "FORMULA CANDIDATES: nenhuma fórmula aprovada no shell real",
+    globalFormulas.every((f) => f["status"] !== "APPROVED"),
+    `${globalFormulas.length} fórmulas`,
+  );
+
+  /* engine gates textuais adicionais */
+  const engineTerms =
+    /(fatorDeOferta|offerFactor|locationFactor|areaFactor|ageFactor|conservationFactor|combineFactors)/i;
+  const engineOffenders = files.filter((f) => engineTerms.test(readFileSync(f, "utf8")));
+  record(
+    "NO ENGINE: nenhum fator nomeado implementado em produção",
+    engineOffenders.length === 0,
+    engineOffenders.join(", ") || "nenhum",
+  );
 }
+
 
 main()
   .catch((error) => {

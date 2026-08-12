@@ -44,3 +44,10 @@ REPRODUCIBILITY e AUDITABILITY.
 `SPECIFICATION_IN_PROGRESS`. A suíte
 `tests/functional/factors-specification-governance.ts` prova que nenhum
 componente de produção calcula valor homogeneizado, ajustado ou estimado.
+
+## Confirmação — Fase 7B
+
+Este documento permanece **BLUEPRINT ONLY**: nenhuma lógica executável, nenhum
+fator, nenhuma fórmula, nenhum parâmetro numérico e nenhum motor de cálculo
+foram introduzidos. Fatores e inferência seguem como shells em
+`SPECIFICATION_IN_PROGRESS`.
