@@ -55,3 +55,75 @@ Estado de cada tópico:
 Nenhum número (fator, limite, coeficiente, tamanho mínimo de amostra) foi
 introduzido. Todos os tópicos numéricos permanecem `PENDING_PRIMARY_SOURCE`
 por decisão explícita — ver `docs/FACTORS_SOURCE_DOSSIER.md`.
+
+## Fase 7B — Topic map consolidado (T01–T32)
+
+Método de pesquisa: inspeção do Normative Registry próprio; hierarquia de fontes
+(primária normativa > regulatória > padrão profissional > orientação >
+literatura técnica > pesquisa > interna); restrição de acesso: nenhuma cópia
+legítima de norma primária disponível neste ambiente e
+`RESEARCH_PROVIDER = FIXTURE` (conteúdo de fixture nunca popula metodologia
+real).
+
+| Tema | Assunto | Status |
+| ---- | ------- | ------ |
+| T01 | Definição MCDDM | PENDING_PRIMARY_SOURCE |
+| T02 | Posição do tratamento por fatores | PENDING_PRIMARY_SOURCE |
+| T03 | Finalidade | CANDIDATE |
+| T04 | Aplicabilidade | PENDING_PRIMARY_SOURCE |
+| T05 | Não aplicabilidade | PENDING_PRIMARY_SOURCE |
+| T06 | Requisitos de dados de mercado | PENDING_PRIMARY_SOURCE |
+| T07 | Requisitos de amostra | PENDING_PRIMARY_SOURCE |
+| T08 | Semelhança | PENDING_PRIMARY_SOURCE |
+| T09 | Variáveis relevantes | CANDIDATE |
+| T10 | Origem aceitável de fatores | PENDING_PRIMARY_SOURCE |
+| T11 | Derivação de fatores | PENDING_PRIMARY_SOURCE |
+| T12 | Referência/paradigma | PENDING_PRIMARY_SOURCE |
+| T13 | Expressão de aplicação | PENDING_PRIMARY_SOURCE |
+| T14 | Combinação de fatores | PENDING_PRIMARY_SOURCE (gate crítico) |
+| T15 | Limites de aplicação | PENDING_PRIMARY_SOURCE |
+| T16 | Dados de oferta | PENDING_PRIMARY_SOURCE |
+| T17 | Dados de transação | PENDING_PRIMARY_SOURCE |
+| T18 | Oferta vs transação | CANDIDATE (controle interno) |
+| T19 | Homogeneização | PENDING_PRIMARY_SOURCE |
+| T20 | Valores unitários | CANDIDATE (semântica interna) |
+| T21 | Resultados homogeneizados | PENDING_PRIMARY_SOURCE |
+| T22 | Observações extremas | PENDING_PRIMARY_SOURCE |
+| T23 | Exclusões | CANDIDATE |
+| T24 | Fundamentação | PENDING_PRIMARY_SOURCE_ACCESS |
+| T25 | Precisão | PENDING_PRIMARY_SOURCE_ACCESS |
+| T26 | Campo de arbítrio | PENDING_PRIMARY_SOURCE_ACCESS |
+| T27 | Extrapolação | PENDING_PRIMARY_SOURCE_ACCESS |
+| T28 | Apresentação de cálculo | PENDING_PRIMARY_SOURCE |
+| T29 | Documentação de fontes | CANDIDATE |
+| T30 | Justificativa profissional | CANDIDATE |
+| T31 | Requisitos de relatório | CANDIDATE |
+| T32 | Limitações conhecidas | PENDING_PRIMARY_SOURCE |
+
+Nenhum tema foi marcado `VERIFIED_*`: nenhuma fonte externa tem conteúdo
+verificado. Os temas estão persistidos em
+`method_specification_source_requirements` (`T01_…`–`T32_…`), com
+`is_satisfied = false`.
+
+### Matriz de fatores candidatos
+
+| Fator | Source status | Source type | Provenance | Fórmula? | Parâmetro? | Derivação conhecida? | Aplicabilidade? | Limitações? | Fonte primária exigida? | Operational status |
+| ----- | ------------- | ----------- | ---------- | -------- | ---------- | -------------------- | --------------- | ----------- | ----------------------- | ------------------ |
+| Oferta | METADATA_ONLY | — | nenhuma | não | não | não | não | não | sim | NOT_OPERATIONAL / PENDING_SOURCE |
+| Localização | METADATA_ONLY | — | nenhuma | não | não | não | não | não | sim | NOT_OPERATIONAL / PENDING_SOURCE |
+| Área | METADATA_ONLY | — | nenhuma | não (NO VERIFIED FORMULA) | não | não | não | não | sim | NOT_OPERATIONAL / PENDING_SOURCE |
+| Idade/depreciação | METADATA_ONLY | — | nenhuma | não | não | não | não | não | sim | NOT_OPERATIONAL / PENDING_SOURCE |
+| Conservação | METADATA_ONLY | — | nenhuma | não | não | não | não | não | sim | NOT_OPERATIONAL / PENDING_SOURCE |
+| Padrão construtivo | METADATA_ONLY | — | nenhuma | não | não | não | não | não | sim | NOT_OPERATIONAL / PENDING_SOURCE |
+| Combinação de fatores | METADATA_ONLY | — | nenhuma | não | não | não | não | não | sim | NOT_OPERATIONAL / PENDING_SOURCE |
+
+Nenhum fator existe como registro operacional; nenhuma tabela, curva, expoente
+ou coeficiente popular foi cadastrado. Distância geodésica e bairro permanecem
+**features factuais**, nunca ajuste.
+
+### Lacunas (gaps)
+
+1. Acesso legítimo a ABNT NBR 14653-1 e -2 (bloqueio principal).
+2. Cópia legítima de literatura técnica para `TECHNICAL_SUPPORT`.
+3. Provedor de pesquisa real (hoje `FIXTURE`).
+4. Revisor humano designado para `CONTENT_VERIFIED` e `LOCATOR_VERIFIED`.
