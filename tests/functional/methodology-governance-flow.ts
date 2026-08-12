@@ -2214,7 +2214,7 @@ async function main() {
     },
     {
       label: "verificação de fonte metodológica",
-      eventType: "METHODOLOGY_SOURCE_VERIFIED",
+      eventType: "METHODOLOGY_SOURCE_METADATA_VERIFIED",
       entityId: mainSourceId,
       actorId: reviewer.id,
     },

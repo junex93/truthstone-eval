@@ -532,6 +532,7 @@ async function main() {
 
   console.log("\n=== CLEANUP ===");
   await admin.storage.from(BUCKET).remove([pathA]);
+  await admin.from("methodology_sources").delete().is("organization_id", null).ilike("title", "TEST_ONLY%");
   for (const id of createdUserIds) {
     await admin.auth.admin.deleteUser(id);
   }
