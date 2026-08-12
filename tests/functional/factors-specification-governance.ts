@@ -648,7 +648,130 @@ async function main() {
     engineOffenders.length === 0,
     engineOffenders.join(", ") || "nenhum",
   );
+
+  /* ---------------------------------------------------------------------
+   * BATCH 01 — gate de revisão de fonte primária (T01 / T04 / T07)
+   * Prova que, sem artefato autorizado, nenhuma claim externa foi criada.
+   * ------------------------------------------------------------------ */
+  const NBR1 = "11111111-0000-4000-8000-000000000002";
+  const NBR2 = "11111111-0000-4000-8000-000000000003";
+  const abntSources = await rows("methodology_sources", "id, short_title, access_status", (q) =>
+    q.in("id", [NBR1, NBR2]),
+  );
+  record(
+    "BATCH01 SOURCE GATE: NBR 14653-1 e -2 registradas no escopo global",
+    abntSources.length === 2,
+    abntSources.map((s) => `${s["short_title"]}=${s["access_status"]}`).join(", "),
+  );
+
+  const abntArtifacts = await rows("methodology_source_artifacts", "id, source_id, access_basis", (q) =>
+    q.in("source_id", [NBR1, NBR2]),
+  );
+  const abntVerifications = await rows(
+    "methodology_source_verifications",
+    "id, source_id, verification_type, locator_id",
+    (q) => q.in("source_id", [NBR1, NBR2]),
+  );
+  const abntLocators = await rows("methodology_source_locators", "id, source_id, artifact_id", (q) =>
+    q.in("source_id", [NBR1, NBR2]),
+  );
+  const contentVerified = abntVerifications.filter(
+    (v) => v["verification_type"] === "CONTENT_VERIFIED",
+  );
+  const locatorVerified = abntVerifications.filter(
+    (v) => v["verification_type"] === "LOCATOR_VERIFIED",
+  );
+
+  record(
+    "BATCH01 NO AUTO-VERIFY: nenhuma verificação de conteúdo sem artefato vinculado",
+    contentVerified.length === 0 || abntArtifacts.length > 0,
+    `artefatos=${abntArtifacts.length} content_verified=${contentVerified.length}`,
+  );
+  record(
+    "BATCH01 NO AUTO-VERIFY: nenhum localizador verificado sem localizador registrado",
+    locatorVerified.length <= abntLocators.length,
+    `localizadores=${abntLocators.length} locator_verified=${locatorVerified.length}`,
+  );
+  record(
+    "BATCH01 METADATA_ONLY: fonte sem conteúdo verificado não sustenta claim direta",
+    abntSources.every(
+      (s) =>
+        s["access_status"] !== "METADATA_ONLY" ||
+        contentVerified.filter((v) => v["source_id"] === s["id"]).length === 0,
+    ),
+    `content_verified=${contentVerified.length}`,
+  );
+
+  /* nenhuma regra do shell é DIRECT_* sem localizador verificado */
+  const ruleIds = fullRules.map((r) => r["id"] as string);
+  const ruleSources = ruleIds.length
+    ? await rows("methodology_rule_sources", "rule_id, source_id, locator_id, relationship", (q) =>
+        q.in("rule_id", ruleIds),
+      )
+    : [];
+  const verifiedLocatorIds = new Set(
+    locatorVerified.map((v) => v["locator_id"] as string).filter(Boolean),
+  );
+  const directOffenders = fullRules.filter(
+    (r) =>
+      String(r["normative_strength"]).startsWith("DIRECT_") &&
+      !ruleSources.some(
+        (rs) => rs["rule_id"] === r["id"] && verifiedLocatorIds.has(rs["locator_id"] as string),
+      ),
+  );
+  record(
+    "BATCH01 DIRECT CLAIM GATE: nenhuma regra DIRECT_* sem localizador verificado",
+    directOffenders.length === 0,
+    directOffenders.map((r) => r["rule_code"]).join(", ") || "nenhuma",
+  );
+
+  /* tópicos do batch permanecem pendentes enquanto o gate estiver fechado */
+  const batchTopics = await rows(
+    "method_specification_source_requirements",
+    "requirement_code, is_satisfied, notes",
+    (q) =>
+      q
+        .eq("method_specification_id", FACTORS_SPEC_ID)
+        .in("requirement_code", [
+          "T01_DEFINITION_MCDDM",
+          "T04_APPLICABILITY",
+          "T07_SAMPLE_REQUIREMENTS",
+        ]),
+  );
+  record(
+    "BATCH01 TOPIC MAP: T01/T04/T07 presentes no topic map",
+    batchTopics.length === 3,
+    batchTopics.map((t) => t["requirement_code"]).join(", "),
+  );
+  record(
+    "BATCH01 TOPIC MAP: T01/T04/T07 pendentes enquanto não há conteúdo verificado",
+    contentVerified.length > 0 || batchTopics.every((t) => t["is_satisfied"] === false),
+    batchTopics.map((t) => `${t["requirement_code"]}=${t["is_satisfied"]}`).join(", "),
+  );
+
+  /* tópicos fora do batch intocados */
+  const otherTopics = await rows(
+    "method_specification_source_requirements",
+    "requirement_code, is_satisfied",
+    (q) => q.eq("method_specification_id", FACTORS_SPEC_ID),
+  );
+  record(
+    "BATCH01 SCOPE: nenhum tópico fora do batch foi satisfeito nesta rodada",
+    otherTopics.every((t) => t["is_satisfied"] === false),
+    `${otherTopics.filter((t) => t["is_satisfied"]).length} satisfeitos`,
+  );
+
+  /* nenhum mínimo amostral inventado */
+  const sampleMinimumTerms =
+    /(minimum_comparables|minimum_observations|minimum_sources|minimumComparables|minimumObservations|minimumSources)/i;
+  const sampleOffenders = files.filter((f) => sampleMinimumTerms.test(readFileSync(f, "utf8")));
+  record(
+    "BATCH01 NO SAMPLE MINIMUM: nenhum mínimo amostral codificado",
+    sampleOffenders.length === 0,
+    sampleOffenders.join(", ") || "nenhum",
+  );
 }
+
 
 
 main()
