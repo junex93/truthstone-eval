@@ -377,6 +377,9 @@ function DocumentIngestionForm({ sourceId }: { sourceId: string }) {
       setFile(null);
       setJustification("");
       void queryClient.invalidateQueries({ queryKey: ["methodology", "source", sourceId] });
+      void queryClient.invalidateQueries({
+        queryKey: ["methodology", "source", sourceId, "readiness"],
+      });
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Falha"),
   });
@@ -463,6 +466,9 @@ function NewLocatorForm({
       toast.success("Localizador registrado.");
       setForm((f) => ({ ...f, section: "", clause: "", page: "", supportExcerpt: "" }));
       void queryClient.invalidateQueries({ queryKey: ["methodology", "source", sourceId] });
+      void queryClient.invalidateQueries({
+        queryKey: ["methodology", "source", sourceId, "readiness"],
+      });
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Falha"),
   });
@@ -581,6 +587,9 @@ function VerifyForm({
       toast.success("Verificação registrada.");
       setForm((f) => ({ ...f, notes: "" }));
       void queryClient.invalidateQueries({ queryKey: ["methodology", "source", sourceId] });
+      void queryClient.invalidateQueries({
+        queryKey: ["methodology", "source", sourceId, "readiness"],
+      });
       void queryClient.invalidateQueries({ queryKey: ["methodology", "sources"] });
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Falha"),
