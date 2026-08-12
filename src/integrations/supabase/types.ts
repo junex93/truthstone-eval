@@ -5778,6 +5778,7 @@ export type Database = {
       }
       in_privileged_op: { Args: never; Returns: boolean }
       is_org_admin: { Args: { _org: string }; Returns: boolean }
+      is_org_creator: { Args: { _org: string }; Returns: boolean }
       is_org_member: { Args: { _org: string }; Returns: boolean }
       market_intelligence_report: { Args: { _case_id: string }; Returns: Json }
       market_source_domain: {
@@ -5785,6 +5786,7 @@ export type Database = {
         Returns: string
       }
       market_universe_metrics: { Args: { _case_id: string }; Returns: Json }
+      org_has_members: { Args: { _org: string }; Returns: boolean }
       p_unit_unknown: { Args: { _unit: string }; Returns: boolean }
       promote_research_candidate: {
         Args: {
