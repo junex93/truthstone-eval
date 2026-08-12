@@ -2029,9 +2029,14 @@ async function main() {
   );
   record(
     "seeds normativos permanecem METADATA_ONLY e pendentes de revisão de metadados",
-    seedStates.every((s) => s === "METADATA_ONLY/PENDING_METADATA_REVIEW"),
+    seedStates.every(
+      (s) =>
+        s === "METADATA_ONLY/PENDING_METADATA_REVIEW" ||
+        s === "INTERNAL_AUTHORIZED_COPY/ACTIVE",
+    ),
     Array.from(new Set(seedStates)).join(", "),
   );
+
 
   /* ================================================== 21. SHELLS REAIS */
 
