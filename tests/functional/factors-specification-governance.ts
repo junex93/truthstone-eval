@@ -655,46 +655,46 @@ async function main() {
    * ------------------------------------------------------------------ */
   const NBR1 = "11111111-0000-4000-8000-000000000002";
   const NBR2 = "11111111-0000-4000-8000-000000000003";
-  const abntSources = await rows("methodology_sources", "id, short_title, access_status", (q) =>
+  const batch01Sources = await rows("methodology_sources", "id, short_title, access_status", (q) =>
     q.in("id", [NBR1, NBR2]),
   );
   record(
     "BATCH01 SOURCE GATE: NBR 14653-1 e -2 registradas no escopo global",
-    abntSources.length === 2,
-    abntSources.map((s) => `${s["short_title"]}=${s["access_status"]}`).join(", "),
+    batch01Sources.length === 2,
+    batch01Sources.map((s) => `${s["short_title"]}=${s["access_status"]}`).join(", "),
   );
 
-  const abntArtifacts = await rows("methodology_source_artifacts", "id, source_id, access_basis", (q) =>
+  const batch01Artifacts = await rows("methodology_source_artifacts", "id, source_id, access_basis", (q) =>
     q.in("source_id", [NBR1, NBR2]),
   );
-  const abntVerifications = await rows(
+  const batch01Verifications = await rows(
     "methodology_source_verifications",
     "id, source_id, verification_type, locator_id",
     (q) => q.in("source_id", [NBR1, NBR2]),
   );
-  const abntLocators = await rows("methodology_source_locators", "id, source_id, artifact_id", (q) =>
+  const batch01Locators = await rows("methodology_source_locators", "id, source_id, artifact_id", (q) =>
     q.in("source_id", [NBR1, NBR2]),
   );
-  const batch01ContentVerified = abntVerifications.filter(
+  const batch01ContentVerified = batch01Verifications.filter(
     (v) => v["verification_type"] === "CONTENT_VERIFIED",
   );
-  const batch01LocatorVerified = abntVerifications.filter(
+  const batch01LocatorVerified = batch01Verifications.filter(
     (v) => v["verification_type"] === "LOCATOR_VERIFIED",
   );
 
   record(
     "BATCH01 NO AUTO-VERIFY: nenhuma verificação de conteúdo sem artefato vinculado",
-    batch01ContentVerified.length === 0 || abntArtifacts.length > 0,
-    `artefatos=${abntArtifacts.length} content_verified=${batch01ContentVerified.length}`,
+    batch01ContentVerified.length === 0 || batch01Artifacts.length > 0,
+    `artefatos=${batch01Artifacts.length} content_verified=${batch01ContentVerified.length}`,
   );
   record(
     "BATCH01 NO AUTO-VERIFY: nenhum localizador verificado sem localizador registrado",
-    batch01LocatorVerified.length <= abntLocators.length,
-    `localizadores=${abntLocators.length} locator_verified=${batch01LocatorVerified.length}`,
+    batch01LocatorVerified.length <= batch01Locators.length,
+    `localizadores=${batch01Locators.length} locator_verified=${batch01LocatorVerified.length}`,
   );
   record(
     "BATCH01 METADATA_ONLY: fonte sem conteúdo verificado não sustenta claim direta",
-    abntSources.every(
+    batch01Sources.every(
       (s) =>
         s["access_status"] !== "METADATA_ONLY" ||
         batch01ContentVerified.filter((v) => v["source_id"] === s["id"]).length === 0,
