@@ -684,14 +684,14 @@ async function main() {
     });
     expectOk(`candidato ${id.slice(0, 8)} movido para ELIGIBLE`, b.error);
   }
-  const excludeDecision = await reviewer.client.rpc("decide_comparable", {
+  const excludeDecision = await valuer.client.rpc("decide_comparable", {
     _candidate_id: candidate2,
     _candidate_status: null,
     _inclusion_status: "EXCLUDED",
     _reason_code: "AREA_OUT_OF_SCOPE",
     _notes: "área de 130 m² fora do intervalo de pesquisa declarado",
   });
-  expectOk("REVIEWER exclui o candidato R2 com código e justificativa", excludeDecision.error);
+  expectOk("VALUER exclui o candidato R2 com código e justificativa", excludeDecision.error);
 
   console.log("\n=== 12. MARKET EVIDENCE SNAPSHOT ===");
   const snapshot = await valuer.client.rpc("create_market_evidence_snapshot", {
