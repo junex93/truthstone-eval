@@ -185,3 +185,22 @@ real a operação falha com mensagem explícita.
 **Decisão:** o valor numérico é sempre recalculado do texto bruto por parser
 determinístico; divergência com o número declarado pela IA é preservada como
 `DIVERGENT` com inconsistência registrada, nunca resolvida automaticamente.
+
+## ADR — Fase 6 (metodologia e registro normativo)
+
+- **ADR-6.1 — Registro declarativo, não executável.** A camada descreve métodos;
+  não há motor de cálculo. Evita produzir número sem base congelada.
+- **ADR-6.2 — Fórmula simbólica.** Expressão é documental e o banco recusa código
+  executável, eliminando superfície de execução arbitrária.
+- **ADR-6.3 — Metadados ≠ conteúdo ≠ localizador.** Permite citar norma paga sem
+  reproduzi-la e impede verificação textual sem base legítima de acesso.
+- **ADR-6.4 — Aprovação com separação de funções e selo SHA-256.** Submissor nunca
+  aprova; aprovação sela manifesto canônico verificável.
+- **ADR-6.5 — Guardas de escopo em `SECURITY DEFINER` fail-closed.** Guarda
+  `INVOKER` sob RLS não vê o pai de outra org e falhava em aberto; agora pai
+  invisível resulta em recusa.
+- **ADR-6.6 — Taxonomia de auditoria por ato.** Um evento
+  `METHODOLOGY_SOURCE_VERIFIED` cobre as três naturezas de verificação, com o
+  tipo específico no payload e na linha de verificação.
+- **ADR-6.7 — Shells vazias para fatores e inferência.** Métodos existem como
+  conceito sem fórmula ou parâmetro de produção, até pedido explícito.

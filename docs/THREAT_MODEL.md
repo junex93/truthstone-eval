@@ -160,3 +160,22 @@ GRANT), mas, diferentemente de T1–T12, **não** têm hoje uma asserção
 correspondente em `tests/security/negative-tests.ts`. A extensão da suíte de
 testes negativos para cobrir o domínio de mercado e comparáveis é
 recomendada e ainda não foi feita — declarado aqui, não escondido.
+
+## Ameaças da camada metodológica (M01–M14)
+
+| ID | Ameaça | Mitigação imposta no banco |
+| --- | --- | --- |
+| M01 | Auto-aprovação da própria especificação | `approve_method_specification` compara aprovador e submissor |
+| M02 | Aprovação por papel sem autoridade | `can_review` verificado dentro da RPC |
+| M03 | Edição de especificação aprovada | `guard_method_specification_update` (imutabilidade) |
+| M04 | Alteração direta de status/hash pelo cliente | GRANT sem UPDATE nas colunas de decisão; só RPC |
+| M05 | Injeção de código executável em fórmula | `guard_methodology_formula` recusa expressão executável |
+| M06 | Regra normativa sem fundamento | completude bloqueia submissão sem localizador verificado |
+| M07 | Citação literal de norma paga | `METADATA_ONLY` recusa `CONTENT_VERIFIED` |
+| M08 | Gravação cross-tenant de conteúdo metodológico | guardas `SECURITY DEFINER` fail-closed |
+| M09 | Vínculo a artefato de outra organização | `guard_methodology_source_artifact` / `_locator_artifact` |
+| M10 | Migração de organização ou troca de pai | `guard_methodology_parent_immutable`, `prevent_org_migration` |
+| M11 | Resolução automática de conflito entre fontes | resolução só por RPC com fundamento humano |
+| M12 | Falsificação da trilha de auditoria | sem GRANT de escrita em `audit_log`; autor vem do token |
+| M13 | Operação sem evento de auditoria correspondente | evento gravado na mesma transação da RPC |
+| M14 | IA criando ou aprovando norma/metodologia | nenhuma escrita de IA nas tabelas de metodologia |

@@ -126,3 +126,31 @@ operando após o hardening.
 bun run tests/security/negative-tests.ts
 bun run tests/functional/market-flow.ts
 ```
+
+## RBAC e guardas da camada metodológica (Fase 6)
+
+Operações oficiais (únicas portas, todas `SECURITY DEFINER`, `search_path = public`,
+autorização interna explícita, auditoria na mesma transação):
+`submit_method_specification`, `approve_method_specification`,
+`reject_method_specification`, `verify_methodology_source`,
+`resolve_methodology_source_conflict`, `specification_completeness`,
+`verify_specification_integrity`, `build_specification_manifest`.
+
+Separação de funções: quem submete não aprova. Aprovação exige `can_review`.
+
+Triggers `SECURITY DEFINER` fail-closed, sem EXECUTE para `PUBLIC`, `anon` ou
+`authenticated`: `guard_specification_child`, `guard_rule_source`,
+`guard_source_verification`, `guard_methodology_source_artifact`,
+`guard_methodology_locator_artifact`, `guard_source_conflict_insert`,
+`guard_methodology_parent_immutable`, `guard_method_specification_update`,
+`guard_methodology_formula`, `guard_support_check_before_verification`.
+
+Motivo do `SECURITY DEFINER` nas guardas: sob RLS, uma guarda `INVOKER` não
+enxerga o registro-pai de outra organização e retornava sem validar — o que
+permitia gravação cross-tenant. Agora, pai ausente ou de outra organização
+resulta em recusa explícita.
+
+Regressão após o hardening: segurança 84/84, mercado 33/33, pesquisa 28/28,
+inteligência de mercado 81/81, governança metodológica 161/161. Linter do banco
+sem ERROR; apenas avisos da classe `0029` (RPCs oficiais expostas por desenho a
+usuários autenticados, com autorização interna).

@@ -223,3 +223,38 @@ Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
 - Limitação declarada: nenhum cálculo de valor, ajuste, fator ou inferência
   estatística. Cerca de 1,5·IQR sinaliza "possível observação extrema" para
   leitura humana; nada é removido do acervo.
+
+## Fase 6 — encerramento (governança metodológica)
+
+### Segurança
+- Guardas metodológicas convertidas para `SECURITY DEFINER` com comportamento
+  fail-closed: `guard_specification_child`, `guard_rule_source`,
+  `guard_source_verification`, `guard_methodology_source_artifact`,
+  `guard_methodology_locator_artifact`, `guard_source_conflict_insert`.
+- Nova guarda `guard_methodology_parent_immutable`: organização e registro-pai de
+  regras e fórmulas não mudam após criação.
+- Revogado EXECUTE de `PUBLIC`, `anon` e `authenticated` nas funções de trigger.
+- Corrigida vulnerabilidade de gravação cross-tenant de fórmula (RLS tornava o
+  registro-pai invisível e a guarda `INVOKER` retornava sem validar).
+- Corrigido erro de casting em `specification_completeness` (rótulos de requisito).
+
+### Testes
+- `tests/functional/methodology-governance-flow.ts`: 161/161 PASS — fluxo
+  legítimo, RBAC, imutabilidade, estabilidade do selo SHA-256, isolamento
+  cross-tenant fail-closed, `METADATA_ONLY`, atomicidade e taxonomia de auditoria.
+- Regressão completa: segurança 84/84, mercado 33/33, pesquisa 28/28,
+  inteligência de mercado 81/81.
+- Linter do banco: nenhum ERROR; avisos remanescentes apenas da classe `0029`.
+
+### Documentação
+- Novos: `METHODOLOGY_GOVERNANCE.md`, `NORMATIVE_REGISTRY.md`,
+  `METHOD_SPECIFICATION_STANDARD.md`, `METHODOLOGY_SOURCE_GOVERNANCE.md`,
+  `FORMULA_AND_PARAMETER_GOVERNANCE.md`, `METHODOLOGY_CHANGE_CONTROL.md`,
+  `METHODOLOGY_TESTING_STANDARD.md`.
+- Atualizados: `ARCHITECTURE.md`, `DATA_GOVERNANCE.md`, `SECURITY.md`,
+  `THREAT_MODEL.md`, `DECISIONS.md`.
+
+### Limitações declaradas
+- Nenhuma lógica de valoração em produção: fatores e inferência seguem shells
+  `DRAFT` vazias, sem fórmula operacional nem parâmetro numérico.
+- Normas pagas permanecem `METADATA_ONLY`; aderência textual não é verificável.
