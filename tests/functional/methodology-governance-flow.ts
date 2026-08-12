@@ -2102,7 +2102,7 @@ async function main() {
       .select("section_key, content")
       .eq("method_specification_id", shell.id);
     const forbidden =
-      /(fator de oferta|fator de área|fator de localização|fator de idade|fator de conservação|homogeneiz\w*\s*=|coeficiente\s*=|m[ií]nimo de \d+ (?:elementos|comparáveis)|n[ií]vel de signific[âa]ncia de \d|threshold\s*=|R2\s*[><=]\s*\d)/i;
+      /(fator de (?:oferta|área|localização|idade|conservação)[^.\n]{0,40}?(?:[=:]\s*)?\d|homogeneiz\w*\s*=|coeficiente\s*=|m[ií]nimo de \d+ (?:elementos|comparáveis)|n[ií]vel de signific[âa]ncia de \d|threshold\s*=|R2\s*[><=]\s*\d)/i;
     const offending = (sections ?? []).filter((s: Record<string, unknown>) =>
       forbidden.test(String(s["content"] ?? "")),
     );
