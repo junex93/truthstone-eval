@@ -45,6 +45,20 @@ function CasesPage() {
     );
   }
 
+  if (!query.data.hasOrganization) {
+    return (
+      <EmptyState
+        title="Nenhuma organização ativa"
+        description="Seu usuário ainda não possui vínculo ativo com uma organização. Crie a organização no painel para começar, ou solicite um convite a um administrador."
+        action={
+          <Button asChild>
+            <Link to="/dashboard">Ir para o painel</Link>
+          </Button>
+        }
+      />
+    );
+  }
+
   const { cases, role } = query.data;
   const writable = canWrite(role);
 
