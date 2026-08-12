@@ -134,3 +134,68 @@ export function asStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.filter((v): v is string => typeof v === "string");
 }
+
+/** Bucket privado exclusivo de documentos normativos autorizados (Fase 7C). */
+export const METHODOLOGY_SOURCE_BUCKET = "methodology-sources";
+
+/**
+ * Documento normativo não pertence a nenhum caso: ele pertence à biblioteca da
+ * organização. Esta função resolve (ou cria) a fonte de evidência interna que
+ * abriga os artefatos metodológicos, sem `valuation_case_id`.
+ */
+export async function ensureMethodologyLibrarySource(
+  supabase: Db,
+  membership: Membership,
+  userId: string,
+): Promise<string> {
+  const name = "Biblioteca metodológica — documentos autorizados";
+  const existing = await supabase
+    .from("evidence_sources")
+    .select("id")
+    .eq("organization_id", membership.organizationId)
+    .is("valuation_case_id", null)
+    .eq("source_name", name)
+    .maybeSingle();
+  if (existing.error) throw new Error(existing.error.message);
+  if (existing.data) return existing.data.id;
+
+  const created = await supabase
+    .from("evidence_sources")
+    .insert({
+      organization_id: membership.organizationId,
+      valuation_case_id: null,
+      source_type: "PRIVATE_DOCUMENT",
+      source_name: name,
+      notes:
+        "Cópias autorizadas de normas e literatura técnica. Escopo organizacional; nunca compartilhada com outra organização.",
+      created_by: userId,
+    })
+    .select("id")
+    .single();
+  if (created.error) throw new Error(created.error.message);
+  return created.data.id;
+}
+
+/**
+ * Caminho canônico do documento normativo:
+ * `<organization_id>/<methodology_source_id>/<arquivo>`.
+ * Os dois primeiros segmentos são conferidos contra o banco, não contra o texto.
+ */
+export function assertMethodologyStoragePath(
+  storagePath: string,
+  organizationId: string,
+  sourceId: string,
+): void {
+  const segments = storagePath.split("/");
+  if (segments.length < 3 || segments.some((s) => s.trim() === "")) {
+    throw new Error(
+      "Caminho inválido: use <organization_id>/<source_id>/<arquivo> no bucket de fontes metodológicas.",
+    );
+  }
+  if (segments[0] !== organizationId) {
+    throw new Error("Caminho de armazenamento fora do escopo da organização.");
+  }
+  if (segments[1] !== sourceId) {
+    throw new Error("Caminho de armazenamento não corresponde à fonte metodológica informada.");
+  }
+}
