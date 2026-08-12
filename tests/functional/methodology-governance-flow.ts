@@ -413,7 +413,10 @@ async function main() {
     _locator_id: null,
     _notes: "Conteúdo conferido na cópia autorizada (TEST_ONLY).",
   });
-  expectOk("REVIEWER verifica conteúdo (CONTENT_VERIFIED) com artefato autorizado", contentVerify.error);
+  expectOk(
+    "REVIEWER verifica conteúdo (CONTENT_VERIFIED) com artefato autorizado",
+    contentVerify.error,
+  );
 
   const { data: locator, error: locatorError } = await valuer.client
     .from("methodology_source_locators")
@@ -489,7 +492,10 @@ async function main() {
     verified_by: reviewer.id,
     verified_at: new Date().toISOString(),
   });
-  expectFail("METADATA_ONLY recusa CONTENT_VERIFIED também por escrita direta", metaOnlyDirect.error);
+  expectFail(
+    "METADATA_ONLY recusa CONTENT_VERIFIED também por escrita direta",
+    metaOnlyDirect.error,
+  );
 
   /* snippet / metadado externo: sem cópia autorizada e sem URL registrada */
   const snippetSource = await mkSource(valuer.client, valuer.id, {
@@ -536,7 +542,11 @@ async function main() {
     locatorId: mainLocatorId,
     relationship: "TECHNICAL_SUPPORT",
   });
-  record("especificação V1 TEST_ONLY montada com seções, regra, fórmula, testes e saída", true, main.specId);
+  record(
+    "especificação V1 TEST_ONLY montada com seções, regra, fórmula, testes e saída",
+    true,
+    main.specId,
+  );
 
   const before = await completeness(valuer.client, main.specId);
   record(
@@ -584,7 +594,10 @@ async function main() {
     _notes: null,
   });
   // OWNER pode revisar; a checagem específica de VALUER vem abaixo com outra spec.
-  expectOk("OWNER (autoridade de revisão, distinto do submissor) pode aprovar", valuerApprove.error);
+  expectOk(
+    "OWNER (autoridade de revisão, distinto do submissor) pode aprovar",
+    valuerApprove.error,
+  );
 
   const { data: approved } = await admin
     .from("method_specifications")
@@ -595,7 +608,9 @@ async function main() {
     .single();
   record(
     "approved_by / approved_at gravados pelo fluxo de aprovação",
-    approved?.status === "APPROVED" && approved?.approved_by === owner.id && !!approved?.approved_at,
+    approved?.status === "APPROVED" &&
+      approved?.approved_by === owner.id &&
+      !!approved?.approved_at,
     `status=${approved?.status}`,
   );
   record(
@@ -636,7 +651,10 @@ async function main() {
     _spec_id: second.specId,
     _notes: null,
   });
-  expectFail("mesmo OWNER que submeteu não pode aprovar (two-person review)", ownerSelfApprove.error);
+  expectFail(
+    "mesmo OWNER que submeteu não pode aprovar (two-person review)",
+    ownerSelfApprove.error,
+  );
 
   const valuerApproveAttempt = await valuer.client.rpc("approve_method_specification", {
     _spec_id: second.specId,
@@ -843,7 +861,10 @@ async function main() {
     expected_result: "METHOD_APPLICABLE",
     created_by: valuer.id,
   });
-  expectFail("novo critério de aplicabilidade não entra em especificação aprovada", newApplicability.error);
+  expectFail(
+    "novo critério de aplicabilidade não entra em especificação aprovada",
+    newApplicability.error,
+  );
 
   const newTestCase = await valuer.client.from("method_test_cases").insert({
     organization_id: orgA,
@@ -1023,7 +1044,10 @@ async function main() {
     relationship_type: "DIRECT_REQUIREMENT",
     created_by: valuer.id,
   });
-  expectOk("vínculo direto com conteúdo verificado e localizador é aceito", claimUnverifiedLocator.error);
+  expectOk(
+    "vínculo direto com conteúdo verificado e localizador é aceito",
+    claimUnverifiedLocator.error,
+  );
 
   const withUnverified = await completeness(valuer.client, normSpecId);
   record(
@@ -1044,7 +1068,9 @@ async function main() {
   record(
     "claim normativa completa (conteúdo + localizador verificados) deixa de ser bloqueador",
     !afterLocatorVerified.blockers.some((b) => b.startsWith("DIRECT_CLAIM_")) &&
-      !afterLocatorVerified.blockers.some((b) => b.startsWith("NORMATIVE_RULE_WITHOUT_DIRECT_SOURCE")),
+      !afterLocatorVerified.blockers.some((b) =>
+        b.startsWith("NORMATIVE_RULE_WITHOUT_DIRECT_SOURCE"),
+      ),
     JSON.stringify(afterLocatorVerified.blockers),
   );
   record(
@@ -1106,7 +1132,10 @@ async function main() {
     relationship_type: "INTERNAL_DESIGN",
     created_by: valuer.id,
   });
-  expectFail("fonte externa não pode ser classificada como INTERNAL_DESIGN", externalAsInternalDesign.error);
+  expectFail(
+    "fonte externa não pode ser classificada como INTERNAL_DESIGN",
+    externalAsInternalDesign.error,
+  );
 
   const { data: internalManifestCheck } = await admin
     .from("methodology_sources")
@@ -1214,7 +1243,10 @@ async function main() {
     unit_code: "TEST_UNKNOWN_UNIT",
     required: true,
   });
-  expectFail("unidade não registrada é recusada pelo registro oficial de unidades", badUnitVar.error);
+  expectFail(
+    "unidade não registrada é recusada pelo registro oficial de unidades",
+    badUnitVar.error,
+  );
 
   const unknownUnit = await completeness(valuer.client, normSpecId);
   record(
@@ -1358,7 +1390,10 @@ async function main() {
     .from("methodology_source_conflicts")
     .update({ resolution_status: "RESOLVED", resolved_by: valuer.id })
     .eq("id", conflict!.id);
-  expectFail("resolução de conflito não pode ser gravada diretamente pelo cliente", directResolve.error);
+  expectFail(
+    "resolução de conflito não pode ser gravada diretamente pelo cliente",
+    directResolve.error,
+  );
 
   const resolve = await reviewer.client.rpc("resolve_methodology_source_conflict", {
     _conflict_id: conflict!.id,
@@ -1370,7 +1405,9 @@ async function main() {
 
   const { data: resolved } = await admin
     .from("methodology_source_conflicts")
-    .select("subject, is_critical, resolution_status, professional_resolution, resolved_by, resolved_at")
+    .select(
+      "subject, is_critical, resolution_status, professional_resolution, resolved_by, resolved_at",
+    )
     .eq("id", conflict!.id)
     .single();
   record(
@@ -1523,9 +1560,10 @@ async function main() {
     .select("specification_manifest")
     .eq("id", main.specId)
     .single();
-  const tampered = JSON.parse(
-    JSON.stringify(approvedManifest!.specification_manifest),
-  ) as Record<string, unknown>;
+  const tampered = JSON.parse(JSON.stringify(approvedManifest!.specification_manifest)) as Record<
+    string,
+    unknown
+  >;
   (tampered["metadata"] as Record<string, unknown>)["title"] = "conteúdo materialmente alterado";
   const { data: tamperHash } = await valuer.client.rpc("verify_specification_integrity", {
     _spec_id: main.specId,
@@ -1559,7 +1597,9 @@ async function main() {
 
   const { data: v1After } = await admin
     .from("method_specifications")
-    .select("status, version, title, specification_hash, specification_manifest, approved_by, approved_at")
+    .select(
+      "status, version, title, specification_hash, specification_manifest, approved_by, approved_at",
+    )
     .eq("id", main.specId)
     .single();
   record(
@@ -1612,7 +1652,10 @@ async function main() {
     runtime: "TEST_ONLY",
     created_by: valuer.id,
   });
-  expectFail("implementação vinculada a especificação não aprovada não pode ser VALIDATED", implOnDraft.error);
+  expectFail(
+    "implementação vinculada a especificação não aprovada não pode ser VALIDATED",
+    implOnDraft.error,
+  );
 
   const implDraft = await valuer.client.from("method_implementations").insert({
     organization_id: orgA,
@@ -1706,11 +1749,13 @@ async function main() {
   );
   expectFail(
     "VIEWER não cria fonte metodológica",
-    (await mkSource(viewer.client, viewer.id, {
-      tag: "viewer",
-      accessStatus: "METADATA_ONLY",
-      authorityLevel: "SECONDARY_GUIDANCE",
-    })).error,
+    (
+      await mkSource(viewer.client, viewer.id, {
+        tag: "viewer",
+        accessStatus: "METADATA_ONLY",
+        authorityLevel: "SECONDARY_GUIDANCE",
+      })
+    ).error,
   );
   expectFail(
     "VIEWER não verifica fonte",
@@ -1894,9 +1939,7 @@ async function main() {
   record(
     "fórmula não pode ser repontada para regra/especificação de outra organização",
     afterReparent?.rule_id === outsiderRuleId,
-    reparent.error
-      ? `recusado: ${reparent.error.message.slice(0, 120)}`
-      : "nenhuma linha alterada",
+    reparent.error ? `recusado: ${reparent.error.message.slice(0, 120)}` : "nenhuma linha alterada",
   );
   const orgMigrate = await outsider.client
     .from("methodology_formulas")
@@ -1910,7 +1953,9 @@ async function main() {
   record(
     "organization_id de fórmula não pode ser migrado depois da criação",
     afterOrgMigrate?.organization_id === orgB,
-    orgMigrate.error ? `recusado: ${orgMigrate.error.message.slice(0, 120)}` : "nenhuma linha alterada",
+    orgMigrate.error
+      ? `recusado: ${orgMigrate.error.message.slice(0, 120)}`
+      : "nenhuma linha alterada",
   );
 
   const crossConflict = await outsider.client.from("methodology_source_conflicts").insert({
@@ -1974,7 +2019,9 @@ async function main() {
   record(
     "visibilidade global não confere direito de escrita global",
     globalAfter?.title === globalSeed.title,
-    globalWrite.error ? `recusado: ${globalWrite.error.message.slice(0, 80)}` : "nenhuma linha alterada",
+    globalWrite.error
+      ? `recusado: ${globalWrite.error.message.slice(0, 80)}`
+      : "nenhuma linha alterada",
   );
 
   const seedStates = (globalSources ?? []).map(
@@ -1994,7 +2041,9 @@ async function main() {
     .select("id, title, version, status, valuation_method_id, specification_hash")
     .is("organization_id", null);
   for (const shell of shellSpecs ?? []) {
-    const label = (shell.title as string).includes("Fatores") ? "Tratamento por Fatores" : "Inferência Estatística";
+    const label = (shell.title as string).includes("Fatores")
+      ? "Tratamento por Fatores"
+      : "Inferência Estatística";
     record(
       `shell "${label}" continua DRAFT / NOT READY FOR IMPLEMENTATION`,
       shell.status === "DRAFT" && shell.specification_hash === null,
