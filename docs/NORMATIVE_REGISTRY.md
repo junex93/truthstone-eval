@@ -42,3 +42,5 @@ por precedência de autoridade.
 
 - Metadados de norma paga não permitem verificação de aderência textual.
 - Nenhuma fonte é interpretada por IA; IA nunca cria, verifica ou aprova fonte.
+- Batch 01 de revisão (T01/T04/T07) fechou como `BLOCKED_BY_USER_ARTIFACT`:
+  NBR 14653-1 e -2 sem artefato, sem conteúdo verificado e sem localizador.

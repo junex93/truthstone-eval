@@ -350,3 +350,22 @@ price_history` update/delete) **sem** GRANT — só pelas RPCs oficiais.
   regressão `negative-tests` 84/84, `methodology-governance-flow` 161/161,
   `factors-specification-governance` 91/91.
 - Nenhuma metodologia matemática introduzida: especificação MCDDM permanece DRAFT.
+
+## Fase 7D — Primary Source Review, Batch 01 (T01 / T04 / T07)
+
+- Rodada de revisão dos temas T01 (definição/posição do MCDDM e do Tratamento por
+  Fatores), T04 (aplicabilidade) e T07 (requisitos da amostra).
+- Estado auditado: **BLOCKED_BY_USER_ARTIFACT**. ABNT NBR 14653-1 e -2 seguem
+  `METADATA_ONLY`, com 0 artefatos, 0 verificações de conteúdo e 0 localizadores.
+- Nenhuma claim externa criada, nenhuma regra reclassificada, nenhum tópico do
+  topic map satisfeito, nenhum mínimo amostral registrado.
+- Novas provas em `tests/functional/factors-specification-governance.ts`
+  (91 → 100 asserts, 100/100 PASS): gate de fonte do batch, ausência de
+  verificação sem artefato, ausência de regra `DIRECT_*` sem localizador
+  verificado, T01/T04/T07 pendentes, escopo intocado e ausência de mínimo
+  amostral codificado.
+- Regressão: `negative-tests` 84/84, `methodology-source-ingestion` 39/39,
+  `methodology-governance-flow` 161/161, `market-intelligence-flow` 81/81,
+  `market-flow` 33/33, `research-flow` 28/28.
+- Relatório: `docs/FACTORS_PRIMARY_SOURCE_REVIEW_BATCH_01.md`.
+- Especificação MCDDM permanece `DRAFT`; nenhuma lógica matemática introduzida.

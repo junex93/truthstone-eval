@@ -127,3 +127,9 @@ ou coeficiente popular foi cadastrado. Distância geodésica e bairro permanecem
 2. Cópia legítima de literatura técnica para `TECHNICAL_SUPPORT`.
 3. Provedor de pesquisa real (hoje `FIXTURE`).
 4. Revisor humano designado para `CONTENT_VERIFIED` e `LOCATOR_VERIFIED`.
+
+### Batch 01 (T01 / T04 / T07) — resultado
+
+Gate fechado: nenhuma claim de conteúdo pôde ser extraída, porque as fontes
+primárias seguem `METADATA_ONLY` sem artefato. Ver
+`docs/FACTORS_PRIMARY_SOURCE_REVIEW_BATCH_01.md`.
