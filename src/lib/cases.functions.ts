@@ -11,6 +11,7 @@ import {
   updateCaseSchema,
 } from "@/lib/validation/schemas";
 import {
+  getMembership,
   requireMembership,
   requireWriteAccess,
   stripGeoPoint,
