@@ -1,0 +1,10 @@
+GRANT EXECUTE ON FUNCTION public.current_actor_organization() TO service_role;
+GRANT EXECUTE ON FUNCTION public.p_unit_unknown(text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.verify_methodology_source(uuid, public.methodology_verification_type, uuid, text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.specification_completeness(uuid) TO service_role;
+GRANT EXECUTE ON FUNCTION public.build_specification_manifest(uuid) TO service_role;
+GRANT EXECUTE ON FUNCTION public.submit_method_specification(uuid, text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.approve_method_specification(uuid, text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.reject_method_specification(uuid, text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.verify_specification_integrity(uuid) TO service_role;
+GRANT EXECUTE ON FUNCTION public.resolve_methodology_source_conflict(uuid, public.methodology_conflict_status, text) TO service_role;
