@@ -2,6 +2,23 @@
 
 Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
 
+## [Correção] Bootstrap da primeira organização (2026-08-12)
+
+- `org_select` passa a permitir leitura pelo criador (`created_by = auth.uid()`),
+  além de membros ativos. O `INSERT ... RETURNING` da criação da organização
+  falhava porque a linha recém-criada era invisível antes de existir vínculo.
+- `member_insert` corrigida: a cláusula `NOT EXISTS` comparava
+  `m2.organization_id = m2.organization_id` (tautologia), inviabilizando o
+  primeiro vínculo OWNER. Agora usa `is_org_creator(org)` e
+  `org_has_members(org)` (`SECURITY DEFINER`, `search_path = public`,
+  `EXECUTE` apenas para `authenticated`), garantindo avaliação fail-closed sem
+  depender da visibilidade RLS do registro-pai.
+- Verificado negativamente: usuário externo não consegue se inserir em
+  organização alheia nem ler a organização; segundo vínculo do mesmo usuário
+  continua bloqueado. Regressão de segurança: 84/84 PASS.
+
+
+
 ## [Fase 4] Property Intelligence Research Engine — closeout
 
 ### Motor de pesquisa
