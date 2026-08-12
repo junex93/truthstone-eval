@@ -864,31 +864,66 @@ async function main() {
   expectFail("novo contrato de saída não entra em especificação aprovada", newOutput.error);
 
   console.log("\n=== 7. PROTEÇÃO CONTRA DELETE ===");
-  expectFail(
+  const expectPreserved = async (
+    name: string,
+    deleteResult: { error: { message: string } | null },
+    table: string,
+    column: string,
+    value: string,
+  ) => {
+    const { count } = await admin
+      .from(table)
+      .select("id", { count: "exact", head: true })
+      .eq(column, value);
+    record(
+      name,
+      (count ?? 0) > 0,
+      deleteResult.error
+        ? `recusado: ${deleteResult.error.message.slice(0, 120)}`
+        : `nenhuma linha removida (RLS não concede DELETE); ${count} linha(s) preservada(s)`,
+    );
+  };
+
+  await expectPreserved(
     "especificação aprovada não pode ser removida",
-    (await valuer.client.from("method_specifications").delete().eq("id", main.specId)).error,
+    await valuer.client.from("method_specifications").delete().eq("id", main.specId),
+    "method_specifications",
+    "id",
+    main.specId,
   );
-  expectFail(
+  await expectPreserved(
     "regra de especificação aprovada não pode ser removida",
-    (await valuer.client.from("methodology_rules").delete().eq("id", main.ruleId)).error,
+    await valuer.client.from("methodology_rules").delete().eq("id", main.ruleId),
+    "methodology_rules",
+    "id",
+    main.ruleId,
   );
-  expectFail(
+  await expectPreserved(
     "fórmula de especificação aprovada não pode ser removida",
-    (await valuer.client.from("methodology_formulas").delete().eq("id", main.formulaId)).error,
+    await valuer.client.from("methodology_formulas").delete().eq("id", main.formulaId),
+    "methodology_formulas",
+    "id",
+    main.formulaId,
   );
-  expectFail(
+  await expectPreserved(
     "caso de teste de especificação aprovada não pode ser removido",
-    (
-      await valuer.client
-        .from("method_test_cases")
-        .delete()
-        .eq("method_specification_id", main.specId)
-    ).error,
+    await valuer.client
+      .from("method_test_cases")
+      .delete()
+      .eq("method_specification_id", main.specId),
+    "method_test_cases",
+    "method_specification_id",
+    main.specId,
   );
-  expectFail(
+  await expectPreserved(
     "verificação de fonte não pode ser removida",
-    (await reviewer.client.from("methodology_source_verifications").delete().eq("source_id", mainSourceId))
-      .error,
+    await reviewer.client
+      .from("methodology_source_verifications")
+      .delete()
+      .eq("source_id", mainSourceId),
+    "methodology_source_verifications",
+    "source_id",
+    mainSourceId,
   );
 
   const { data: afterImmutability } = await admin
@@ -1179,15 +1214,9 @@ async function main() {
     unit_code: "TEST_UNKNOWN_UNIT",
     required: true,
   });
-  expectOk("variável com unidade não registrada é aceita como rascunho", badUnitVar.error);
+  expectFail("unidade não registrada é recusada pelo registro oficial de unidades", badUnitVar.error);
 
   const unknownUnit = await completeness(valuer.client, normSpecId);
-  record(
-    "unidade não registrada bloqueia aprovação (FORMULA_UNKNOWN_UNIT)",
-    unknownUnit.blockers.some((b) => b.startsWith("FORMULA_UNKNOWN_UNIT")),
-    JSON.stringify(unknownUnit.blockers.filter((b) => b.startsWith("FORMULA_UNKNOWN_UNIT"))),
-  );
-
   record(
     "fórmula declarada sem caso de teste correspondente bloqueia aprovação",
     unknownUnit.blockers.some((b) => b.startsWith("FORMULA_WITHOUT_TESTS")) ||
@@ -1353,9 +1382,12 @@ async function main() {
       })
     ).error,
   );
-  expectFail(
+  await expectPreserved(
     "conflito não pode ser removido do acervo",
-    (await reviewer.client.from("methodology_source_conflicts").delete().eq("id", conflict!.id)).error,
+    await reviewer.client.from("methodology_source_conflicts").delete().eq("id", conflict!.id),
+    "methodology_source_conflicts",
+    "id",
+    conflict!.id,
   );
 
   const afterResolution = await completeness(valuer.client, normSpecId);
