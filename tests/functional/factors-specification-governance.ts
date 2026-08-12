@@ -705,7 +705,7 @@ async function main() {
   /* nenhuma regra do shell é DIRECT_* sem localizador verificado */
   const batch01RuleIds = fullRules.map((r) => r["id"] as string);
   const batch01RuleSources = batch01RuleIds.length
-    ? await rows("methodology_rule_sources", "rule_id, source_id, locator_id, relationship", (q) =>
+    ? await rows("methodology_rule_sources", "rule_id, source_id, source_locator_id, relationship_type", (q) =>
         q.in("rule_id", batch01RuleIds),
       )
     : [];
@@ -716,7 +716,7 @@ async function main() {
     (r) =>
       String(r["normative_strength"]).startsWith("DIRECT_") &&
       !batch01RuleSources.some(
-        (rs) => rs["rule_id"] === r["id"] && verifiedLocatorIds.has(rs["locator_id"] as string),
+        (rs) => rs["rule_id"] === r["id"] && verifiedLocatorIds.has(rs["source_locator_id"] as string),
       ),
   );
   record(
