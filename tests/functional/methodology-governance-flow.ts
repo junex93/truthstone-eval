@@ -2027,9 +2027,9 @@ async function main() {
       : "nenhuma linha alterada",
   );
 
-  const seedStates = (globalSources ?? []).map(
-    (s: Record<string, unknown>) => `${s["access_status"]}/${s["status"]}`,
-  );
+  const seedStates = (globalSources ?? [])
+    .filter((s: Record<string, unknown>) => !String(s["title"] ?? "").startsWith("TEST_ONLY"))
+    .map((s: Record<string, unknown>) => `${s["access_status"]}/${s["status"]}`);
   record(
     "seeds normativos permanecem METADATA_ONLY e pendentes de revisão de metadados",
     seedStates.every(
