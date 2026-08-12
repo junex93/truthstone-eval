@@ -2,6 +2,22 @@
 
 Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
 
+## Fase 7 — MCDDM / Tratamento por Fatores (specification real)
+
+- Migração versionada popula o shell global `MCDDM — Tratamento por Fatores`
+  (v0.1, `DRAFT`): 18 seções, 26 regras candidatas `INTERNAL_CONTROL`, 5 critérios
+  de aplicabilidade, 14 requisitos de teste, 10 contratos de saída e 17 conceitos
+  no dicionário de dados metodológico.
+- Criada fonte de controle interno (`INTERNAL_POLICY`) para sustentar procedência
+  `INTERNAL_DESIGN`; nenhuma regra afirma exigência de norma.
+- Nenhuma fórmula, parâmetro, fator ou limite numérico foi introduzido: tópicos
+  numéricos permanecem `PENDING_PRIMARY_SOURCE` (ABNT segue `METADATA_ONLY`).
+- Nova suíte `tests/functional/factors-specification-governance.ts`
+  (`bun run test:factors`): **56/56 PASS** — zero regra órfã, zero claim normativa
+  sem verificação, zero fator default, isolamento de fixture e ausência de motor.
+- Documentação: `FACTORS_SOURCE_DOSSIER.md`, `FACTORS_METHOD_RESEARCH.md`,
+  `FACTORS_RULE_CATALOG.md`, `FACTORS_IMPLEMENTATION_BLUEPRINT.md`.
+
 ## [Correção] Bootstrap da primeira organização (2026-08-12)
 
 - `org_select` passa a permitir leitura pelo criador (`created_by = auth.uid()`),
@@ -17,11 +33,10 @@ Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
   organização alheia nem ler a organização; segundo vínculo do mesmo usuário
   continua bloqueado. Regressão de segurança: 84/84 PASS.
 
-
-
 ## [Fase 4] Property Intelligence Research Engine — closeout
 
 ### Motor de pesquisa
+
 - `resolveProvider` sem fallback silencioso: o modo determinístico exige
   `RESEARCH_PROVIDER=FIXTURE`; ausência de `ANTHROPIC_API_KEY` falha com mensagem
   explícita em vez de trocar a origem do dado sem avisar.
@@ -35,6 +50,7 @@ Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
   (IA declara 125.000 onde o texto diz R$ 1.250.000).
 
 ### Testes
+
 - Nova suíte `tests/functional/research-flow.ts` (28/28): gate offline
   (trecho fabricado, número ausente, conflito numérico, campo fora da allowlist,
   injeção de prompt, oferta ≠ transação, URL inventada) e invariantes de banco
@@ -46,11 +62,13 @@ Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
 - Scripts `test:research`, `test:market` e `test:all` adicionados.
 
 ### Documentação
+
 - Novos: `RESEARCH_ENGINE.md`, `AI_GOVERNANCE.md`, `PROMPT_INJECTION_DEFENSE.md`.
 
 ## [Fase 2] Forensic Integrity Hardening — 2026-08-10
 
 ### Banco de dados
+
 - Adicionada `dataset_item_snapshots`: snapshot imutável do estado integral de
   cada campo no instante do congelamento (valores, verificador, linhagem,
   `artifact_sha256`, ordinal determinístico).
@@ -78,18 +96,21 @@ Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
   contra o banco.
 
 ### Correções encontradas pelos testes negativos
+
 - `GRANT EXECUTE ON FUNCTION public.in_privileged_op() TO authenticated`
   (+ `REVOKE ... FROM anon`): sem isso, toda atualização legítima falhava com
   "permission denied for function in_privileged_op", porque os triggers de guarda
   executam como o papel invocador. Ver ADR-008.
 
 ### Performance
+
 - Índices adicionados em foreign keys sem índice: `properties.organization_id`,
   `evidence_field_revisions.organization_id`, `evidence_reviews.organization_id`,
   `evidence_reviews.artifact_id`, `dataset_items.organization_id`,
   `ai_runs.valuation_case_id`.
 
 ### Aplicação
+
 - `workspace.server.ts`: `writeAudit` com `actorUserId` derivado do token e
   escrita via cliente admin.
 - `cases.functions.ts`: transição de status via RPC.
@@ -99,11 +120,13 @@ Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
 - UI de evidência impede captura de artefato em fonte sem caso vinculado.
 
 ### Testes
+
 - `tests/security/negative-tests.ts`: 49 asserções negativas executáveis
   (anônimo, cross-tenant, RBAC, auditoria, imutabilidade, freeze, storage,
   escalação de privilégio). Execução de 2026-08-10: **49/49 aprovadas**.
 
 ### Documentação
+
 - Criados `docs/PRODUCT_CONSTITUTION.md`, `ARCHITECTURE.md`,
   `DATA_GOVERNANCE.md`, `SECURITY.md`, `EVIDENCE_MODEL.md`,
   `DATASET_INTEGRITY.md`, `RBAC.md`, `DECISIONS.md`, `THREAT_MODEL.md`,
@@ -125,6 +148,7 @@ Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
 ## [Fase 3] Property & Comparable Intelligence Foundation — 2026-08-10
 
 ### Banco de dados
+
 - Extensão `postgis` habilitada.
 - Novos enums de taxonomia: `property_type_code`, `knowledge_state`,
   `address_normalization_status`, `development_type`,
@@ -139,8 +163,8 @@ Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
   `market_observation_price_history`, `property_attribute_observations`,
   `property_canonical_facts`, `property_match_candidates`,
   `comparable_exclusion_reasons` (com taxonomia seed), `comparable_
-  candidates`, `comparable_decision_history`, `market_source_quality_
-  assessments`, `derived_values`.
+candidates`, `comparable_decision_history`, `market_source_quality_
+assessments`, `derived_values`.
 - Triggers novos: `sync_geo_point` (canonicaliza `geo_point` vs. lat/long),
   `guard_canonical_fact` (só `adopt_canonical_fact` escreve fato canônico),
   `guard_market_observation_update` (tipo de observação e vínculo de
@@ -159,14 +183,15 @@ Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
   nas novas tabelas.
 - GRANTs: leitura ampla para `authenticated` nas novas tabelas; escrita
   direta de decisão (`property_canonical_facts` update, `comparable_
-  candidates` status, `comparable_decision_history`, `market_observation_
-  price_history` update/delete) **sem** GRANT — só pelas RPCs oficiais.
+candidates` status, `comparable_decision_history`, `market_observation_
+price_history` update/delete) **sem** GRANT — só pelas RPCs oficiais.
   `comparable_exclusion_reasons` com leitura pública para `authenticated`.
 - Nomenclatura: migração `20260810195526_...` renomeia o namespace interno de
   GUC/manifesto de `fluxa.*` para `valuation.*` (ver ADR-019 em
   `docs/DECISIONS.md`), sem alterar comportamento.
 
 ### Documentação
+
 - Criados `docs/PROPERTY_DATA_MODEL.md`, `docs/MARKET_OBSERVATION_MODEL.md`,
   `docs/COMPARABLE_GOVERNANCE.md`, `docs/GEO_MODEL.md`.
 - `docs/PRODUCT_CONSTITUTION.md`: novo Artigo 9 com as oposições conceituais
@@ -178,6 +203,7 @@ Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
   comparáveis.
 
 ### Limitações declaradas nesta fase
+
 - Não existe, no código de aplicação (`src/lib`, `src/routes`), nenhuma
   server function, formulário ou tela para as novas tabelas — apenas o
   schema, os triggers e as RPCs no banco, mais o vocabulário em
@@ -191,6 +217,7 @@ Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
 ## [Fase 3C] Closeout — Property & Comparable Intelligence — 2026-08-11
 
 ### Banco de dados
+
 - `record_price_observation` passou a validar a linhagem completa de
   `_evidence_field_id` (campo → extração → artefato → fonte → organização e
   caso): campo de outro caso, de outra organização ou inexistente é recusado.
@@ -202,6 +229,7 @@ Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
   decisão e de fato canônico só pelas RPCs oficiais.
 
 ### Testes
+
 - `tests/security/negative-tests.ts`: 84 asserções (antes 75). Novas provas de
   linhagem cross-case/cross-org em `record_price_observation` e de
   append-only em `comparable_decision_history` com comparação de estado
@@ -214,6 +242,7 @@ Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
 - Execução: 84/84 e 33/33 aprovadas, 0 falhas.
 
 ### Documentação
+
 - `docs/ARCHITECTURE.md`: mapa de arquivos atualizado com a camada de aplicação
   de mercado e comparáveis e as rotas por aba do caso (a nota "não
   implementado" foi removida por ser falsa).
@@ -244,6 +273,7 @@ Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
 ## Fase 6 — encerramento (governança metodológica)
 
 ### Segurança
+
 - Guardas metodológicas convertidas para `SECURITY DEFINER` com comportamento
   fail-closed: `guard_specification_child`, `guard_rule_source`,
   `guard_source_verification`, `guard_methodology_source_artifact`,
@@ -256,6 +286,7 @@ Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
 - Corrigido erro de casting em `specification_completeness` (rótulos de requisito).
 
 ### Testes
+
 - `tests/functional/methodology-governance-flow.ts`: 161/161 PASS — fluxo
   legítimo, RBAC, imutabilidade, estabilidade do selo SHA-256, isolamento
   cross-tenant fail-closed, `METADATA_ONLY`, atomicidade e taxonomia de auditoria.
@@ -264,6 +295,7 @@ Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
 - Linter do banco: nenhum ERROR; avisos remanescentes apenas da classe `0029`.
 
 ### Documentação
+
 - Novos: `METHODOLOGY_GOVERNANCE.md`, `NORMATIVE_REGISTRY.md`,
   `METHOD_SPECIFICATION_STANDARD.md`, `METHODOLOGY_SOURCE_GOVERNANCE.md`,
   `FORMULA_AND_PARAMETER_GOVERNANCE.md`, `METHODOLOGY_CHANGE_CONTROL.md`,
@@ -272,6 +304,7 @@ Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
   `THREAT_MODEL.md`, `DECISIONS.md`.
 
 ### Limitações declaradas
+
 - Nenhuma lógica de valoração em produção: fatores e inferência seguem shells
   `DRAFT` vazias, sem fórmula operacional nem parâmetro numérico.
 - Normas pagas permanecem `METADATA_ONLY`; aderência textual não é verificável.
