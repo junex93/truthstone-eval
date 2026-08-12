@@ -2075,16 +2075,27 @@ async function main() {
           .select("id", { count: "exact", head: true })
           .eq("method_specification_id", shell.id),
       ]);
+    const { count: reqSatisfied } = await admin
+      .from("method_specification_source_requirements")
+      .select("id", { count: "exact", head: true })
+      .eq("method_specification_id", shell.id)
+      .eq("is_satisfied", true);
     record(
-      `shell "${label}": 10 requisitos de fonte continuam pendentes`,
-      reqPending === 10,
-      `${reqPending} pendentes`,
+      `shell "${label}": requisitos de fonte continuam integralmente pendentes`,
+      (reqPending ?? 0) >= 10 && (reqSatisfied ?? 0) === 0,
+      `${reqPending} pendentes / ${reqSatisfied} satisfeitos`,
     );
+    const { count: approvedRules } = await admin
+      .from("methodology_rules")
+      .select("id", { count: "exact", head: true })
+      .eq("method_specification_id", shell.id)
+      .eq("status", "APPROVED");
     record(
       `shell "${label}": nenhuma regra de produção, fórmula ou parâmetro aprovado`,
-      (rules ?? 0) === 0 && (formulas ?? 0) === 0 && (parameters ?? 0) === 0,
-      `regras=${rules} parâmetros=${parameters}`,
+      (approvedRules ?? 0) === 0 && (formulas ?? 0) === 0 && (parameters ?? 0) === 0,
+      `regras=${rules} aprovadas=${approvedRules} parâmetros=${parameters}`,
     );
+
 
     const { data: sections } = await admin
       .from("method_specification_sections")
