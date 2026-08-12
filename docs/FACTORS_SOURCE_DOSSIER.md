@@ -5,13 +5,13 @@ Dossiê de fontes do shell **MCDDM — Tratamento por Fatores**
 
 ## Estado real das fontes primárias
 
-| Fonte | Tipo | Acesso | Verificações | Pode sustentar claim normativa direta? |
-| --- | --- | --- | --- | --- |
-| ABNT NBR 14653-1 | TECHNICAL_STANDARD | METADATA_ONLY | nenhuma de conteúdo | **NÃO** |
-| ABNT NBR 14653-2 | TECHNICAL_STANDARD | METADATA_ONLY | nenhuma de conteúdo | **NÃO** |
-| ABNT NBR 14653-3 | TECHNICAL_STANDARD | METADATA_ONLY | nenhuma de conteúdo | **NÃO** |
-| IVS / RICS / COFECI | PROFESSIONAL_STANDARD / REGULATION | METADATA_ONLY | nenhuma de conteúdo | **NÃO** |
-| Controle interno Fluxa (`11111111-…-00000000000f`) | INTERNAL_POLICY | INTERNAL | fundamento organizacional escrito | sustenta apenas `INTERNAL_CONTROL` |
+| Fonte                                              | Tipo                               | Acesso        | Verificações                      | Pode sustentar claim normativa direta? |
+| -------------------------------------------------- | ---------------------------------- | ------------- | --------------------------------- | -------------------------------------- |
+| ABNT NBR 14653-1                                   | TECHNICAL_STANDARD                 | METADATA_ONLY | nenhuma de conteúdo               | **NÃO**                                |
+| ABNT NBR 14653-2                                   | TECHNICAL_STANDARD                 | METADATA_ONLY | nenhuma de conteúdo               | **NÃO**                                |
+| ABNT NBR 14653-3                                   | TECHNICAL_STANDARD                 | METADATA_ONLY | nenhuma de conteúdo               | **NÃO**                                |
+| IVS / RICS / COFECI                                | PROFESSIONAL_STANDARD / REGULATION | METADATA_ONLY | nenhuma de conteúdo               | **NÃO**                                |
+| Controle interno Fluxa (`11111111-…-00000000000f`) | INTERNAL_POLICY                    | INTERNAL      | fundamento organizacional escrito | sustenta apenas `INTERNAL_CONTROL`     |
 
 Consequência declarada: **nenhuma** regra do shell real afirma "a norma exige X".
 Todas as 26 regras candidatas têm `normative_strength = INTERNAL_CONTROL` e

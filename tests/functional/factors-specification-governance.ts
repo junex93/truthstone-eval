@@ -147,12 +147,20 @@ async function main() {
     "id, rule_code, rule_type, normative_strength, status",
     (q) => q.eq("method_specification_id", FACTORS_SPEC_ID),
   );
-  record("regras candidatas registradas no shell real", rules.length >= 20, `${rules.length} regras`);
+  record(
+    "regras candidatas registradas no shell real",
+    rules.length >= 20,
+    `${rules.length} regras`,
+  );
 
   const ruleSources = await rows(
     "methodology_rule_sources",
     "rule_id, source_id, source_locator_id, relationship_type",
-    (q) => q.in("rule_id", rules.map((r) => r["id"] as string)),
+    (q) =>
+      q.in(
+        "rule_id",
+        rules.map((r) => r["id"] as string),
+      ),
   );
   const provenance = new Map<string, Record<string, any>[]>();
   for (const rs of ruleSources) {
@@ -164,7 +172,9 @@ async function main() {
   record(
     "ZERO ORPHAN RULES: toda regra real tem procedência registrada",
     orphans.length === 0,
-    orphans.length === 0 ? "nenhuma órfã" : `órfãs: ${orphans.map((r) => r["rule_code"]).join(", ")}`,
+    orphans.length === 0
+      ? "nenhuma órfã"
+      : `órfãs: ${orphans.map((r) => r["rule_code"]).join(", ")}`,
   );
 
   const internalOnly = rules.every((r) => {
@@ -186,10 +196,14 @@ async function main() {
     "source_id, locator_id, verification_type",
   );
   const contentVerified = new Set(
-    verifications.filter((v) => v["verification_type"] === "CONTENT_VERIFIED").map((v) => v["source_id"]),
+    verifications
+      .filter((v) => v["verification_type"] === "CONTENT_VERIFIED")
+      .map((v) => v["source_id"]),
   );
   const locatorVerified = new Set(
-    verifications.filter((v) => v["verification_type"] === "LOCATOR_VERIFIED").map((v) => v["locator_id"]),
+    verifications
+      .filter((v) => v["verification_type"] === "LOCATOR_VERIFIED")
+      .map((v) => v["locator_id"]),
   );
   const directClaims = ruleSources.filter((rs) =>
     ["DIRECT_REQUIREMENT", "DIRECT_PROHIBITION"].includes(rs["relationship_type"] as string),
@@ -227,7 +241,10 @@ async function main() {
 
   /* ------------------------------------- fórmulas, parâmetros e defaults */
   const formulas = await rows("methodology_formulas", "id, formula_code, status, expression", (q) =>
-    q.in("rule_id", rules.map((r) => r["id"] as string)),
+    q.in(
+      "rule_id",
+      rules.map((r) => r["id"] as string),
+    ),
   );
   record(
     "FORMULA CANDIDATES permanecem declarativas e nunca APPROVED",
@@ -253,7 +270,9 @@ async function main() {
   );
   const setIds = new Set(
     (
-      await rows("method_parameter_sets", "id", (q) => q.eq("method_specification_id", FACTORS_SPEC_ID))
+      await rows("method_parameter_sets", "id", (q) =>
+        q.eq("method_specification_id", FACTORS_SPEC_ID),
+      )
     ).map((s) => s["id"]),
   );
   const unsourcedValues = paramValues.filter(
@@ -294,8 +313,10 @@ async function main() {
   );
 
   /* --------------------------------------------- conflitos e lacunas */
-  const conflicts = await rows("methodology_source_conflicts", "id, subject, resolution_status", (q) =>
-    q.is("organization_id", null),
+  const conflicts = await rows(
+    "methodology_source_conflicts",
+    "id, subject, resolution_status",
+    (q) => q.is("organization_id", null),
   );
   const autoResolved = conflicts.filter((c) => c["resolution_status"] === "RESOLVED");
   record(
@@ -339,9 +360,15 @@ async function main() {
   const testTypes = new Set(testCases.map((t) => t["test_type"]));
   record(
     "categorias de teste cobertas (UNIT/NUMERIC/BOUNDARY/NEGATIVE/COMPLIANCE/REPRODUCIBILITY/AUDITABILITY)",
-    ["UNIT", "NUMERIC", "BOUNDARY", "NEGATIVE", "COMPLIANCE", "REPRODUCIBILITY", "AUDITABILITY"].every(
-      (t) => testTypes.has(t),
-    ),
+    [
+      "UNIT",
+      "NUMERIC",
+      "BOUNDARY",
+      "NEGATIVE",
+      "COMPLIANCE",
+      "REPRODUCIBILITY",
+      "AUDITABILITY",
+    ].every((t) => testTypes.has(t)),
     [...testTypes].join(", "),
   );
 
