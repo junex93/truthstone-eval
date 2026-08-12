@@ -332,3 +332,21 @@ price_history` update/delete) **sem** GRANT — só pelas RPCs oficiais.
 - `specification_completeness`: DRAFT, `is_complete=false`, 0 blockers,
   warnings `NO_PARAMETERS_REGISTERED` / `NO_FORMULA_REGISTERED`, 42 requisitos
   de fonte pendentes. Nenhum motor de valoração implementado.
+
+## Fase 7C — Primary Source Ingestion & Verification Gate
+
+- Bucket privado `methodology-sources` com caminho canônico `<organization_id>/<source_id>/<arquivo>`.
+- SHA-256 sempre calculado no servidor; hash do cliente recusado.
+- Trigger `guard_methodology_source_artifact`: recusa `METADATA_ONLY` como base de acesso,
+  artefato de outra organização e artefato sem hash de servidor.
+- Trigger `guard_methodology_locator_artifact`: localizador só aponta para artefato da mesma
+  fonte e organização.
+- RPC `verify_methodology_source` (METADATA / CONTENT / LOCATOR) com autor e organização
+  derivados do token; RPC `methodology_source_readiness` com estados
+  `BLOCKED_BY_USER_ARTIFACT` → `PENDING_*_VERIFICATION` → `SOURCE_READY_FOR_RULE_REVIEW`.
+- Isolamento provado: cópia autorizada de uma organização não habilita outra; registro global
+  permanece `METADATA_ONLY`.
+- Testes: `tests/functional/methodology-source-ingestion.ts` 39/39 PASS;
+  regressão `negative-tests` 84/84, `methodology-governance-flow` 161/161,
+  `factors-specification-governance` 91/91.
+- Nenhuma metodologia matemática introduzida: especificação MCDDM permanece DRAFT.
