@@ -308,3 +308,27 @@ price_history` update/delete) **sem** GRANT — só pelas RPCs oficiais.
 - Nenhuma lógica de valoração em produção: fatores e inferência seguem shells
   `DRAFT` vazias, sem fórmula operacional nem parâmetro numérico.
 - Normas pagas permanecem `METADATA_ONLY`; aderência textual não é verificável.
+
+## Fase 7B — Verificação de fontes e reclassificação de regras (MCDDM Fatores)
+
+- Inventário bibliográfico ampliado (IBAPE, COBREAP, Dantas, Abunahman, Fiker),
+  todos `METADATA_ONLY` / `PENDING_METADATA_REVIEW`; literatura técnica nunca
+  elevada a `PRIMARY_NORMATIVE`.
+- Topic map T01–T32 persistido em `method_specification_source_requirements`
+  com status explícito; nenhum tema marcado como satisfeito.
+- Auditoria das 26 regras: 10 permanecem controle interno puro; 16 receberam
+  vínculo `BACKGROUND` ao tema externo correspondente (nunca `DIRECT_*`),
+  preservando o `INTERNAL_DESIGN` original.
+- ABNT gate mantido: NBR 14653-1/-2 em `METADATA_ONLY` não sustentam exigência,
+  proibição, fórmula, limiar, fundamentação, precisão, arbítrio ou extrapolação.
+- Seções `SOURCE_REFERENCES`, `LIMITATIONS` (registro de questões abertas) e
+  `KNOWN_RISKS` atualizadas.
+- Documentação: criado `docs/FACTORS_APPLICABILITY.md` (5º documento faltante);
+  atualizados dossiê de fontes, catálogo de regras, pesquisa e blueprint.
+- Testes: `test:factors` 91/91 PASS (baseline 56, ampliado com asserts de topic
+  map, gates críticos, má classificação e reclassificação). Regressões:
+  metodologia 161/161, inteligência de mercado 81/81, segurança 84/84,
+  mercado 33/33, pesquisa 28/28. Typecheck e build PASS.
+- `specification_completeness`: DRAFT, `is_complete=false`, 0 blockers,
+  warnings `NO_PARAMETERS_REGISTERED` / `NO_FORMULA_REGISTERED`, 42 requisitos
+  de fonte pendentes. Nenhum motor de valoração implementado.
