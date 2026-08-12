@@ -1790,7 +1790,17 @@ async function main() {
     expression_language: "SYMBOLIC",
     created_by: outsider.id,
   });
-  expectFail("org B não insere fórmula em regra da org A", crossFormula.error);
+  const { count: crossFormulaCount } = await admin
+    .from("methodology_formulas")
+    .select("id", { count: "exact", head: true })
+    .eq("formula_code", "TEST_CROSS_F");
+  record(
+    "org B não insere fórmula em regra da org A",
+    crossFormula.error !== null || (crossFormulaCount ?? 0) === 0,
+    crossFormula.error
+      ? `recusado: ${crossFormula.error.message.slice(0, 120)}`
+      : "nenhuma linha gravada (RLS cross-tenant)",
+  );
 
   const crossConflict = await outsider.client.from("methodology_source_conflicts").insert({
     organization_id: orgB,
@@ -1984,7 +1994,7 @@ async function main() {
   const { data: aiAudit } = await admin
     .from("audit_log")
     .select("id")
-    .in("action", [
+    .in("event_type", [
       "METHOD_SPECIFICATION_APPROVED",
       "METHODOLOGY_SOURCE_VERIFIED",
       "METHODOLOGY_SOURCE_CONFLICT_RESOLVED",
@@ -2003,14 +2013,14 @@ async function main() {
     .from("audit_log")
     .select("action, actor_user_id, entity_id")
     .eq("organization_id", orgA)
-    .in("action", [
+    .in("event_type", [
       "METHOD_SPECIFICATION_SUBMITTED",
       "METHOD_SPECIFICATION_APPROVED",
       "METHOD_SPECIFICATION_REJECTED",
       "METHODOLOGY_SOURCE_VERIFIED",
       "METHODOLOGY_SOURCE_CONFLICT_RESOLVED",
     ]);
-  const actions = new Set((auditEvents ?? []).map((e: Record<string, unknown>) => e["action"]));
+  const actions = new Set((auditEvents ?? []).map((e: Record<string, unknown>) => e["event_type"]));
   record(
     "cada operação oficial gravou evento de auditoria com autor",
     actions.size === 5 &&
@@ -2020,7 +2030,7 @@ async function main() {
 
   const auditTamper = await valuer.client
     .from("audit_log")
-    .update({ action: "TAMPERED" })
+    .update({ event_type: "TAMPERED" })
     .eq("organization_id", orgA);
   expectFail("trilha de auditoria não aceita alteração pelo cliente", auditTamper.error);
 }
