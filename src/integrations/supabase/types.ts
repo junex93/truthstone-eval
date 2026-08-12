@@ -2771,6 +2771,9 @@ export type Database = {
           manifest_schema_version: string | null
           organization_id: string | null
           purpose: string | null
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_reason: string | null
           review_notes: string | null
           scope: string | null
           specification_hash: string | null
@@ -2797,6 +2800,9 @@ export type Database = {
           manifest_schema_version?: string | null
           organization_id?: string | null
           purpose?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
           review_notes?: string | null
           scope?: string | null
           specification_hash?: string | null
@@ -2823,6 +2829,9 @@ export type Database = {
           manifest_schema_version?: string | null
           organization_id?: string | null
           purpose?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
           review_notes?: string | null
           scope?: string | null
           specification_hash?: string | null
@@ -5667,6 +5676,10 @@ export type Database = {
         }
         Returns: string
       }
+      approve_method_specification: {
+        Args: { _notes?: string; _spec_id: string }
+        Returns: Json
+      }
       assess_sample_readiness: {
         Args: {
           _case_id: string
@@ -5693,6 +5706,10 @@ export type Database = {
         Args: { _candidate_id: string }
         Returns: string
       }
+      build_specification_manifest: {
+        Args: { _spec_id: string }
+        Returns: Json
+      }
       can_review: { Args: { _org: string }; Returns: boolean }
       can_write: { Args: { _org: string }; Returns: boolean }
       complete_sample_selection: {
@@ -5712,6 +5729,7 @@ export type Database = {
         Args: { _case_id: string; _description: string }
         Returns: string
       }
+      current_actor_organization: { Args: never; Returns: string }
       current_org_role: {
         Args: { _org: string }
         Returns: Database["public"]["Enums"]["org_role"]
@@ -5767,6 +5785,7 @@ export type Database = {
         Returns: string
       }
       market_universe_metrics: { Args: { _case_id: string }; Returns: Json }
+      p_unit_unknown: { Args: { _unit: string }; Returns: boolean }
       promote_research_candidate: {
         Args: {
           _candidate_id: string
@@ -5800,8 +5819,20 @@ export type Database = {
         Args: { _field_id: string; _reason: string }
         Returns: string
       }
+      reject_method_specification: {
+        Args: { _reason: string; _spec_id: string }
+        Returns: string
+      }
       resolve_market_data_issue: {
         Args: { _issue_id: string; _notes: string }
+        Returns: string
+      }
+      resolve_methodology_source_conflict: {
+        Args: {
+          _conflict_id: string
+          _professional_resolution: string
+          _resolution_status: Database["public"]["Enums"]["methodology_conflict_status"]
+        }
         Returns: string
       }
       resolve_property_match: {
@@ -5826,6 +5857,7 @@ export type Database = {
         }
         Returns: string
       }
+      specification_completeness: { Args: { _spec_id: string }; Returns: Json }
       start_sample_selection: {
         Args: {
           _case_id: string
@@ -5833,6 +5865,10 @@ export type Database = {
           _notes: string
           _purpose: string
         }
+        Returns: string
+      }
+      submit_method_specification: {
+        Args: { _notes?: string; _spec_id: string }
         Returns: string
       }
       transition_case_status: {
@@ -5847,8 +5883,21 @@ export type Database = {
         Args: { _field_id: string; _notes: string }
         Returns: string
       }
+      verify_methodology_source: {
+        Args: {
+          _locator_id?: string
+          _notes?: string
+          _source_id: string
+          _verification_type: Database["public"]["Enums"]["methodology_verification_type"]
+        }
+        Returns: string
+      }
       verify_snapshot_integrity: {
         Args: { _kind: string; _snapshot_id: string }
+        Returns: Json
+      }
+      verify_specification_integrity: {
+        Args: { _spec_id: string }
         Returns: Json
       }
       write_audit_event: {
