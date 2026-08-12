@@ -1,0 +1,202 @@
+-- guard_specification_child: fail-closed + leitura privilegiada do pai
+CREATE OR REPLACE FUNCTION public.guard_specification_child()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public'
+AS $function$
+DECLARE v_spec uuid; v_status public.method_spec_status; v_org uuid; v_found boolean;
+BEGIN
+  IF public.in_privileged_op() THEN RETURN NEW; END IF;
+  IF TG_TABLE_NAME IN ('methodology_formulas','methodology_formula_variables') THEN
+    IF TG_TABLE_NAME = 'methodology_formulas' THEN
+      SELECT r.method_specification_id INTO v_spec FROM public.methodology_rules r WHERE r.id = NEW.rule_id;
+    ELSE
+      SELECT r.method_specification_id INTO v_spec
+        FROM public.methodology_formulas f JOIN public.methodology_rules r ON r.id = f.rule_id
+       WHERE f.id = NEW.formula_id;
+    END IF;
+  ELSIF TG_TABLE_NAME = 'methodology_rule_sources' THEN
+    SELECT r.method_specification_id INTO v_spec FROM public.methodology_rules r WHERE r.id = NEW.rule_id;
+  ELSE
+    v_spec := NEW.method_specification_id;
+  END IF;
+
+  IF v_spec IS NULL THEN
+    RAISE EXCEPTION 'Registro-pai inexistente ou fora do escopo: conteúdo metodológico recusado (%)', TG_TABLE_NAME;
+  END IF;
+  SELECT status, organization_id, true INTO v_status, v_org, v_found
+    FROM public.method_specifications WHERE id = v_spec;
+  IF NOT coalesce(v_found, false) THEN
+    RAISE EXCEPTION 'Especificação inexistente';
+  END IF;
+  IF NEW.organization_id IS DISTINCT FROM v_org THEN
+    RAISE EXCEPTION 'Conteúdo metodológico fora do escopo da organização da especificação (%)', TG_TABLE_NAME;
+  END IF;
+  IF v_status IS DISTINCT FROM 'DRAFT' THEN
+    RAISE EXCEPTION 'Especificação em % não aceita alteração de conteúdo (%): gere nova versão',
+      v_status, TG_TABLE_NAME;
+  END IF;
+  RETURN NEW;
+END; $function$;
+
+CREATE OR REPLACE FUNCTION public.guard_rule_source()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public'
+AS $function$
+DECLARE v_authority public.methodology_authority_level; v_src_org uuid; v_content_verified boolean;
+BEGIN
+  SELECT authority_level, organization_id INTO v_authority, v_src_org
+    FROM public.methodology_sources WHERE id = NEW.source_id;
+  IF v_authority IS NULL THEN RAISE EXCEPTION 'Fonte metodológica inexistente'; END IF;
+  IF v_src_org IS NOT NULL AND v_src_org IS DISTINCT FROM NEW.organization_id THEN
+    RAISE EXCEPTION 'Fonte metodológica pertence a outra organização';
+  END IF;
+
+  IF v_authority = 'INTERNAL_SPECIFICATION' AND NEW.relationship_type <> 'INTERNAL_DESIGN' THEN
+    RAISE EXCEPTION 'Especificação interna só pode sustentar regra como INTERNAL_DESIGN: controle interno nunca é apresentado como exigência normativa externa';
+  END IF;
+  IF NEW.relationship_type = 'INTERNAL_DESIGN' AND v_authority <> 'INTERNAL_SPECIFICATION' THEN
+    RAISE EXCEPTION 'INTERNAL_DESIGN exige fonte classificada como INTERNAL_SPECIFICATION';
+  END IF;
+
+  IF NEW.source_locator_id IS NOT NULL
+     AND NOT EXISTS (SELECT 1 FROM public.methodology_source_locators l
+                      WHERE l.id = NEW.source_locator_id AND l.source_id = NEW.source_id) THEN
+    RAISE EXCEPTION 'Localizador não pertence à fonte vinculada';
+  END IF;
+
+  IF NEW.relationship_type IN ('DIRECT_REQUIREMENT','DIRECT_PROHIBITION') THEN
+    SELECT EXISTS (SELECT 1 FROM public.methodology_source_verifications v
+                    WHERE v.source_id = NEW.source_id AND v.verification_type = 'CONTENT_VERIFIED')
+      INTO v_content_verified;
+    IF NOT v_content_verified THEN
+      RAISE EXCEPTION 'Afirmação normativa direta exige conteúdo da fonte verificado (CONTENT_VERIFIED)';
+    END IF;
+    IF NEW.source_locator_id IS NULL THEN
+      RAISE EXCEPTION 'Afirmação normativa direta exige localizador (cláusula/seção/página) da fonte';
+    END IF;
+  END IF;
+  RETURN NEW;
+END; $function$;
+
+CREATE OR REPLACE FUNCTION public.guard_source_verification()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public'
+AS $function$
+DECLARE v_access public.methodology_access_status; v_org uuid;
+BEGIN
+  SELECT access_status, organization_id INTO v_access, v_org
+    FROM public.methodology_sources WHERE id = NEW.source_id;
+  IF v_access IS NULL THEN RAISE EXCEPTION 'Fonte metodológica inexistente'; END IF;
+  IF v_org IS NOT NULL AND v_org IS DISTINCT FROM NEW.organization_id THEN
+    RAISE EXCEPTION 'Fonte pertence a outra organização';
+  END IF;
+  IF NEW.verification_type IN ('CONTENT_VERIFIED','LOCATOR_VERIFIED')
+     AND v_access = 'METADATA_ONLY' THEN
+    RAISE EXCEPTION 'Fonte com acesso METADATA_ONLY não pode receber verificação de conteúdo: o texto integral não está disponível no projeto';
+  END IF;
+  IF NEW.verification_type = 'LOCATOR_VERIFIED' AND NEW.locator_id IS NULL THEN
+    RAISE EXCEPTION 'Verificação de localizador exige o localizador correspondente';
+  END IF;
+  IF NEW.locator_id IS NOT NULL
+     AND NOT EXISTS (SELECT 1 FROM public.methodology_source_locators l
+                      WHERE l.id = NEW.locator_id AND l.source_id = NEW.source_id) THEN
+    RAISE EXCEPTION 'Localizador não pertence a esta fonte';
+  END IF;
+  RETURN NEW;
+END; $function$;
+
+CREATE OR REPLACE FUNCTION public.guard_methodology_source_artifact()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public'
+AS $function$
+DECLARE v_src_org uuid; v_src_found boolean; v_art_org uuid; v_found boolean;
+BEGIN
+  SELECT organization_id, true INTO v_src_org, v_src_found FROM public.methodology_sources WHERE id = NEW.source_id;
+  IF NOT coalesce(v_src_found, false) THEN RAISE EXCEPTION 'Fonte metodológica inexistente'; END IF;
+  SELECT organization_id, true INTO v_art_org, v_found FROM public.evidence_artifacts WHERE id = NEW.evidence_artifact_id;
+  IF NOT coalesce(v_found, false) THEN
+    RAISE EXCEPTION 'Artefato inexistente';
+  END IF;
+  IF NEW.organization_id IS DISTINCT FROM v_art_org THEN
+    RAISE EXCEPTION 'Artefato pertence a outra organização: linhagem incompatível com a fonte metodológica';
+  END IF;
+  IF v_src_org IS NOT NULL AND v_src_org IS DISTINCT FROM NEW.organization_id THEN
+    RAISE EXCEPTION 'Fonte metodológica pertence a outra organização';
+  END IF;
+  RETURN NEW;
+END; $function$;
+
+CREATE OR REPLACE FUNCTION public.guard_methodology_locator_artifact()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public'
+AS $function$
+DECLARE v_src_org uuid; v_src_found boolean; v_art_org uuid; v_found boolean;
+BEGIN
+  SELECT organization_id, true INTO v_src_org, v_src_found FROM public.methodology_sources WHERE id = NEW.source_id;
+  IF NOT coalesce(v_src_found, false) THEN RAISE EXCEPTION 'Fonte metodológica inexistente'; END IF;
+  IF v_src_org IS NOT NULL AND NEW.organization_id IS NOT NULL AND v_src_org <> NEW.organization_id THEN
+    RAISE EXCEPTION 'Localizador fora do escopo da organização da fonte metodológica';
+  END IF;
+  IF NEW.artifact_id IS NOT NULL THEN
+    SELECT organization_id, true INTO v_art_org, v_found FROM public.evidence_artifacts WHERE id = NEW.artifact_id;
+    IF NOT coalesce(v_found, false) THEN
+      RAISE EXCEPTION 'Artefato inexistente';
+    END IF;
+    IF NEW.organization_id IS DISTINCT FROM v_art_org THEN
+      RAISE EXCEPTION 'Artefato pertence a outra organização: linhagem incompatível com o localizador';
+    END IF;
+  END IF;
+  RETURN NEW;
+END; $function$;
+
+CREATE OR REPLACE FUNCTION public.guard_source_conflict_insert()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public'
+AS $function$
+DECLARE v_a uuid; v_b uuid; v_found_a boolean; v_found_b boolean;
+BEGIN
+  SELECT organization_id, true INTO v_a, v_found_a FROM public.methodology_sources WHERE id = NEW.source_a_id;
+  SELECT organization_id, true INTO v_b, v_found_b FROM public.methodology_sources WHERE id = NEW.source_b_id;
+  IF NOT coalesce(v_found_a, false) OR NOT coalesce(v_found_b, false) THEN
+    RAISE EXCEPTION 'Fonte metodológica inexistente';
+  END IF;
+  IF NEW.source_a_id = NEW.source_b_id THEN
+    RAISE EXCEPTION 'Conflito exige duas fontes distintas';
+  END IF;
+  IF (v_a IS NOT NULL AND v_a IS DISTINCT FROM NEW.organization_id)
+     OR (v_b IS NOT NULL AND v_b IS DISTINCT FROM NEW.organization_id) THEN
+    RAISE EXCEPTION 'Conflito de fontes fora do escopo da organização';
+  END IF;
+  RETURN NEW;
+END; $function$;
+
+-- impede migração de parent entre organizações em fórmulas e variáveis
+CREATE OR REPLACE FUNCTION public.guard_methodology_parent_immutable()
+RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public'
+AS $function$
+BEGIN
+  IF TG_TABLE_NAME = 'methodology_formulas' AND NEW.rule_id IS DISTINCT FROM OLD.rule_id THEN
+    RAISE EXCEPTION 'Fórmula não pode trocar de regra/especificação: gere nova versão';
+  END IF;
+  IF TG_TABLE_NAME = 'methodology_formula_variables' AND NEW.formula_id IS DISTINCT FROM OLD.formula_id THEN
+    RAISE EXCEPTION 'Variável não pode trocar de fórmula: gere nova versão';
+  END IF;
+  IF TG_TABLE_NAME = 'methodology_rules' AND NEW.method_specification_id IS DISTINCT FROM OLD.method_specification_id THEN
+    RAISE EXCEPTION 'Regra não pode trocar de especificação: gere nova versão';
+  END IF;
+  RETURN NEW;
+END; $function$;
+
+DROP TRIGGER IF EXISTS trg_methodology_formulas_parentimmutable ON public.methodology_formulas;
+CREATE TRIGGER trg_methodology_formulas_parentimmutable BEFORE UPDATE ON public.methodology_formulas
+FOR EACH ROW EXECUTE FUNCTION public.guard_methodology_parent_immutable();
+
+DROP TRIGGER IF EXISTS trg_methodology_formula_variables_parentimmutable ON public.methodology_formula_variables;
+CREATE TRIGGER trg_methodology_formula_variables_parentimmutable BEFORE UPDATE ON public.methodology_formula_variables
+FOR EACH ROW EXECUTE FUNCTION public.guard_methodology_parent_immutable();
+
+DROP TRIGGER IF EXISTS trg_methodology_rules_parentimmutable ON public.methodology_rules;
+CREATE TRIGGER trg_methodology_rules_parentimmutable BEFORE UPDATE ON public.methodology_rules
+FOR EACH ROW EXECUTE FUNCTION public.guard_methodology_parent_immutable();
+
+REVOKE EXECUTE ON FUNCTION public.guard_specification_child() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.guard_rule_source() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.guard_source_verification() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.guard_methodology_source_artifact() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.guard_methodology_locator_artifact() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.guard_source_conflict_insert() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.guard_methodology_parent_immutable() FROM anon, authenticated;
