@@ -349,7 +349,7 @@ function DocumentIngestionForm({ sourceId }: { sourceId: string }) {
         .from("organization_members")
         .select("organization_id")
         .eq("user_id", session.user?.id ?? "")
-        .eq("is_active", true)
+        .eq("status", "ACTIVE")
         .maybeSingle();
       if (memberError) throw new Error(memberError.message);
       if (!member) throw new Error("Nenhuma organização ativa vinculada a este usuário.");
