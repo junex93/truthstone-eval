@@ -31,6 +31,7 @@ import { Route as AuthenticatedShellCasesCaseIdIntelligenceRouteImport } from '.
 import { Route as AuthenticatedShellCasesCaseIdPropertyRouteImport } from './routes/_authenticated/_shell/cases/$caseId/property'
 import { Route as AuthenticatedShellMethodologySourcesIndexRouteImport } from './routes/_authenticated/_shell/methodology/sources/index'
 import { Route as AuthenticatedShellMethodologySourcesSourceIdRouteImport } from './routes/_authenticated/_shell/methodology/sources/$sourceId'
+import { Route as AuthenticatedShellMethodologySpecificationsSpecIdRouteImport } from './routes/_authenticated/_shell/methodology/specifications/$specId'
 import { Route as AuthenticatedShellCasesCaseIdMarketIndexRouteImport } from './routes/_authenticated/_shell/cases/$caseId/market/index'
 import { Route as AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRouteImport } from './routes/_authenticated/_shell/cases/$caseId/market/$marketPropertyId'
 import { Route as AuthenticatedShellCasesCaseIdResearchIndexRouteImport } from './routes/_authenticated/_shell/cases/$caseId/research/index'
@@ -161,6 +162,12 @@ const AuthenticatedShellMethodologySourcesSourceIdRoute =
     path: '/methodology/sources/$sourceId',
     getParentRoute: () => AuthenticatedShellRoute,
   } as any)
+const AuthenticatedShellMethodologySpecificationsSpecIdRoute =
+  AuthenticatedShellMethodologySpecificationsSpecIdRouteImport.update({
+    id: '/methodology/specifications/$specId',
+    path: '/methodology/specifications/$specId',
+    getParentRoute: () => AuthenticatedShellRoute,
+  } as any)
 const AuthenticatedShellCasesCaseIdMarketIndexRoute =
   AuthenticatedShellCasesCaseIdMarketIndexRouteImport.update({
     id: '/market/',
@@ -205,6 +212,7 @@ export interface FileRoutesByFullPath {
   '/cases/$caseId/intelligence': typeof AuthenticatedShellCasesCaseIdIntelligenceRoute
   '/cases/$caseId/property': typeof AuthenticatedShellCasesCaseIdPropertyRoute
   '/methodology/sources/$sourceId': typeof AuthenticatedShellMethodologySourcesSourceIdRoute
+  '/methodology/specifications/$specId': typeof AuthenticatedShellMethodologySpecificationsSpecIdRoute
   '/cases/$caseId/': typeof AuthenticatedShellCasesCaseIdIndexRoute
   '/methodology/sources/': typeof AuthenticatedShellMethodologySourcesIndexRoute
   '/cases/$caseId/market/$marketPropertyId': typeof AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRoute
@@ -230,6 +238,7 @@ export interface FileRoutesByTo {
   '/cases/$caseId/intelligence': typeof AuthenticatedShellCasesCaseIdIntelligenceRoute
   '/cases/$caseId/property': typeof AuthenticatedShellCasesCaseIdPropertyRoute
   '/methodology/sources/$sourceId': typeof AuthenticatedShellMethodologySourcesSourceIdRoute
+  '/methodology/specifications/$specId': typeof AuthenticatedShellMethodologySpecificationsSpecIdRoute
   '/cases/$caseId': typeof AuthenticatedShellCasesCaseIdIndexRoute
   '/methodology/sources': typeof AuthenticatedShellMethodologySourcesIndexRoute
   '/cases/$caseId/market/$marketPropertyId': typeof AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRoute
@@ -259,6 +268,7 @@ export interface FileRoutesById {
   '/_authenticated/_shell/cases/$caseId/intelligence': typeof AuthenticatedShellCasesCaseIdIntelligenceRoute
   '/_authenticated/_shell/cases/$caseId/property': typeof AuthenticatedShellCasesCaseIdPropertyRoute
   '/_authenticated/_shell/methodology/sources/$sourceId': typeof AuthenticatedShellMethodologySourcesSourceIdRoute
+  '/_authenticated/_shell/methodology/specifications/$specId': typeof AuthenticatedShellMethodologySpecificationsSpecIdRoute
   '/_authenticated/_shell/cases/$caseId/': typeof AuthenticatedShellCasesCaseIdIndexRoute
   '/_authenticated/_shell/methodology/sources/': typeof AuthenticatedShellMethodologySourcesIndexRoute
   '/_authenticated/_shell/cases/$caseId/market/$marketPropertyId': typeof AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRoute
@@ -287,6 +297,7 @@ export interface FileRouteTypes {
     | '/cases/$caseId/intelligence'
     | '/cases/$caseId/property'
     | '/methodology/sources/$sourceId'
+    | '/methodology/specifications/$specId'
     | '/cases/$caseId/'
     | '/methodology/sources/'
     | '/cases/$caseId/market/$marketPropertyId'
@@ -312,6 +323,7 @@ export interface FileRouteTypes {
     | '/cases/$caseId/intelligence'
     | '/cases/$caseId/property'
     | '/methodology/sources/$sourceId'
+    | '/methodology/specifications/$specId'
     | '/cases/$caseId'
     | '/methodology/sources'
     | '/cases/$caseId/market/$marketPropertyId'
@@ -340,6 +352,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_shell/cases/$caseId/intelligence'
     | '/_authenticated/_shell/cases/$caseId/property'
     | '/_authenticated/_shell/methodology/sources/$sourceId'
+    | '/_authenticated/_shell/methodology/specifications/$specId'
     | '/_authenticated/_shell/cases/$caseId/'
     | '/_authenticated/_shell/methodology/sources/'
     | '/_authenticated/_shell/cases/$caseId/market/$marketPropertyId'
@@ -510,6 +523,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellMethodologySourcesSourceIdRouteImport
       parentRoute: typeof AuthenticatedShellRoute
     }
+    '/_authenticated/_shell/methodology/specifications/$specId': {
+      id: '/_authenticated/_shell/methodology/specifications/$specId'
+      path: '/methodology/specifications/$specId'
+      fullPath: '/methodology/specifications/$specId'
+      preLoaderRoute: typeof AuthenticatedShellMethodologySpecificationsSpecIdRouteImport
+      parentRoute: typeof AuthenticatedShellRoute
+    }
     '/_authenticated/_shell/cases/$caseId/market/': {
       id: '/_authenticated/_shell/cases/$caseId/market/'
       path: '/market'
@@ -593,6 +613,7 @@ interface AuthenticatedShellRouteChildren {
   AuthenticatedShellEvidenceIndexRoute: typeof AuthenticatedShellEvidenceIndexRoute
   AuthenticatedShellMethodologyIndexRoute: typeof AuthenticatedShellMethodologyIndexRoute
   AuthenticatedShellMethodologySourcesSourceIdRoute: typeof AuthenticatedShellMethodologySourcesSourceIdRoute
+  AuthenticatedShellMethodologySpecificationsSpecIdRoute: typeof AuthenticatedShellMethodologySpecificationsSpecIdRoute
   AuthenticatedShellMethodologySourcesIndexRoute: typeof AuthenticatedShellMethodologySourcesIndexRoute
 }
 
@@ -615,6 +636,8 @@ const AuthenticatedShellRouteChildren: AuthenticatedShellRouteChildren = {
     AuthenticatedShellMethodologyIndexRoute,
   AuthenticatedShellMethodologySourcesSourceIdRoute:
     AuthenticatedShellMethodologySourcesSourceIdRoute,
+  AuthenticatedShellMethodologySpecificationsSpecIdRoute:
+    AuthenticatedShellMethodologySpecificationsSpecIdRoute,
   AuthenticatedShellMethodologySourcesIndexRoute:
     AuthenticatedShellMethodologySourcesIndexRoute,
 }

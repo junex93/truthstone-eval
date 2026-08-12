@@ -169,7 +169,7 @@ function SpecificationPage() {
               Submeter à revisão
             </Button>
           ) : null}
-          {specification.status === "IN_REVIEW" && canReview(role) ? (
+          {specification.status === "UNDER_REVIEW" && canReview(role) ? (
             <Button
               size="sm"
               disabled={approveMutation.isPending}
@@ -179,7 +179,7 @@ function SpecificationPage() {
             </Button>
           ) : null}
         </div>
-        {specification.status === "IN_REVIEW" && canReview(role) ? (
+        {specification.status === "UNDER_REVIEW" && canReview(role) ? (
           <div className="flex flex-wrap items-end gap-2">
             <div className="min-w-64 flex-1 space-y-1.5">
               <Label htmlFor="reject-reason">Justificativa da rejeição</Label>

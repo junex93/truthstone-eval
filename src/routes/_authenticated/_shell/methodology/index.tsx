@@ -51,9 +51,6 @@ function MethodologyHome() {
             <Button asChild variant="outline">
               <Link to="/methodology/sources">Biblioteca de fontes</Link>
             </Button>
-            <Button asChild variant="outline">
-              <Link to="/methodology/conflicts">Conflitos</Link>
-            </Button>
           </>
         }
       />
@@ -145,7 +142,7 @@ function MethodologyHome() {
                 <span className="mono-value">
                   {impl.implementation_code} v{impl.version}
                 </span>
-                <Badge variant={impl.status === "BLOCKED" ? "destructive" : "outline"}>
+                <Badge variant={impl.status !== "VALIDATED" ? "destructive" : "outline"}>
                   {impl.status}
                 </Badge>
               </li>
