@@ -104,6 +104,8 @@ export const registerSourceDocumentSchema = z.object({
   notes: optionalText(1000),
 });
 
+export const methodologyArtifactScopeSchema = z.object({ evidenceArtifactId: uuid });
+
 export const createSourceLocatorSchema = z.object({
   sourceId: uuid,
   locatorType: z.enum(METHODOLOGY_LOCATOR_TYPES),

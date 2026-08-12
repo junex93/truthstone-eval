@@ -687,3 +687,38 @@ const EXECUTABLE_PAYLOAD = /(\beval\b|new\s+Function|=>|\bimport\b|\brequire\b|`
 export function looksExecutable(expression: string): boolean {
   return EXECUTABLE_PAYLOAD.test(expression);
 }
+
+/** Diagnóstico de prontidão de fonte (RPC `methodology_source_readiness`). */
+export interface SourceReadinessReport {
+  source_id: string;
+  scope: "GLOBAL_METADATA" | "ORGANIZATION";
+  global_access_status: string;
+  organization_access_basis: string | null;
+  artifacts_in_organization: number;
+  metadata_verified: boolean;
+  content_verified: boolean;
+  locators_total: number;
+  locators_verified: number;
+  state:
+    | "BLOCKED_BY_USER_ARTIFACT"
+    | "PENDING_METADATA_VERIFICATION"
+    | "PENDING_CONTENT_VERIFICATION"
+    | "SOURCE_READY_FOR_RULE_REVIEW";
+  locator_backed_claims_allowed: boolean;
+  blockers: string[];
+}
+
+export const SOURCE_READINESS_LABEL: Record<string, string> = {
+  BLOCKED_BY_USER_ARTIFACT: "Bloqueada — sem documento autorizado nesta organização",
+  PENDING_METADATA_VERIFICATION: "Pendente de verificação de metadados",
+  PENDING_CONTENT_VERIFICATION: "Pendente de verificação de conteúdo",
+  SOURCE_READY_FOR_RULE_REVIEW: "Pronta para revisão de regras",
+};
+
+export const READINESS_BLOCKER_LABEL: Record<string, string> = {
+  NO_AUTHORIZED_ARTIFACT_IN_THIS_ORGANIZATION:
+    "Nenhum documento autorizado com base de acesso legítima nesta organização",
+  METADATA_NOT_VERIFIED: "Metadados ainda não conferidos por humano",
+  CONTENT_NOT_VERIFIED: "Conteúdo ainda não conferido contra o documento",
+  NO_VERIFIED_LOCATOR: "Nenhum localizador verificado (seção/cláusula/página)",
+};

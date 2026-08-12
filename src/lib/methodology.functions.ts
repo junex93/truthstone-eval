@@ -11,15 +11,22 @@ import { createServerFn } from "@tanstack/react-start";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
+  METHODOLOGY_SOURCE_BUCKET,
   asJsonObject,
   asStringArray,
+  assertMethodologyStoragePath,
+  ensureMethodologyLibrarySource,
   requireDraftSpecification,
   requireFormulaInDraftSpecification,
   requireRuleInDraftSpecification,
   requireSourceInScope,
   requireSpecificationInScope,
 } from "@/lib/methodology.server";
-import type { CompletenessReport, IntegrityReport } from "@/lib/domain/methodology";
+import type {
+  CompletenessReport,
+  IntegrityReport,
+  SourceReadinessReport,
+} from "@/lib/domain/methodology";
 import {
   approveSpecificationSchema,
   attachRuleSourceSchema,
@@ -38,6 +45,8 @@ import {
   createSourceConflictSchema,
   createSourceLocatorSchema,
   methodScopeSchema,
+  methodologyArtifactScopeSchema,
+  registerSourceDocumentSchema,
   rejectSpecificationSchema,
   resolveSourceConflictSchema,
   reviewChangeRequestSchema,
@@ -55,6 +64,7 @@ import {
   requireMembership,
   requireReviewAccess,
   requireWriteAccess,
+  sha256Hex,
   writeAudit,
 } from "@/lib/workspace.server";
 
