@@ -22,6 +22,7 @@ import { Route as AuthenticatedShellDatasetsIndexRouteImport } from './routes/_a
 import { Route as AuthenticatedShellDatasetsDatasetIdRouteImport } from './routes/_authenticated/_shell/datasets/$datasetId'
 import { Route as AuthenticatedShellEvidenceIndexRouteImport } from './routes/_authenticated/_shell/evidence/index'
 import { Route as AuthenticatedShellEvidenceSourceIdRouteImport } from './routes/_authenticated/_shell/evidence/$sourceId'
+import { Route as AuthenticatedShellMethodologyIndexRouteImport } from './routes/_authenticated/_shell/methodology/index'
 import { Route as AuthenticatedShellCasesCaseIdIndexRouteImport } from './routes/_authenticated/_shell/cases/$caseId/index'
 import { Route as AuthenticatedShellCasesCaseIdComparablesRouteImport } from './routes/_authenticated/_shell/cases/$caseId/comparables'
 import { Route as AuthenticatedShellCasesCaseIdDuplicatesRouteImport } from './routes/_authenticated/_shell/cases/$caseId/duplicates'
@@ -103,6 +104,12 @@ const AuthenticatedShellEvidenceSourceIdRoute =
     path: '/evidence/$sourceId',
     getParentRoute: () => AuthenticatedShellRoute,
   } as any)
+const AuthenticatedShellMethodologyIndexRoute =
+  AuthenticatedShellMethodologyIndexRouteImport.update({
+    id: '/methodology/',
+    path: '/methodology/',
+    getParentRoute: () => AuthenticatedShellRoute,
+  } as any)
 const AuthenticatedShellCasesCaseIdIndexRoute =
   AuthenticatedShellCasesCaseIdIndexRouteImport.update({
     id: '/',
@@ -170,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/cases/': typeof AuthenticatedShellCasesIndexRoute
   '/datasets/': typeof AuthenticatedShellDatasetsIndexRoute
   '/evidence/': typeof AuthenticatedShellEvidenceIndexRoute
+  '/methodology/': typeof AuthenticatedShellMethodologyIndexRoute
   '/cases/$caseId/comparables': typeof AuthenticatedShellCasesCaseIdComparablesRoute
   '/cases/$caseId/duplicates': typeof AuthenticatedShellCasesCaseIdDuplicatesRoute
   '/cases/$caseId/intelligence': typeof AuthenticatedShellCasesCaseIdIntelligenceRoute
@@ -191,6 +199,7 @@ export interface FileRoutesByTo {
   '/cases': typeof AuthenticatedShellCasesIndexRoute
   '/datasets': typeof AuthenticatedShellDatasetsIndexRoute
   '/evidence': typeof AuthenticatedShellEvidenceIndexRoute
+  '/methodology': typeof AuthenticatedShellMethodologyIndexRoute
   '/cases/$caseId/comparables': typeof AuthenticatedShellCasesCaseIdComparablesRoute
   '/cases/$caseId/duplicates': typeof AuthenticatedShellCasesCaseIdDuplicatesRoute
   '/cases/$caseId/intelligence': typeof AuthenticatedShellCasesCaseIdIntelligenceRoute
@@ -216,6 +225,7 @@ export interface FileRoutesById {
   '/_authenticated/_shell/cases/': typeof AuthenticatedShellCasesIndexRoute
   '/_authenticated/_shell/datasets/': typeof AuthenticatedShellDatasetsIndexRoute
   '/_authenticated/_shell/evidence/': typeof AuthenticatedShellEvidenceIndexRoute
+  '/_authenticated/_shell/methodology/': typeof AuthenticatedShellMethodologyIndexRoute
   '/_authenticated/_shell/cases/$caseId/comparables': typeof AuthenticatedShellCasesCaseIdComparablesRoute
   '/_authenticated/_shell/cases/$caseId/duplicates': typeof AuthenticatedShellCasesCaseIdDuplicatesRoute
   '/_authenticated/_shell/cases/$caseId/intelligence': typeof AuthenticatedShellCasesCaseIdIntelligenceRoute
@@ -240,6 +250,7 @@ export interface FileRouteTypes {
     | '/cases/'
     | '/datasets/'
     | '/evidence/'
+    | '/methodology/'
     | '/cases/$caseId/comparables'
     | '/cases/$caseId/duplicates'
     | '/cases/$caseId/intelligence'
@@ -261,6 +272,7 @@ export interface FileRouteTypes {
     | '/cases'
     | '/datasets'
     | '/evidence'
+    | '/methodology'
     | '/cases/$caseId/comparables'
     | '/cases/$caseId/duplicates'
     | '/cases/$caseId/intelligence'
@@ -285,6 +297,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_shell/cases/'
     | '/_authenticated/_shell/datasets/'
     | '/_authenticated/_shell/evidence/'
+    | '/_authenticated/_shell/methodology/'
     | '/_authenticated/_shell/cases/$caseId/comparables'
     | '/_authenticated/_shell/cases/$caseId/duplicates'
     | '/_authenticated/_shell/cases/$caseId/intelligence'
@@ -393,6 +406,13 @@ declare module '@tanstack/react-router' {
       path: '/evidence/$sourceId'
       fullPath: '/evidence/$sourceId'
       preLoaderRoute: typeof AuthenticatedShellEvidenceSourceIdRouteImport
+      parentRoute: typeof AuthenticatedShellRoute
+    }
+    '/_authenticated/_shell/methodology/': {
+      id: '/_authenticated/_shell/methodology/'
+      path: '/methodology'
+      fullPath: '/methodology/'
+      preLoaderRoute: typeof AuthenticatedShellMethodologyIndexRouteImport
       parentRoute: typeof AuthenticatedShellRoute
     }
     '/_authenticated/_shell/cases/$caseId/': {
@@ -510,6 +530,7 @@ interface AuthenticatedShellRouteChildren {
   AuthenticatedShellCasesIndexRoute: typeof AuthenticatedShellCasesIndexRoute
   AuthenticatedShellDatasetsIndexRoute: typeof AuthenticatedShellDatasetsIndexRoute
   AuthenticatedShellEvidenceIndexRoute: typeof AuthenticatedShellEvidenceIndexRoute
+  AuthenticatedShellMethodologyIndexRoute: typeof AuthenticatedShellMethodologyIndexRoute
 }
 
 const AuthenticatedShellRouteChildren: AuthenticatedShellRouteChildren = {
@@ -525,6 +546,8 @@ const AuthenticatedShellRouteChildren: AuthenticatedShellRouteChildren = {
   AuthenticatedShellCasesIndexRoute: AuthenticatedShellCasesIndexRoute,
   AuthenticatedShellDatasetsIndexRoute: AuthenticatedShellDatasetsIndexRoute,
   AuthenticatedShellEvidenceIndexRoute: AuthenticatedShellEvidenceIndexRoute,
+  AuthenticatedShellMethodologyIndexRoute:
+    AuthenticatedShellMethodologyIndexRoute,
 }
 
 const AuthenticatedShellRouteWithChildren =
