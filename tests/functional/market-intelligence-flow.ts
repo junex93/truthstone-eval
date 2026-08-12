@@ -1008,7 +1008,7 @@ async function main() {
   const report = await valuer.client.rpc("market_intelligence_report", { _case_id: caseA });
   expectOk("relatório de inteligência de mercado disponível", report.error);
   const reportJson = report.data as Record<string, unknown>;
-  const metricsFinal = (reportJson["metrics"] ?? {}) as Record<string, number>;
+  const metricsFinal = ((reportJson["header"] ?? reportJson["metrics"]) ?? {}) as Record<string, number>;
   record(
     "o relatório declara a lacuna de pesquisa: nenhuma captura de pesquisa neste caso",
     Number(metricsFinal["search_result_count"]) === 0 &&
