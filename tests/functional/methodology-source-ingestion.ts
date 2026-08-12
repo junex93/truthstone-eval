@@ -123,8 +123,8 @@ async function main() {
       source_type: "TECHNICAL_STANDARD",
       jurisdiction: "BR",
       access_status: "METADATA_ONLY",
-      authority_level: "MANDATORY_TECHNICAL_STANDARD",
-      status: "METADATA_VERIFIED",
+      authority_level: "PRIMARY_NORMATIVE",
+      status: "ACTIVE",
       created_by: ownerA.id,
     })
     .select("id")
@@ -141,8 +141,8 @@ async function main() {
       source_type: "TECHNICAL_STANDARD",
       jurisdiction: "BR",
       access_status: "METADATA_ONLY",
-      authority_level: "MANDATORY_TECHNICAL_STANDARD",
-      status: "METADATA_VERIFIED",
+      authority_level: "PRIMARY_NORMATIVE",
+      status: "ACTIVE",
       created_by: ownerA.id,
     })
     .select("id")
