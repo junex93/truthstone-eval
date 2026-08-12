@@ -233,7 +233,7 @@ export const updateDraftMethodologySource = createServerFn({ method: "POST" })
 
     const { error } = await supabase
       .from("methodology_sources")
-      .update(patch)
+      .update(patch as never)
       .eq("id", data.sourceId);
     if (error) throw new Error(error.message);
 
@@ -339,8 +339,8 @@ export const verifyMethodologySource = createServerFn({ method: "POST" })
     const { data: verificationId, error } = await supabase.rpc("verify_methodology_source", {
       _source_id: data.sourceId,
       _verification_type: data.verificationType,
-      _locator_id: data.locatorId ?? undefined,
-      _notes: data.notes ?? undefined,
+      ...(data.locatorId ? { _locator_id: data.locatorId } : {}),
+      ...(data.notes ? { _notes: data.notes } : {}),
     });
     if (error) throw new Error(error.message);
     return { verificationId };
@@ -824,7 +824,7 @@ export const updateDraftSpecification = createServerFn({ method: "POST" })
 
     const { error } = await supabase
       .from("method_specifications")
-      .update(patch)
+      .update(patch as never)
       .eq("id", data.specificationId);
     if (error) throw new Error(error.message);
 
@@ -935,7 +935,7 @@ export const submitMethodSpecification = createServerFn({ method: "POST" })
     await requireWriteAccess(supabase, userId);
     const { error } = await supabase.rpc("submit_method_specification", {
       _spec_id: data.specificationId,
-      _notes: data.notes ?? undefined,
+      ...(data.notes ? { _notes: data.notes } : {}),
     });
     if (error) throw new Error(error.message);
     return { specificationId: data.specificationId };
@@ -950,7 +950,7 @@ export const approveMethodSpecification = createServerFn({ method: "POST" })
     await requireReviewAccess(supabase, userId);
     const { data: result, error } = await supabase.rpc("approve_method_specification", {
       _spec_id: data.specificationId,
-      _notes: data.notes ?? undefined,
+      ...(data.notes ? { _notes: data.notes } : {}),
     });
     if (error) throw new Error(error.message);
     const json = asJsonObject(result);
@@ -997,7 +997,7 @@ export const verifySpecificationIntegrity = createServerFn({ method: "POST" })
       hash_algorithm: (json["hash_algorithm"] as string | null) ?? null,
       manifest_schema_version: (json["manifest_schema_version"] as string | null) ?? null,
       manifest_equal: Boolean(json["manifest_equal"]),
-      status: json["status"] as string | undefined,
+      ...(typeof json["status"] === "string" ? { status: json["status"] } : {}),
     };
   });
 
@@ -1073,7 +1073,7 @@ export const updateDraftMethodologyRule = createServerFn({ method: "POST" })
     if (data.priority !== undefined) patch["priority"] = data.priority;
     if (Object.keys(patch).length === 0) return { ruleId: data.ruleId };
 
-    const { error } = await supabase.from("methodology_rules").update(patch).eq("id", data.ruleId);
+    const { error } = await supabase.from("methodology_rules").update(patch as never).eq("id", data.ruleId);
     if (error) throw new Error(error.message);
 
     await writeAudit(supabase, {
