@@ -1796,7 +1796,7 @@ async function main() {
       valuation_method_id: outsiderMethod!.id,
       version: `1.0.0-test-b-${stamp}`,
       title: "Especificação TEST_ONLY da org B",
-      jurisdiction: "TEST_ONLY",
+      jurisdiction: "ORGANIZATIONAL",
       created_by: outsider.id,
     })
     .select("id")
