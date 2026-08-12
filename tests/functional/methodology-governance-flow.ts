@@ -1307,7 +1307,18 @@ async function main() {
     .from("method_parameter_values")
     .update({ numeric_value: 2 })
     .eq("parameter_id", parameter!.id);
-  expectFail("valor de parâmetro registrado é imutável (correção exige nova versão)", paramValueUpdate.error);
+  const { data: paramValueAfter } = await admin
+    .from("method_parameter_values")
+    .select("numeric_value")
+    .eq("parameter_id", parameter!.id)
+    .single();
+  record(
+    "valor de parâmetro registrado é imutável (correção exige nova versão)",
+    Number(paramValueAfter?.numeric_value) === 1,
+    paramValueUpdate.error
+      ? `recusado: ${paramValueUpdate.error.message.slice(0, 120)}`
+      : "nenhuma linha alterada (RLS não concede UPDATE)",
+  );
 
   /* ================================================== 12. CONFLITO DE FONTES */
 
@@ -1516,7 +1527,7 @@ async function main() {
     JSON.stringify(approvedManifest!.specification_manifest),
   ) as Record<string, unknown>;
   (tampered["metadata"] as Record<string, unknown>)["title"] = "conteúdo materialmente alterado";
-  const { data: tamperHash } = await admin.rpc("verify_specification_integrity", {
+  const { data: tamperHash } = await valuer.client.rpc("verify_specification_integrity", {
     _spec_id: main.specId,
   });
   const storedHash = (tamperHash as { stored_hash: string }).stored_hash;
