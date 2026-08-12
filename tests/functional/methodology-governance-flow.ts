@@ -2136,7 +2136,7 @@ async function main() {
       label: "aprovação da especificação principal",
       eventType: "METHOD_SPECIFICATION_APPROVED",
       entityId: main.specId,
-      actorId: reviewer.id,
+      actorId: owner.id,
     },
     {
       label: "rejeição pelo fluxo oficial",
