@@ -675,47 +675,47 @@ async function main() {
   const abntLocators = await rows("methodology_source_locators", "id, source_id, artifact_id", (q) =>
     q.in("source_id", [NBR1, NBR2]),
   );
-  const contentVerified = abntVerifications.filter(
+  const batch01ContentVerified = abntVerifications.filter(
     (v) => v["verification_type"] === "CONTENT_VERIFIED",
   );
-  const locatorVerified = abntVerifications.filter(
+  const batch01LocatorVerified = abntVerifications.filter(
     (v) => v["verification_type"] === "LOCATOR_VERIFIED",
   );
 
   record(
     "BATCH01 NO AUTO-VERIFY: nenhuma verificação de conteúdo sem artefato vinculado",
-    contentVerified.length === 0 || abntArtifacts.length > 0,
-    `artefatos=${abntArtifacts.length} content_verified=${contentVerified.length}`,
+    batch01ContentVerified.length === 0 || abntArtifacts.length > 0,
+    `artefatos=${abntArtifacts.length} content_verified=${batch01ContentVerified.length}`,
   );
   record(
     "BATCH01 NO AUTO-VERIFY: nenhum localizador verificado sem localizador registrado",
-    locatorVerified.length <= abntLocators.length,
-    `localizadores=${abntLocators.length} locator_verified=${locatorVerified.length}`,
+    batch01LocatorVerified.length <= abntLocators.length,
+    `localizadores=${abntLocators.length} locator_verified=${batch01LocatorVerified.length}`,
   );
   record(
     "BATCH01 METADATA_ONLY: fonte sem conteúdo verificado não sustenta claim direta",
     abntSources.every(
       (s) =>
         s["access_status"] !== "METADATA_ONLY" ||
-        contentVerified.filter((v) => v["source_id"] === s["id"]).length === 0,
+        batch01ContentVerified.filter((v) => v["source_id"] === s["id"]).length === 0,
     ),
-    `content_verified=${contentVerified.length}`,
+    `content_verified=${batch01ContentVerified.length}`,
   );
 
   /* nenhuma regra do shell é DIRECT_* sem localizador verificado */
-  const ruleIds = fullRules.map((r) => r["id"] as string);
-  const ruleSources = ruleIds.length
+  const batch01RuleIds = fullRules.map((r) => r["id"] as string);
+  const batch01RuleSources = batch01RuleIds.length
     ? await rows("methodology_rule_sources", "rule_id, source_id, locator_id, relationship", (q) =>
-        q.in("rule_id", ruleIds),
+        q.in("rule_id", batch01RuleIds),
       )
     : [];
   const verifiedLocatorIds = new Set(
-    locatorVerified.map((v) => v["locator_id"] as string).filter(Boolean),
+    batch01LocatorVerified.map((v) => v["locator_id"] as string).filter(Boolean),
   );
   const directOffenders = fullRules.filter(
     (r) =>
       String(r["normative_strength"]).startsWith("DIRECT_") &&
-      !ruleSources.some(
+      !batch01RuleSources.some(
         (rs) => rs["rule_id"] === r["id"] && verifiedLocatorIds.has(rs["locator_id"] as string),
       ),
   );
@@ -745,7 +745,7 @@ async function main() {
   );
   record(
     "BATCH01 TOPIC MAP: T01/T04/T07 pendentes enquanto não há conteúdo verificado",
-    contentVerified.length > 0 || batchTopics.every((t) => t["is_satisfied"] === false),
+    batch01ContentVerified.length > 0 || batchTopics.every((t) => t["is_satisfied"] === false),
     batchTopics.map((t) => `${t["requirement_code"]}=${t["is_satisfied"]}`).join(", "),
   );
 
