@@ -34,7 +34,7 @@ export const listCases = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
 
-    return { role: membership.role, cases: data ?? [] };
+    return { role: membership.role, cases: data ?? [], hasOrganization: true as const };
   });
 
 export const createCase = createServerFn({ method: "POST" })
