@@ -13,7 +13,8 @@
     "format": "prettier --write .",
     "test:research": "bun run tests/functional/research-flow.ts",
     "test:market": "bun run tests/functional/market-flow.ts",
-    "test:all": "bun run tests/security/negative-tests.ts && bun run tests/functional/market-flow.ts && bun run tests/functional/research-flow.ts"
+    "test:all": "bun run tests/security/negative-tests.ts && bun run tests/functional/market-flow.ts && bun run tests/functional/research-flow.ts && bun run tests/functional/market-intelligence-flow.ts",
+    "test:market-intelligence": "bun run tests/functional/market-intelligence-flow.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
