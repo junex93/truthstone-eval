@@ -89,3 +89,10 @@ Somente restrições internas declaradas (nenhuma citação normativa):
 - `IMPLEMENTATION_DESIGN_LATER` — expressão de aplicação e combinação.
 
 Nenhum motor, cálculo, fator, expoente ou limiar existe nesta fase.
+
+## 7. Batch 01 de revisão de fonte (T01 / T04 / T07)
+
+Resultado: `BLOCKED_BY_USER_ARTIFACT`. Sem artefato autorizado da NBR 14653-1/-2,
+T04 continua descrito apenas como controle interno (`INTERNAL_CONTROL`), sem
+condição normativa de aplicabilidade e sem mínimo amostral (T07).
+Detalhes em `docs/FACTORS_PRIMARY_SOURCE_REVIEW_BATCH_01.md`.
