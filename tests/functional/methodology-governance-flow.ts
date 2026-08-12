@@ -1782,8 +1782,9 @@ async function main() {
       organization_id: orgB,
       code: `TEST_ONLY_M_B_${stamp}`,
       name: "Método TEST_ONLY (org B)",
-      family: "TEST_ONLY",
-      lifecycle_status: "DRAFT",
+      family_code: "MARKET_COMPARISON",
+      description: "Método fictício exclusivo de teste. Não produz valor.",
+      status: "CONCEPT",
       created_by: outsider.id,
     })
     .select("id")
@@ -1796,7 +1797,6 @@ async function main() {
       version: `1.0.0-test-b-${stamp}`,
       title: "Especificação TEST_ONLY da org B",
       jurisdiction: "TEST_ONLY",
-      status: "DRAFT",
       created_by: outsider.id,
     })
     .select("id")
