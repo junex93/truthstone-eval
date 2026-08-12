@@ -82,6 +82,30 @@ export const attachSourceArtifactSchema = z.object({
   notes: optionalText(1000),
 });
 
+/**
+ * Base de acesso legítima de um documento autorizado. METADATA_ONLY não é base
+ * de acesso: fonte sem cópia legítima nunca sustenta verificação de conteúdo.
+ */
+export const AUTHORIZED_ACCESS_BASES = [
+  "USER_PROVIDED_COPY",
+  "LICENSED_COPY",
+  "INTERNAL_AUTHORIZED_COPY",
+  "PUBLICLY_ACCESSIBLE",
+] as const;
+
+/** Ingestão de documento normativo já enviado ao bucket privado. */
+export const registerSourceDocumentSchema = z.object({
+  sourceId: uuid,
+  storagePath: z.string().trim().min(3).max(1024),
+  fileName: text(1, 300),
+  mimeType: optionalText(160),
+  accessBasis: z.enum(AUTHORIZED_ACCESS_BASES),
+  accessJustification: text(10, 2000),
+  notes: optionalText(1000),
+});
+
+export const methodologyArtifactScopeSchema = z.object({ evidenceArtifactId: uuid });
+
 export const createSourceLocatorSchema = z.object({
   sourceId: uuid,
   locatorType: z.enum(METHODOLOGY_LOCATOR_TYPES),
@@ -94,6 +118,8 @@ export const createSourceLocatorSchema = z.object({
   externalAnchor: optionalText(2000),
   supportExcerpt: optionalText(4000),
   notes: optionalText(1000),
+  /** Artefato que sustenta o localizador; validado em banco quanto à linhagem. */
+  artifactId: uuid.optional().nullable(),
 });
 
 export const verifyMethodologySourceSchema = z.object({

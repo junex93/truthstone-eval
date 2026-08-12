@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 /**
  * FUNCTIONAL + NEGATIVE FLOW TEST — METHODOLOGY GOVERNANCE (fase 6)
  *
@@ -162,7 +163,9 @@ async function main() {
         storage_bucket: "evidence-originals",
         storage_path: `${org}/${kase.id}/mg-${tag}-${stamp}.pdf`,
         file_name: `mg-${tag}-${stamp}.pdf`,
-        sha256_hash: null,
+        sha256_hash: createHash("sha256")
+          .update(`TEST_ONLY-${org}-${tag}-${stamp}`)
+          .digest("hex"),
         hash_computed_by: "SERVER",
         created_by: creator,
       })
@@ -2024,9 +2027,9 @@ async function main() {
       : "nenhuma linha alterada",
   );
 
-  const seedStates = (globalSources ?? []).map(
-    (s: Record<string, unknown>) => `${s["access_status"]}/${s["status"]}`,
-  );
+  const seedStates = (globalSources ?? [])
+    .filter((s: Record<string, unknown>) => !String(s["title"] ?? "").startsWith("TEST_ONLY"))
+    .map((s: Record<string, unknown>) => `${s["access_status"]}/${s["status"]}`);
   record(
     "seeds normativos permanecem METADATA_ONLY e pendentes de revisão de metadados",
     seedStates.every(
@@ -2211,7 +2214,7 @@ async function main() {
     },
     {
       label: "verificação de fonte metodológica",
-      eventType: "METHODOLOGY_SOURCE_VERIFIED",
+      eventType: "METHODOLOGY_SOURCE_METADATA_VERIFIED",
       entityId: mainSourceId,
       actorId: reviewer.id,
     },

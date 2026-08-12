@@ -16,7 +16,8 @@
     "test:all": "bun run tests/security/negative-tests.ts && bun run tests/functional/market-flow.ts && bun run tests/functional/research-flow.ts && bun run tests/functional/market-intelligence-flow.ts",
     "test:market-intelligence": "bun run tests/functional/market-intelligence-flow.ts",
     "test:methodology": "bun run tests/functional/methodology-governance-flow.ts",
-    "test:factors": "bun run tests/functional/factors-specification-governance.ts"
+    "test:factors": "bun run tests/functional/factors-specification-governance.ts",
+    "test:source-ingestion": "bun run tests/functional/methodology-source-ingestion.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

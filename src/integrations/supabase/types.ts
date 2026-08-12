@@ -5786,6 +5786,14 @@ export type Database = {
         Returns: string
       }
       market_universe_metrics: { Args: { _case_id: string }; Returns: Json }
+      methodology_source_org_access_basis: {
+        Args: { _org: string; _source_id: string }
+        Returns: Database["public"]["Enums"]["methodology_access_status"]
+      }
+      methodology_source_readiness: {
+        Args: { _source_id: string }
+        Returns: Json
+      }
       org_has_members: { Args: { _org: string }; Returns: boolean }
       p_unit_unknown: { Args: { _unit: string }; Returns: boolean }
       promote_research_candidate: {

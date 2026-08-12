@@ -24,17 +24,26 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { canReview, canWrite } from "@/hooks/use-workspace";
 import {
+  ACCESS_STATUS_LABEL,
   METHODOLOGY_LOCATOR_TYPES,
   METHODOLOGY_VERIFICATION_TYPES,
-  allowsContentVerification,
+  READINESS_BLOCKER_LABEL,
+  SOURCE_READINESS_LABEL,
 } from "@/lib/domain/methodology";
+import type { SourceReadinessReport } from "@/lib/domain/methodology";
 import {
   createMethodologySourceLocator,
+  getMethodologyDocumentUrl,
   getMethodologySource,
+  getMethodologySourceReadiness,
+  registerMethodologySourceDocument,
   verifyMethodologySource,
 } from "@/lib/methodology.functions";
+import { supabase } from "@/integrations/supabase/client";
 import {
+  AUTHORIZED_ACCESS_BASES,
   createSourceLocatorSchema,
+  registerSourceDocumentSchema,
   verifyMethodologySourceSchema,
 } from "@/lib/validation/methodology-schemas";
 
@@ -45,9 +54,14 @@ export const Route = createFileRoute("/_authenticated/_shell/methodology/sources
 function SourceDetailPage() {
   const { sourceId } = Route.useParams();
   const fetchSource = useServerFn(getMethodologySource);
+  const fetchReadiness = useServerFn(getMethodologySourceReadiness);
   const query = useQuery({
     queryKey: ["methodology", "source", sourceId],
     queryFn: () => fetchSource({ data: { sourceId } }),
+  });
+  const readinessQuery = useQuery({
+    queryKey: ["methodology", "source", sourceId, "readiness"],
+    queryFn: () => fetchReadiness({ data: { sourceId } }),
   });
 
   if (query.isPending) return <Skeleton className="h-96 w-full" />;
@@ -66,7 +80,9 @@ function SourceDetailPage() {
   }
 
   const { source, locators, verifications, artifacts, ruleSources, conflicts, role } = query.data;
-  const contentAllowed = allowsContentVerification(source.access_status);
+  const readiness = readinessQuery.data?.readiness;
+  // O gate é do banco: a interface apenas reflete o diagnóstico da RPC.
+  const contentAllowed = readiness ? readiness.organization_access_basis !== null : false;
 
   return (
     <div className="space-y-6">
@@ -90,13 +106,26 @@ function SourceDetailPage() {
         <DataField label="Artefatos anexados" value={String(artifacts.length)} />
       </div>
 
+      <ReadinessPanel readiness={readiness} pending={readinessQuery.isPending} />
+
       {!contentAllowed ? (
         <GovernanceNote>
-          Esta fonte está registrada como METADATA_ONLY: a plataforma não possui cópia legítima do
-          conteúdo. Verificação de conteúdo e de localizador está bloqueada, e nenhuma regra pode
-          declarar citação textual apoiada nela.
+          Esta organização não possui documento autorizado desta fonte: ela permanece como metadado
+          declarado. Verificação de conteúdo e de localizador está bloqueada no banco, e nenhuma
+          regra pode declarar citação textual apoiada nela. Uma cópia enviada por outra organização
+          nunca satisfaz este requisito.
         </GovernanceNote>
       ) : null}
+
+      <section>
+        <SectionTitle
+          step="00"
+          title="Documento autorizado"
+          description="Cópia privada da organização. O SHA-256 é calculado no servidor, lendo os bytes armazenados."
+        />
+        <ArtifactList artifacts={artifacts} />
+        {canWrite(role) ? <DocumentIngestionForm sourceId={sourceId} /> : null}
+      </section>
 
       <section>
         <SectionTitle
@@ -128,7 +157,9 @@ function SourceDetailPage() {
             ))}
           </ul>
         )}
-        {canWrite(role) ? <NewLocatorForm sourceId={sourceId} /> : null}
+        {canWrite(role) ? (
+          <NewLocatorForm sourceId={sourceId} artifacts={artifacts} />
+        ) : null}
       </section>
 
       <section>
@@ -201,7 +232,212 @@ function SourceDetailPage() {
   );
 }
 
-function NewLocatorForm({ sourceId }: { sourceId: string }) {
+function ReadinessPanel({
+  readiness,
+  pending,
+}: {
+  readiness: SourceReadinessReport | undefined;
+  pending: boolean;
+}) {
+  if (pending) return <Skeleton className="h-24 w-full" />;
+  if (!readiness) return null;
+  return (
+    <div className="panel space-y-3 p-5">
+      <div className="grid gap-4 sm:grid-cols-4">
+        <DataField
+          label="Estado da fonte"
+          value={SOURCE_READINESS_LABEL[readiness.state] ?? readiness.state}
+        />
+        <DataField
+          label="Base de acesso nesta organização"
+          value={
+            readiness.organization_access_basis
+              ? (ACCESS_STATUS_LABEL[readiness.organization_access_basis] ??
+                readiness.organization_access_basis)
+              : "Nenhuma"
+          }
+        />
+        <DataField
+          label="Escopo do registro"
+          value={readiness.scope === "GLOBAL_METADATA" ? "Metadado global" : "Organização"}
+        />
+        <DataField
+          label="Localizadores verificados"
+          value={`${readiness.locators_verified} de ${readiness.locators_total}`}
+        />
+      </div>
+      {readiness.blockers.length > 0 ? (
+        <ul className="space-y-1 border-t border-border pt-3 text-xs text-muted-foreground">
+          {readiness.blockers.map((b) => (
+            <li key={b} className="mono-value">
+              · {READINESS_BLOCKER_LABEL[b] ?? b}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="border-t border-border pt-3 text-xs text-muted-foreground">
+          Fonte pronta para revisão de regras. Isto habilita citação com localizador; não valida
+          nenhuma fórmula nem parâmetro.
+        </p>
+      )}
+    </div>
+  );
+}
+
+interface ArtifactRow {
+  id: string;
+  evidence_artifact_id: string;
+  access_basis: string;
+  notes: string | null;
+  created_at: string;
+}
+
+function ArtifactList({ artifacts }: { artifacts: ArtifactRow[] }) {
+  const getUrl = useServerFn(getMethodologyDocumentUrl);
+  const open = useMutation({
+    mutationFn: (evidenceArtifactId: string) => getUrl({ data: { evidenceArtifactId } }),
+    onSuccess: (result) => window.open(result.url, "_blank", "noopener,noreferrer"),
+    onError: (error) => toast.error(error instanceof Error ? error.message : "Falha"),
+  });
+
+  if (artifacts.length === 0) {
+    return (
+      <div className="panel px-4 py-6 text-sm text-muted-foreground">
+        Nenhum documento autorizado registrado nesta organização.
+      </div>
+    );
+  }
+  return (
+    <ul className="panel divide-y divide-border">
+      {artifacts.map((a) => (
+        <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
+          <span>
+            <span className="mono-value text-xs text-muted-foreground">
+              {ACCESS_STATUS_LABEL[a.access_basis] ?? a.access_basis}
+            </span>
+            <span className="ml-2 text-xs text-muted-foreground">
+              {new Date(a.created_at).toLocaleString("pt-BR")}
+            </span>
+            {a.notes ? <p className="mt-0.5 text-xs text-muted-foreground">{a.notes}</p> : null}
+          </span>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={open.isPending}
+            onClick={() => open.mutate(a.evidence_artifact_id)}
+          >
+            Abrir documento
+          </Button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function DocumentIngestionForm({ sourceId }: { sourceId: string }) {
+  const queryClient = useQueryClient();
+  const register = useServerFn(registerMethodologySourceDocument);
+  const [file, setFile] = useState<File | null>(null);
+  const [accessBasis, setAccessBasis] = useState<string>("USER_PROVIDED_COPY");
+  const [justification, setJustification] = useState("");
+
+  const mutation = useMutation({
+    mutationFn: async () => {
+      if (!file) throw new Error("Selecione o documento autorizado.");
+      const { data: session } = await supabase.auth.getUser();
+      const { data: member, error: memberError } = await supabase
+        .from("organization_members")
+        .select("organization_id")
+        .eq("user_id", session.user?.id ?? "")
+        .eq("status", "ACTIVE")
+        .maybeSingle();
+      if (memberError) throw new Error(memberError.message);
+      if (!member) throw new Error("Nenhuma organização ativa vinculada a este usuário.");
+
+      const safeName = file.name.replace(/[^\w.\-]+/g, "_");
+      const storagePath = `${member.organization_id}/${sourceId}/${Date.now()}-${safeName}`;
+      const upload = await supabase.storage
+        .from("methodology-sources")
+        .upload(storagePath, file, { upsert: false });
+      if (upload.error) throw new Error(upload.error.message);
+
+      return register({
+        data: registerSourceDocumentSchema.parse({
+          sourceId,
+          storagePath,
+          fileName: file.name,
+          mimeType: file.type || null,
+          accessBasis,
+          accessJustification: justification,
+        }),
+      });
+    },
+    onSuccess: (result) => {
+      toast.success(`Documento registrado. SHA-256 ${result.sha256?.slice(0, 12)}…`);
+      setFile(null);
+      setJustification("");
+      void queryClient.invalidateQueries({ queryKey: ["methodology", "source", sourceId] });
+      void queryClient.invalidateQueries({
+        queryKey: ["methodology", "source", sourceId, "readiness"],
+      });
+    },
+    onError: (error) => toast.error(error instanceof Error ? error.message : "Falha"),
+  });
+
+  return (
+    <div className="panel mt-3 space-y-3 p-4">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="space-y-1.5">
+          <Label htmlFor="doc-file">Arquivo</Label>
+          <Input
+            id="doc-file"
+            type="file"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Base de acesso</Label>
+          <Select value={accessBasis} onValueChange={setAccessBasis}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {AUTHORIZED_ACCESS_BASES.map((b) => (
+                <SelectItem key={b} value={b}>
+                  {ACCESS_STATUS_LABEL[b] ?? b}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="doc-just">Justificativa da autorização</Label>
+          <Input
+            id="doc-just"
+            value={justification}
+            onChange={(e) => setJustification(e.target.value)}
+            placeholder="Ex.: exemplar adquirido pela organização"
+          />
+        </div>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        O documento fica em bucket privado, isolado por organização. Nenhuma outra organização passa
+        a ter acesso ao conteúdo por causa deste envio.
+      </p>
+      <Button size="sm" disabled={mutation.isPending} onClick={() => mutation.mutate()}>
+        Registrar documento autorizado
+      </Button>
+    </div>
+  );
+}
+
+function NewLocatorForm({
+  sourceId,
+  artifacts,
+}: {
+  sourceId: string;
+  artifacts: ArtifactRow[];
+}) {
   const queryClient = useQueryClient();
   const create = useServerFn(createMethodologySourceLocator);
   const [form, setForm] = useState({
@@ -210,6 +446,7 @@ function NewLocatorForm({ sourceId }: { sourceId: string }) {
     clause: "",
     page: "",
     supportExcerpt: "",
+    artifactId: "",
   });
 
   const mutation = useMutation({
@@ -222,12 +459,16 @@ function NewLocatorForm({ sourceId }: { sourceId: string }) {
           clause: form.clause || null,
           page: form.page === "" ? null : Number(form.page),
           supportExcerpt: form.supportExcerpt || null,
+          artifactId: form.artifactId === "" ? null : form.artifactId,
         }),
       }),
     onSuccess: () => {
       toast.success("Localizador registrado.");
       setForm((f) => ({ ...f, section: "", clause: "", page: "", supportExcerpt: "" }));
       void queryClient.invalidateQueries({ queryKey: ["methodology", "source", sourceId] });
+      void queryClient.invalidateQueries({
+        queryKey: ["methodology", "source", sourceId, "readiness"],
+      });
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Falha"),
   });
@@ -278,6 +519,26 @@ function NewLocatorForm({ sourceId }: { sourceId: string }) {
             onChange={(e) => setForm((f) => ({ ...f, page: e.target.value }))}
           />
         </div>
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label>Documento de apoio</Label>
+          <Select
+            value={form.artifactId}
+            onValueChange={(value) => setForm((f) => ({ ...f, artifactId: value }))}
+            disabled={artifacts.length === 0}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={artifacts.length === 0 ? "Nenhum documento" : "Nenhum"} />
+            </SelectTrigger>
+            <SelectContent>
+              {artifacts.map((a) => (
+                <SelectItem key={a.evidence_artifact_id} value={a.evidence_artifact_id}>
+                  {ACCESS_STATUS_LABEL[a.access_basis] ?? a.access_basis} ·{" "}
+                  {new Date(a.created_at).toLocaleDateString("pt-BR")}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <div className="space-y-1.5 sm:col-span-4">
           <Label htmlFor="loc-excerpt">Trecho de apoio (mínimo necessário)</Label>
           <Textarea
@@ -326,6 +587,9 @@ function VerifyForm({
       toast.success("Verificação registrada.");
       setForm((f) => ({ ...f, notes: "" }));
       void queryClient.invalidateQueries({ queryKey: ["methodology", "source", sourceId] });
+      void queryClient.invalidateQueries({
+        queryKey: ["methodology", "source", sourceId, "readiness"],
+      });
       void queryClient.invalidateQueries({ queryKey: ["methodology", "sources"] });
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Falha"),

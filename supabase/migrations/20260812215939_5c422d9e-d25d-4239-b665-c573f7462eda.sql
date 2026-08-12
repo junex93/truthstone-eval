@@ -1,0 +1,4 @@
+DROP TRIGGER IF EXISTS trg_meth_locator_artifact_lineage ON public.methodology_source_locators;
+CREATE TRIGGER trg_meth_locator_artifact_lineage
+BEFORE INSERT OR UPDATE ON public.methodology_source_locators
+FOR EACH ROW EXECUTE FUNCTION public.guard_methodology_locator_artifact();
