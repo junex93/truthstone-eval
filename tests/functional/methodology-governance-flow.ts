@@ -2207,7 +2207,7 @@ async function main() {
     .order("created_at", { ascending: true });
   const { data: atomicSpec } = await admin
     .from("method_specifications")
-    .select("status, approved_by, approved_at, manifest_hash")
+    .select("status, approved_by, approved_at, specification_hash")
     .eq("id", atomic.specId)
     .single();
   record(
@@ -2222,9 +2222,9 @@ async function main() {
     atomicSpec?.status === "APPROVED" &&
       atomicSpec?.approved_by === reviewer.id &&
       !!atomicSpec?.approved_at &&
-      typeof atomicSpec?.manifest_hash === "string" &&
-      (atomicSpec?.manifest_hash as string).length === 64,
-    `status=${atomicSpec?.status} hash=${String(atomicSpec?.manifest_hash).slice(0, 12)}…`,
+      typeof atomicSpec?.specification_hash === "string" &&
+      (atomicSpec?.specification_hash as string).length === 64,
+    `status=${atomicSpec?.status} hash=${String(atomicSpec?.specification_hash).slice(0, 12)}…`,
   );
 
   const auditTamper = await valuer.client
