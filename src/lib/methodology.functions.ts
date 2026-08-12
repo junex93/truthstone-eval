@@ -287,6 +287,137 @@ export const attachMethodologySourceArtifact = createServerFn({ method: "POST" }
     return { artifactLinkId: row.id };
   });
 
+/**
+ * Ingestão de documento normativo autorizado (Fase 7C).
+ *
+ * O arquivo já está no bucket privado `methodology-sources`. Aqui o servidor
+ * lê os bytes de volta e calcula o SHA-256 — hash vindo do cliente nunca é
+ * aceito. A cópia é SEMPRE da organização: uma fonte global permanece
+ * METADATA_ONLY para todas as demais organizações.
+ */
+export const registerMethodologySourceDocument = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => registerSourceDocumentSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const membership = await requireWriteAccess(supabase, userId);
+    const scope = await requireSourceInScope(supabase, data.sourceId, membership);
+
+    assertMethodologyStoragePath(data.storagePath, membership.organizationId, scope.id);
+
+    const download = await supabase.storage
+      .from(METHODOLOGY_SOURCE_BUCKET)
+      .download(data.storagePath);
+    if (download.error || !download.data) {
+      throw new Error(
+        `Não foi possível ler o documento armazenado para calcular o hash: ${
+          download.error?.message ?? "arquivo ausente"
+        }`,
+      );
+    }
+    const bytes = await download.data.arrayBuffer();
+    const hash = await sha256Hex(bytes);
+
+    const evidenceSourceId = await ensureMethodologyLibrarySource(supabase, membership, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const artifact = await supabaseAdmin
+      .from("evidence_artifacts")
+      .insert({
+        organization_id: membership.organizationId,
+        evidence_source_id: evidenceSourceId,
+        storage_bucket: METHODOLOGY_SOURCE_BUCKET,
+        storage_path: data.storagePath,
+        file_name: data.fileName,
+        mime_type: data.mimeType ?? download.data.type ?? null,
+        file_size: bytes.byteLength,
+        sha256_hash: hash,
+        hash_computed_by: "SERVER",
+        created_by: userId,
+      })
+      .select("id, sha256_hash, file_size")
+      .single();
+    if (artifact.error) throw new Error(artifact.error.message);
+
+    const link = await supabase
+      .from("methodology_source_artifacts")
+      .insert({
+        organization_id: membership.organizationId,
+        source_id: scope.id,
+        evidence_artifact_id: artifact.data.id,
+        access_basis: data.accessBasis,
+        notes: [data.accessJustification, data.notes].filter(Boolean).join(" — "),
+        created_by: userId,
+      })
+      .select("id")
+      .single();
+    if (link.error) throw new Error(link.error.message);
+
+    await writeAudit(supabase, {
+      organizationId: membership.organizationId,
+      actorUserId: userId,
+      eventType: "METHODOLOGY_SOURCE_ARTIFACT_ATTACHED",
+      entityType: "methodology_source_artifacts",
+      entityId: link.data.id,
+      after: {
+        source_id: scope.id,
+        evidence_artifact_id: artifact.data.id,
+        access_basis: data.accessBasis,
+        sha256_hash: artifact.data.sha256_hash,
+        hash_computed_by: "SERVER",
+      },
+    });
+
+    return {
+      artifactLinkId: link.data.id,
+      evidenceArtifactId: artifact.data.id,
+      sha256: artifact.data.sha256_hash,
+      fileSize: artifact.data.file_size,
+    };
+  });
+
+/** URL assinada de curta duração para conferência humana do documento. */
+export const getMethodologyDocumentUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => methodologyArtifactScopeSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const membership = await requireMembership(supabase, userId);
+
+    const { data: artifact, error } = await supabase
+      .from("evidence_artifacts")
+      .select("id, storage_bucket, storage_path, organization_id")
+      .eq("id", data.evidenceArtifactId)
+      .eq("organization_id", membership.organizationId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!artifact) throw new Error("Documento fora do escopo desta organização.");
+
+    const signed = await supabase.storage
+      .from(artifact.storage_bucket)
+      .createSignedUrl(artifact.storage_path, 300);
+    if (signed.error || !signed.data) {
+      throw new Error(signed.error?.message ?? "Não foi possível gerar o acesso temporário.");
+    }
+    return { url: signed.data.signedUrl };
+  });
+
+/** Diagnóstico determinístico: o estado vem da RPC, nunca da interface. */
+export const getMethodologySourceReadiness = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => sourceScopeSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const membership = await requireMembership(supabase, userId);
+    await requireSourceInScope(supabase, data.sourceId, membership);
+
+    const { data: report, error } = await supabase.rpc("methodology_source_readiness", {
+      _source_id: data.sourceId,
+    });
+    if (error) throw new Error(error.message);
+    return { readiness: asJsonObject(report) as unknown as SourceReadinessReport };
+  });
+
 export const createMethodologySourceLocator = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => createSourceLocatorSchema.parse(input))
@@ -310,6 +441,7 @@ export const createMethodologySourceLocator = createServerFn({ method: "POST" })
         external_anchor: data.externalAnchor,
         support_excerpt: data.supportExcerpt,
         notes: data.notes,
+        artifact_id: data.artifactId ?? null,
         created_by: userId,
       })
       .select("id")
@@ -322,7 +454,11 @@ export const createMethodologySourceLocator = createServerFn({ method: "POST" })
       eventType: "METHODOLOGY_SOURCE_LOCATOR_CREATED",
       entityType: "methodology_source_locators",
       entityId: row.id,
-      after: { source_id: data.sourceId, locator_type: data.locatorType },
+      after: {
+        source_id: data.sourceId,
+        locator_type: data.locatorType,
+        artifact_id: data.artifactId ?? null,
+      },
     });
     return { locatorId: row.id };
   });
