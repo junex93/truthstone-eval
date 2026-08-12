@@ -103,3 +103,19 @@ Buckets privados: `evidence-originals`, `property-media`, `generated-reports`.
 Caminho canônico: `<organization_id>/<valuation_case_id>/<arquivo>`. As políticas
 de storage validam os dois segmentos contra o banco (existência da organização e
 do caso), não apenas o texto do path.
+
+## Camada 6 — Metodologia e registro normativo
+
+```
+src/routes/_authenticated/_shell/methodology/*   UI de registro e revisão
+src/lib/methodology.functions.ts                 server functions (wrapper fino)
+src/lib/methodology.server.ts                    helpers exclusivos de servidor
+src/lib/validation/methodology-schemas.ts        contratos Zod compartilhados
+src/lib/domain/constants.ts                      vocabulário único de metodologia
+PostgreSQL                                       RLS + triggers + RPCs oficiais
+```
+
+A camada é declarativa: descreve métodos, não os executa. Não há motor de
+cálculo, ajuste, inferência ou geração de laudo. As especificações de
+"Tratamento por fatores" e "Inferência estatística" permanecem shells `DRAFT`
+vazias.

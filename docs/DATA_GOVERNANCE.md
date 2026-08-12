@@ -90,3 +90,15 @@ comparable`, `resolve_property_match`); fato canônico só é escrito por
 (sistema e tarefa), IDs de evidência de entrada, saída bruta, status e tempos.
 Nenhuma saída de IA é dado factual: ela só entra no acervo como candidato sujeito
 a verificação humana.
+
+## Integridade da camada metodológica (Fase 6)
+
+- Especificação aprovada gera manifesto canônico ordenado + `specification_hash`
+  SHA-256; `verify_specification_integrity` recalcula de forma estável.
+- Fonte metodológica separa metadados, conteúdo e localizador; `METADATA_ONLY`
+  não aceita verificação de conteúdo.
+- Regras normativas exigem localizador de fonte verificada; regras internas são
+  marcadas `INTERNAL_CONTROL` e nunca se apresentam como exigência de norma.
+- Fórmulas são simbólicas e documentais; expressão executável é recusada no banco.
+- Conflito entre fontes é preservado até resolução humana fundamentada.
+- Versão aprovada nunca é editada: correção é nova versão com supersessão.

@@ -413,7 +413,10 @@ async function main() {
     _locator_id: null,
     _notes: "Conteúdo conferido na cópia autorizada (TEST_ONLY).",
   });
-  expectOk("REVIEWER verifica conteúdo (CONTENT_VERIFIED) com artefato autorizado", contentVerify.error);
+  expectOk(
+    "REVIEWER verifica conteúdo (CONTENT_VERIFIED) com artefato autorizado",
+    contentVerify.error,
+  );
 
   const { data: locator, error: locatorError } = await valuer.client
     .from("methodology_source_locators")
@@ -489,7 +492,10 @@ async function main() {
     verified_by: reviewer.id,
     verified_at: new Date().toISOString(),
   });
-  expectFail("METADATA_ONLY recusa CONTENT_VERIFIED também por escrita direta", metaOnlyDirect.error);
+  expectFail(
+    "METADATA_ONLY recusa CONTENT_VERIFIED também por escrita direta",
+    metaOnlyDirect.error,
+  );
 
   /* snippet / metadado externo: sem cópia autorizada e sem URL registrada */
   const snippetSource = await mkSource(valuer.client, valuer.id, {
@@ -536,7 +542,11 @@ async function main() {
     locatorId: mainLocatorId,
     relationship: "TECHNICAL_SUPPORT",
   });
-  record("especificação V1 TEST_ONLY montada com seções, regra, fórmula, testes e saída", true, main.specId);
+  record(
+    "especificação V1 TEST_ONLY montada com seções, regra, fórmula, testes e saída",
+    true,
+    main.specId,
+  );
 
   const before = await completeness(valuer.client, main.specId);
   record(
@@ -584,7 +594,10 @@ async function main() {
     _notes: null,
   });
   // OWNER pode revisar; a checagem específica de VALUER vem abaixo com outra spec.
-  expectOk("OWNER (autoridade de revisão, distinto do submissor) pode aprovar", valuerApprove.error);
+  expectOk(
+    "OWNER (autoridade de revisão, distinto do submissor) pode aprovar",
+    valuerApprove.error,
+  );
 
   const { data: approved } = await admin
     .from("method_specifications")
@@ -595,7 +608,9 @@ async function main() {
     .single();
   record(
     "approved_by / approved_at gravados pelo fluxo de aprovação",
-    approved?.status === "APPROVED" && approved?.approved_by === owner.id && !!approved?.approved_at,
+    approved?.status === "APPROVED" &&
+      approved?.approved_by === owner.id &&
+      !!approved?.approved_at,
     `status=${approved?.status}`,
   );
   record(
@@ -636,7 +651,10 @@ async function main() {
     _spec_id: second.specId,
     _notes: null,
   });
-  expectFail("mesmo OWNER que submeteu não pode aprovar (two-person review)", ownerSelfApprove.error);
+  expectFail(
+    "mesmo OWNER que submeteu não pode aprovar (two-person review)",
+    ownerSelfApprove.error,
+  );
 
   const valuerApproveAttempt = await valuer.client.rpc("approve_method_specification", {
     _spec_id: second.specId,
@@ -843,7 +861,10 @@ async function main() {
     expected_result: "METHOD_APPLICABLE",
     created_by: valuer.id,
   });
-  expectFail("novo critério de aplicabilidade não entra em especificação aprovada", newApplicability.error);
+  expectFail(
+    "novo critério de aplicabilidade não entra em especificação aprovada",
+    newApplicability.error,
+  );
 
   const newTestCase = await valuer.client.from("method_test_cases").insert({
     organization_id: orgA,
@@ -1023,7 +1044,10 @@ async function main() {
     relationship_type: "DIRECT_REQUIREMENT",
     created_by: valuer.id,
   });
-  expectOk("vínculo direto com conteúdo verificado e localizador é aceito", claimUnverifiedLocator.error);
+  expectOk(
+    "vínculo direto com conteúdo verificado e localizador é aceito",
+    claimUnverifiedLocator.error,
+  );
 
   const withUnverified = await completeness(valuer.client, normSpecId);
   record(
@@ -1044,7 +1068,9 @@ async function main() {
   record(
     "claim normativa completa (conteúdo + localizador verificados) deixa de ser bloqueador",
     !afterLocatorVerified.blockers.some((b) => b.startsWith("DIRECT_CLAIM_")) &&
-      !afterLocatorVerified.blockers.some((b) => b.startsWith("NORMATIVE_RULE_WITHOUT_DIRECT_SOURCE")),
+      !afterLocatorVerified.blockers.some((b) =>
+        b.startsWith("NORMATIVE_RULE_WITHOUT_DIRECT_SOURCE"),
+      ),
     JSON.stringify(afterLocatorVerified.blockers),
   );
   record(
@@ -1106,7 +1132,10 @@ async function main() {
     relationship_type: "INTERNAL_DESIGN",
     created_by: valuer.id,
   });
-  expectFail("fonte externa não pode ser classificada como INTERNAL_DESIGN", externalAsInternalDesign.error);
+  expectFail(
+    "fonte externa não pode ser classificada como INTERNAL_DESIGN",
+    externalAsInternalDesign.error,
+  );
 
   const { data: internalManifestCheck } = await admin
     .from("methodology_sources")
@@ -1214,7 +1243,10 @@ async function main() {
     unit_code: "TEST_UNKNOWN_UNIT",
     required: true,
   });
-  expectFail("unidade não registrada é recusada pelo registro oficial de unidades", badUnitVar.error);
+  expectFail(
+    "unidade não registrada é recusada pelo registro oficial de unidades",
+    badUnitVar.error,
+  );
 
   const unknownUnit = await completeness(valuer.client, normSpecId);
   record(
@@ -1358,7 +1390,10 @@ async function main() {
     .from("methodology_source_conflicts")
     .update({ resolution_status: "RESOLVED", resolved_by: valuer.id })
     .eq("id", conflict!.id);
-  expectFail("resolução de conflito não pode ser gravada diretamente pelo cliente", directResolve.error);
+  expectFail(
+    "resolução de conflito não pode ser gravada diretamente pelo cliente",
+    directResolve.error,
+  );
 
   const resolve = await reviewer.client.rpc("resolve_methodology_source_conflict", {
     _conflict_id: conflict!.id,
@@ -1370,7 +1405,9 @@ async function main() {
 
   const { data: resolved } = await admin
     .from("methodology_source_conflicts")
-    .select("subject, is_critical, resolution_status, professional_resolution, resolved_by, resolved_at")
+    .select(
+      "subject, is_critical, resolution_status, professional_resolution, resolved_by, resolved_at",
+    )
     .eq("id", conflict!.id)
     .single();
   record(
@@ -1523,9 +1560,10 @@ async function main() {
     .select("specification_manifest")
     .eq("id", main.specId)
     .single();
-  const tampered = JSON.parse(
-    JSON.stringify(approvedManifest!.specification_manifest),
-  ) as Record<string, unknown>;
+  const tampered = JSON.parse(JSON.stringify(approvedManifest!.specification_manifest)) as Record<
+    string,
+    unknown
+  >;
   (tampered["metadata"] as Record<string, unknown>)["title"] = "conteúdo materialmente alterado";
   const { data: tamperHash } = await valuer.client.rpc("verify_specification_integrity", {
     _spec_id: main.specId,
@@ -1559,7 +1597,9 @@ async function main() {
 
   const { data: v1After } = await admin
     .from("method_specifications")
-    .select("status, version, title, specification_hash, specification_manifest, approved_by, approved_at")
+    .select(
+      "status, version, title, specification_hash, specification_manifest, approved_by, approved_at",
+    )
     .eq("id", main.specId)
     .single();
   record(
@@ -1612,7 +1652,10 @@ async function main() {
     runtime: "TEST_ONLY",
     created_by: valuer.id,
   });
-  expectFail("implementação vinculada a especificação não aprovada não pode ser VALIDATED", implOnDraft.error);
+  expectFail(
+    "implementação vinculada a especificação não aprovada não pode ser VALIDATED",
+    implOnDraft.error,
+  );
 
   const implDraft = await valuer.client.from("method_implementations").insert({
     organization_id: orgA,
@@ -1706,11 +1749,13 @@ async function main() {
   );
   expectFail(
     "VIEWER não cria fonte metodológica",
-    (await mkSource(viewer.client, viewer.id, {
-      tag: "viewer",
-      accessStatus: "METADATA_ONLY",
-      authorityLevel: "SECONDARY_GUIDANCE",
-    })).error,
+    (
+      await mkSource(viewer.client, viewer.id, {
+        tag: "viewer",
+        accessStatus: "METADATA_ONLY",
+        authorityLevel: "SECONDARY_GUIDANCE",
+      })
+    ).error,
   );
   expectFail(
     "VIEWER não verifica fonte",
@@ -1775,31 +1820,142 @@ async function main() {
   });
   expectFail("org B não insere regra em especificação da org A", crossRule.error);
 
+  /* fixture legítima da org B (identificadores exclusivos por execução) */
+  const { data: outsiderMethod } = await outsider.client
+    .from("valuation_methods")
+    .insert({
+      organization_id: orgB,
+      code: `TEST_ONLY_M_B_${stamp}`,
+      name: "Método TEST_ONLY (org B)",
+      family_code: "MARKET_COMPARISON",
+      description: "Método fictício exclusivo de teste. Não produz valor.",
+      status: "CONCEPT",
+      created_by: outsider.id,
+    })
+    .select("id")
+    .single();
+  const { data: outsiderSpec } = await outsider.client
+    .from("method_specifications")
+    .insert({
+      organization_id: orgB,
+      valuation_method_id: outsiderMethod!.id,
+      version: `1.0.0-test-b-${stamp}`,
+      title: "Especificação TEST_ONLY da org B",
+      jurisdiction: "ORGANIZATIONAL",
+      created_by: outsider.id,
+    })
+    .select("id")
+    .single();
+  const { data: outsiderRule } = await outsider.client
+    .from("methodology_rules")
+    .insert({
+      organization_id: orgB,
+      method_specification_id: outsiderSpec!.id,
+      rule_code: `TEST_R_B_${stamp}`,
+      title: "Regra TEST_ONLY da org B",
+      rule_type: "VALIDATION",
+      normative_strength: "INTERNAL_CONTROL",
+      created_by: outsider.id,
+    })
+    .select("id")
+    .single();
+  const outsiderRuleId = outsiderRule!.id;
+  record(
+    "fixture org B criada com identificadores exclusivos desta execução",
+    !!outsiderRuleId,
+    `spec=${outsiderSpec!.id} rule=${outsiderRuleId}`,
+  );
+
   const { data: crossOrgRuleForFormula } = await admin
     .from("methodology_rules")
-    .select("id")
+    .select("id, organization_id, method_specification_id")
     .eq("method_specification_id", main.specId)
     .limit(1)
     .single();
+  const crossFormulaCode = `TEST_CROSS_F_${stamp}`;
+  const { count: preCrossFormula } = await admin
+    .from("methodology_formulas")
+    .select("id", { count: "exact", head: true })
+    .eq("formula_code", crossFormulaCode);
+  record(
+    "PRE-STATE: marcador de fórmula cross-tenant inexistente antes da tentativa",
+    (preCrossFormula ?? 0) === 0,
+    `pre-count=${preCrossFormula ?? 0} code=${crossFormulaCode}`,
+  );
   const crossFormula = await outsider.client.from("methodology_formulas").insert({
     organization_id: orgB,
     rule_id: crossOrgRuleForFormula!.id,
-    formula_code: "TEST_CROSS_F",
+    formula_code: crossFormulaCode,
     name: "fórmula cruzada",
     expression: "TEST_A",
     expression_language: "SYMBOLIC",
     created_by: outsider.id,
   });
-  const { count: crossFormulaCount } = await admin
+  const { data: postCrossFormula } = await admin
     .from("methodology_formulas")
-    .select("id", { count: "exact", head: true })
-    .eq("formula_code", "TEST_CROSS_F");
+    .select("id, organization_id, rule_id")
+    .eq("formula_code", crossFormulaCode);
   record(
-    "org B não insere fórmula em regra da org A",
-    crossFormula.error !== null || (crossFormulaCount ?? 0) === 0,
+    "POST-STATE: nenhuma fórmula cross-tenant persistida (estado do banco inalterado)",
+    (postCrossFormula ?? []).length === 0,
     crossFormula.error
-      ? `recusado: ${crossFormula.error.message.slice(0, 120)}`
-      : "nenhuma linha gravada (RLS cross-tenant)",
+      ? `recusado no banco: ${crossFormula.error.message.slice(0, 140)}`
+      : `REGRESSÃO: ${(postCrossFormula ?? []).length} linha(s) gravada(s)`,
+  );
+  record(
+    "mecanismo de recusa é erro explícito do banco, não filtragem silenciosa",
+    crossFormula.error !== null,
+    crossFormula.error ? crossFormula.error.message.slice(0, 140) : "insert aceito sem erro",
+  );
+
+  const legitOutsiderFormula = await outsider.client.from("methodology_formulas").insert({
+    organization_id: orgB,
+    rule_id: outsiderRuleId,
+    formula_code: `TEST_OWN_F_${stamp}`,
+    name: "fórmula própria da org B",
+    expression: "TEST_A",
+    expression_language: "SYMBOLIC",
+    created_by: outsider.id,
+  });
+  expectOk(
+    "org B registra fórmula na própria especificação (caminho legítimo preservado)",
+    legitOutsiderFormula.error,
+  );
+
+  const { data: ownFormula } = await admin
+    .from("methodology_formulas")
+    .select("id")
+    .eq("formula_code", `TEST_OWN_F_${stamp}`)
+    .single();
+  const reparent = await outsider.client
+    .from("methodology_formulas")
+    .update({ rule_id: crossOrgRuleForFormula!.id })
+    .eq("id", ownFormula!.id);
+  const { data: afterReparent } = await admin
+    .from("methodology_formulas")
+    .select("rule_id")
+    .eq("id", ownFormula!.id)
+    .single();
+  record(
+    "fórmula não pode ser repontada para regra/especificação de outra organização",
+    afterReparent?.rule_id === outsiderRuleId,
+    reparent.error ? `recusado: ${reparent.error.message.slice(0, 120)}` : "nenhuma linha alterada",
+  );
+  const orgMigrate = await outsider.client
+    .from("methodology_formulas")
+    .update({ organization_id: orgA })
+    .eq("id", ownFormula!.id);
+  const { data: afterOrgMigrate } = await admin
+    .from("methodology_formulas")
+    .select("organization_id")
+    .eq("id", ownFormula!.id)
+    .single();
+  record(
+    "organization_id de fórmula não pode ser migrado depois da criação",
+    afterOrgMigrate?.organization_id === orgB,
+    orgMigrate.error
+      ? `recusado: ${orgMigrate.error.message.slice(0, 120)}`
+      : "nenhuma linha alterada",
   );
 
   const crossConflict = await outsider.client.from("methodology_source_conflicts").insert({
@@ -1863,7 +2019,9 @@ async function main() {
   record(
     "visibilidade global não confere direito de escrita global",
     globalAfter?.title === globalSeed.title,
-    globalWrite.error ? `recusado: ${globalWrite.error.message.slice(0, 80)}` : "nenhuma linha alterada",
+    globalWrite.error
+      ? `recusado: ${globalWrite.error.message.slice(0, 80)}`
+      : "nenhuma linha alterada",
   );
 
   const seedStates = (globalSources ?? []).map(
@@ -1883,7 +2041,9 @@ async function main() {
     .select("id, title, version, status, valuation_method_id, specification_hash")
     .is("organization_id", null);
   for (const shell of shellSpecs ?? []) {
-    const label = (shell.title as string).includes("Fatores") ? "Tratamento por Fatores" : "Inferência Estatística";
+    const label = (shell.title as string).includes("Fatores")
+      ? "Tratamento por Fatores"
+      : "Inferência Estatística";
     record(
       `shell "${label}" continua DRAFT / NOT READY FOR IMPLEMENTATION`,
       shell.status === "DRAFT" && shell.specification_hash === null,
@@ -2009,23 +2169,111 @@ async function main() {
   /* ================================================== 23. AUDITORIA */
 
   console.log("\n=== 23. TRILHA DE AUDITORIA ===");
-  const { data: auditEvents } = await admin
+  const auditExpectations: Array<{
+    label: string;
+    eventType: string;
+    entityId: string;
+    actorId: string;
+  }> = [
+    {
+      label: "submissão da especificação principal",
+      eventType: "METHOD_SPECIFICATION_SUBMITTED",
+      entityId: main.specId,
+      actorId: valuer.id,
+    },
+    {
+      label: "aprovação da especificação principal",
+      eventType: "METHOD_SPECIFICATION_APPROVED",
+      entityId: main.specId,
+      actorId: owner.id,
+    },
+    {
+      label: "rejeição pelo fluxo oficial",
+      eventType: "METHOD_SPECIFICATION_REJECTED",
+      entityId: rejectable.specId,
+      actorId: reviewer.id,
+    },
+    {
+      label: "verificação de fonte metodológica",
+      eventType: "METHODOLOGY_SOURCE_VERIFIED",
+      entityId: mainSourceId,
+      actorId: reviewer.id,
+    },
+    {
+      label: "resolução de conflito entre fontes",
+      eventType: "METHODOLOGY_SOURCE_CONFLICT_RESOLVED",
+      entityId: conflict!.id,
+      actorId: reviewer.id,
+    },
+  ];
+
+  for (const expectation of auditExpectations) {
+    const { data: rows } = await admin
+      .from("audit_log")
+      .select("event_type, actor_user_id, entity_id, organization_id, created_at")
+      .eq("organization_id", orgA)
+      .eq("event_type", expectation.eventType)
+      .eq("entity_id", expectation.entityId);
+    const match = (rows ?? []).find(
+      (row: Record<string, unknown>) => row["actor_user_id"] === expectation.actorId,
+    );
+    record(
+      `auditoria: ${expectation.label} registra evento, autor, organização e alvo corretos`,
+      !!match && typeof match["created_at"] === "string",
+      match
+        ? `${expectation.eventType} entity=${expectation.entityId.slice(0, 8)} actor=ok`
+        : `evento ausente ou autor divergente (${(rows ?? []).length} linhas)`,
+    );
+  }
+
+  /* atomicidade: operação de negócio e evento de auditoria na mesma RPC */
+  const atomic = await buildApprovableSpec({
+    tag: "V-audit",
+    version: `1.9.0-test-${stamp}`,
+    methodId,
+    sourceId: mainSourceId,
+    locatorId: mainLocatorId,
+    relationship: "TECHNICAL_SUPPORT",
+  });
+  const { count: preSubmitAudit } = await admin
     .from("audit_log")
-    .select("action, actor_user_id, entity_id")
-    .eq("organization_id", orgA)
-    .in("event_type", [
-      "METHOD_SPECIFICATION_SUBMITTED",
-      "METHOD_SPECIFICATION_APPROVED",
-      "METHOD_SPECIFICATION_REJECTED",
-      "METHODOLOGY_SOURCE_VERIFIED",
-      "METHODOLOGY_SOURCE_CONFLICT_RESOLVED",
-    ]);
-  const actions = new Set((auditEvents ?? []).map((e: Record<string, unknown>) => e["event_type"]));
+    .select("id", { count: "exact", head: true })
+    .eq("entity_id", atomic.specId);
+  const atomicSubmit = await valuer.client.rpc("submit_method_specification", {
+    _spec_id: atomic.specId,
+    _notes: "Submissão TEST_ONLY (auditoria atômica).",
+  });
+  expectOk("submissão TEST_ONLY para verificação atômica de auditoria", atomicSubmit.error);
+  const atomicApprove = await reviewer.client.rpc("approve_method_specification", {
+    _spec_id: atomic.specId,
+    _notes: "Aprovação TEST_ONLY (auditoria atômica).",
+  });
+  expectOk("aprovação TEST_ONLY para verificação atômica de auditoria", atomicApprove.error);
+  const { data: atomicAudit } = await admin
+    .from("audit_log")
+    .select("event_type, actor_user_id, created_at")
+    .eq("entity_id", atomic.specId)
+    .order("created_at", { ascending: true });
+  const { data: atomicSpec } = await admin
+    .from("method_specifications")
+    .select("status, approved_by, approved_at, specification_hash")
+    .eq("id", atomic.specId)
+    .single();
   record(
-    "cada operação oficial gravou evento de auditoria com autor",
-    actions.size === 5 &&
-      (auditEvents ?? []).every((e: Record<string, unknown>) => !!e["actor_user_id"]),
-    Array.from(actions).join(", "),
+    "operação e auditoria acontecem juntas: PRE=0 evento, POST=submissão + aprovação",
+    (preSubmitAudit ?? 0) === 0 &&
+      (atomicAudit ?? []).map((e: Record<string, unknown>) => e["event_type"]).join(",") ===
+        "METHOD_SPECIFICATION_SUBMITTED,METHOD_SPECIFICATION_APPROVED",
+    `pre=${preSubmitAudit ?? 0} post=${(atomicAudit ?? []).length}`,
+  );
+  record(
+    "auditoria de aprovação corresponde ao estado final APPROVED com selo SHA-256",
+    atomicSpec?.status === "APPROVED" &&
+      atomicSpec?.approved_by === reviewer.id &&
+      !!atomicSpec?.approved_at &&
+      typeof atomicSpec?.specification_hash === "string" &&
+      (atomicSpec?.specification_hash as string).length === 64,
+    `status=${atomicSpec?.status} hash=${String(atomicSpec?.specification_hash).slice(0, 12)}…`,
   );
 
   const auditTamper = await valuer.client
