@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 /**
  * FUNCTIONAL + NEGATIVE FLOW TEST — METHODOLOGY GOVERNANCE (fase 6)
  *
@@ -162,7 +163,9 @@ async function main() {
         storage_bucket: "evidence-originals",
         storage_path: `${org}/${kase.id}/mg-${tag}-${stamp}.pdf`,
         file_name: `mg-${tag}-${stamp}.pdf`,
-        sha256_hash: null,
+        sha256_hash: createHash("sha256")
+          .update(`TEST_ONLY-${org}-${tag}-${stamp}`)
+          .digest("hex"),
         hash_computed_by: "SERVER",
         created_by: creator,
       })
