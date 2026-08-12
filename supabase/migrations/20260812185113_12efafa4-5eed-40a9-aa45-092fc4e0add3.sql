@@ -1,0 +1,1 @@
+ALTER FUNCTION public.market_intelligence_report(uuid) VOLATILE;

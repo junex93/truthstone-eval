@@ -13,7 +13,8 @@
     "format": "prettier --write .",
     "test:research": "bun run tests/functional/research-flow.ts",
     "test:market": "bun run tests/functional/market-flow.ts",
-    "test:all": "bun run tests/security/negative-tests.ts && bun run tests/functional/market-flow.ts && bun run tests/functional/research-flow.ts"
+    "test:all": "bun run tests/security/negative-tests.ts && bun run tests/functional/market-flow.ts && bun run tests/functional/research-flow.ts && bun run tests/functional/market-intelligence-flow.ts",
+    "test:market-intelligence": "bun run tests/functional/market-intelligence-flow.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -73,7 +74,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
-    "@lovable.dev/vite-tanstack-config": "^2.10.0",
+    "@lovable.dev/vite-tanstack-config": "2.12.0",
     "@types/node": "^22.16.5",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
