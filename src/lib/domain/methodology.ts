@@ -250,3 +250,440 @@ export interface IntegrityReport {
   manifest_equal?: boolean;
   status?: string;
 }
+
+/* ===================================================================== */
+/* Contratos de leitura explícitos (sem `any`).                          */
+/* Espelham as colunas reais do PostgreSQL. O banco continua autoridade. */
+/* ===================================================================== */
+
+export type MethodologySourceType = (typeof METHODOLOGY_SOURCE_TYPES)[number];
+export type MethodologyAuthorityLevel = (typeof METHODOLOGY_AUTHORITY_LEVELS)[number];
+export type MethodologySourceStatus = (typeof METHODOLOGY_SOURCE_STATUSES)[number];
+export type MethodologyJurisdiction = (typeof METHODOLOGY_JURISDICTIONS)[number];
+export type MethodologyLocatorType = (typeof METHODOLOGY_LOCATOR_TYPES)[number];
+export type MethodologyRuleType = (typeof METHODOLOGY_RULE_TYPES)[number];
+export type MethodologyNormativeStrength = (typeof METHODOLOGY_NORMATIVE_STRENGTHS)[number];
+export type MethodologySourceRelationship = (typeof METHODOLOGY_SOURCE_RELATIONSHIPS)[number];
+export type MethodSpecSectionKey = (typeof METHOD_SPEC_SECTION_KEYS)[number];
+export type MethodTestType = (typeof METHOD_TEST_TYPES)[number];
+export type MethodologyOutputType = (typeof METHODOLOGY_OUTPUT_TYPES)[number];
+export type MethodologyDataType = (typeof METHODOLOGY_DATA_TYPES)[number];
+export type MethodApplicabilityResult = (typeof METHOD_APPLICABILITY_RESULTS)[number];
+export type MethodologyChangeType = (typeof METHODOLOGY_CHANGE_TYPES)[number];
+export type MethodologyConflictStatus = (typeof METHODOLOGY_CONFLICT_STATUSES)[number];
+
+export interface MethodologySource {
+  id: string;
+  organization_id: string | null;
+  title: string;
+  short_title: string | null;
+  source_type: MethodologySourceType;
+  issuing_body: string | null;
+  authors: string | null;
+  edition: string | null;
+  publication_year: number | null;
+  publication_date: string | null;
+  effective_from: string | null;
+  effective_until: string | null;
+  jurisdiction: MethodologyJurisdiction;
+  jurisdiction_detail: string | null;
+  language: string | null;
+  identifier: string | null;
+  isbn: string | null;
+  doi: string | null;
+  external_url: string | null;
+  access_status: MethodologyAccessStatus;
+  authority_level: MethodologyAuthorityLevel;
+  status: MethodologySourceStatus;
+  supersedes_source_id: string | null;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SourceArtifact {
+  id: string;
+  organization_id: string;
+  source_id: string;
+  evidence_artifact_id: string;
+  access_basis: MethodologyAccessStatus;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface SourceLocator {
+  id: string;
+  organization_id: string | null;
+  source_id: string;
+  artifact_id: string | null;
+  locator_type: MethodologyLocatorType;
+  section: string | null;
+  clause: string | null;
+  page: string | null;
+  chapter: string | null;
+  figure: string | null;
+  table_reference: string | null;
+  external_anchor: string | null;
+  support_excerpt: string | null;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SourceVerification {
+  id: string;
+  organization_id: string;
+  source_id: string;
+  locator_id: string | null;
+  verification_type: MethodologyVerificationType;
+  notes: string | null;
+  verified_by: string;
+  verified_at: string;
+}
+
+export interface SourceConflict {
+  id: string;
+  organization_id: string;
+  source_a_id: string;
+  source_b_id: string;
+  subject: string;
+  description: string | null;
+  is_critical: boolean;
+  resolution_status: MethodologyConflictStatus;
+  professional_resolution: string | null;
+  resolved_by: string | null;
+  resolved_at: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ValuationMethod {
+  id: string;
+  organization_id: string | null;
+  code: string;
+  name: string;
+  family_code: string;
+  description: string | null;
+  status: string;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MethodSpecification {
+  id: string;
+  organization_id: string | null;
+  valuation_method_id: string;
+  version: string;
+  title: string;
+  purpose: string | null;
+  scope: string | null;
+  jurisdiction: MethodologyJurisdiction;
+  status: MethodSpecStatus;
+  effective_from: string | null;
+  effective_until: string | null;
+  specification_manifest: unknown;
+  specification_hash: string | null;
+  hash_algorithm: string | null;
+  manifest_schema_version: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  submitted_for_review_at: string | null;
+  submitted_by: string | null;
+  approved_by: string | null;
+  approved_at: string | null;
+  review_notes: string | null;
+  supersedes_specification_id: string | null;
+  rejected_by: string | null;
+  rejected_at: string | null;
+  rejection_reason: string | null;
+}
+
+export interface SpecificationSection {
+  id: string;
+  organization_id: string | null;
+  method_specification_id: string;
+  section_key: MethodSpecSectionKey;
+  content: string | null;
+  ordinal: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MethodologyRule {
+  id: string;
+  organization_id: string | null;
+  method_specification_id: string;
+  rule_code: string;
+  title: string;
+  rule_type: MethodologyRuleType;
+  description: string | null;
+  normative_strength: MethodologyNormativeStrength;
+  status: string;
+  priority: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RuleSource {
+  id: string;
+  organization_id: string | null;
+  rule_id: string;
+  source_id: string;
+  source_locator_id: string | null;
+  support_excerpt: string | null;
+  relationship_type: MethodologySourceRelationship;
+  interpretation_notes: string | null;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface MethodologyFormula {
+  id: string;
+  organization_id: string | null;
+  rule_id: string;
+  formula_code: string;
+  name: string;
+  expression: string;
+  expression_language: "SYMBOLIC";
+  description: string | null;
+  status: string;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FormulaVariable {
+  id: string;
+  organization_id: string | null;
+  formula_id: string;
+  variable_code: string;
+  name: string;
+  description: string | null;
+  data_type: MethodologyDataType;
+  unit_code: string | null;
+  input_semantic: string | null;
+  required: boolean;
+  constraints: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MethodologyParameter {
+  id: string;
+  organization_id: string | null;
+  method_specification_id: string | null;
+  parameter_code: string;
+  name: string;
+  data_type: MethodologyDataType;
+  unit_code: string | null;
+  default_value: number | null;
+  min_value: number | null;
+  max_value: number | null;
+  source_required: boolean;
+  description: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ParameterSet {
+  id: string;
+  organization_id: string;
+  method_specification_id: string;
+  set_code: string;
+  version: string;
+  scope_description: string | null;
+  effective_from: string | null;
+  effective_until: string | null;
+  status: string;
+  approved_by: string | null;
+  approved_at: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ApplicabilityRule {
+  id: string;
+  organization_id: string | null;
+  method_specification_id: string;
+  criterion_code: string;
+  criterion_description: string;
+  expected_result: MethodApplicabilityResult;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MethodTestCase {
+  id: string;
+  organization_id: string | null;
+  method_specification_id: string;
+  test_code: string;
+  title: string;
+  test_type: MethodTestType;
+  input_fixture: unknown;
+  expected_result: unknown;
+  expected_status: string | null;
+  source_reference: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MethodOutputContract {
+  id: string;
+  organization_id: string | null;
+  method_specification_id: string;
+  output_type: MethodologyOutputType;
+  description: string | null;
+  unit_code: string | null;
+  required: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MethodImplementation {
+  id: string;
+  organization_id: string | null;
+  method_specification_id: string;
+  implementation_code: string;
+  version: string;
+  status: string;
+  runtime: string | null;
+  checksum: string | null;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  approved_by: string | null;
+  approved_at: string | null;
+}
+
+export interface MethodChangeRequest {
+  id: string;
+  organization_id: string;
+  target_type: string;
+  target_id: string | null;
+  change_type: MethodologyChangeType;
+  description: string;
+  reason: string;
+  proposed_by: string;
+  status: string;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  review_notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SourceRequirementChecklist {
+  id: string;
+  organization_id: string | null;
+  method_specification_id: string;
+  requirement_code: string;
+  description: string;
+  satisfied_by_source_id: string | null;
+  is_satisfied: boolean;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type SpecificationCompleteness = CompletenessReport;
+export type SpecificationIntegrity = IntegrityReport;
+
+/* ============================ rótulos e leituras factuais ============ */
+
+export const NORMATIVE_STRENGTH_LABEL: Record<string, string> = {
+  MANDATORY: "Obrigatório",
+  RECOMMENDED: "Recomendado",
+  PERMITTED: "Permitido",
+  PROHIBITED: "Proibido",
+  INTERNAL_CONTROL: "Controle interno da plataforma",
+};
+
+export const RELATIONSHIP_LABEL: Record<string, string> = {
+  DIRECT_REQUIREMENT: "Exigência direta da fonte",
+  DIRECT_PROHIBITION: "Proibição direta da fonte",
+  TECHNICAL_SUPPORT: "Suporte técnico",
+  INTERPRETATION: "Interpretação",
+  BACKGROUND: "Contexto",
+  INTERNAL_DESIGN: "Desenho interno da plataforma",
+};
+
+export const SPEC_SECTION_LABEL: Record<MethodSpecSectionKey, string> = {
+  PURPOSE: "Finalidade",
+  INTENDED_USE: "Uso pretendido",
+  APPLICABILITY: "Aplicabilidade",
+  NON_APPLICABILITY: "Não aplicabilidade",
+  REQUIRED_INPUTS: "Insumos obrigatórios",
+  OPTIONAL_INPUTS: "Insumos opcionais",
+  DATA_REQUIREMENTS: "Requisitos de dados",
+  RULES: "Regras",
+  FORMULAS: "Fórmulas",
+  ASSUMPTIONS: "Pressupostos",
+  DIAGNOSTICS: "Diagnósticos",
+  LIMITATIONS: "Limitações",
+  OUTPUTS: "Saídas",
+  UNCERTAINTY: "Incerteza",
+  REPORTING_REQUIREMENTS: "Requisitos de relato",
+  SOURCE_REFERENCES: "Referências de fonte",
+  TEST_REQUIREMENTS: "Requisitos de teste",
+  KNOWN_RISKS: "Riscos conhecidos",
+};
+
+/** Seções exigidas pelo diagnóstico determinístico do banco. */
+export const REQUIRED_SPEC_SECTIONS: readonly MethodSpecSectionKey[] = [
+  "PURPOSE",
+  "INTENDED_USE",
+  "APPLICABILITY",
+  "NON_APPLICABILITY",
+  "REQUIRED_INPUTS",
+  "DATA_REQUIREMENTS",
+  "RULES",
+  "LIMITATIONS",
+  "TEST_REQUIREMENTS",
+  "OUTPUTS",
+] as const;
+
+/** Contagem factual de seções preenchidas. Nunca "percentual de confiança". */
+export function countFilledSections(sections: readonly SpecificationSection[]): {
+  filled: number;
+  total: number;
+} {
+  const total = METHOD_SPEC_SECTION_KEYS.length;
+  const filled = sections.filter((s) => (s.content ?? "").trim().length > 0).length;
+  return { filled, total };
+}
+
+/** Uma especificação APPROVED/SUPERSEDED/REJECTED nunca é editável pelo cliente. */
+export function isSpecificationEditable(status: MethodSpecStatus): boolean {
+  return status === "DRAFT";
+}
+
+/** Afirmação normativa externa direta. INTERNAL_DESIGN nunca é norma externa. */
+export function isExternalNormativeClaim(relationship: MethodologySourceRelationship): boolean {
+  return relationship === "DIRECT_REQUIREMENT" || relationship === "DIRECT_PROHIBITION";
+}
+
+/**
+ * Texto de fórmula é REGISTRO SIMBÓLICO, nunca código executável.
+ * Nenhuma camada deste produto avalia expressão (`eval`, `new Function`, SQL dinâmico).
+ * Este detector existe apenas para recusar payload executável na entrada.
+ */
+const EXECUTABLE_PAYLOAD = /(\beval\b|new\s+Function|=>|\bimport\b|\brequire\b|`|;|\$\{|\bprocess\b|\bwindow\b|\bglobalThis\b|\bfetch\b|--|\/\*|\bselect\b\s|\bdrop\b\s)/i;
+
+export function looksExecutable(expression: string): boolean {
+  return EXECUTABLE_PAYLOAD.test(expression);
+}

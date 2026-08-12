@@ -22,11 +22,16 @@ import { Route as AuthenticatedShellDatasetsIndexRouteImport } from './routes/_a
 import { Route as AuthenticatedShellDatasetsDatasetIdRouteImport } from './routes/_authenticated/_shell/datasets/$datasetId'
 import { Route as AuthenticatedShellEvidenceIndexRouteImport } from './routes/_authenticated/_shell/evidence/index'
 import { Route as AuthenticatedShellEvidenceSourceIdRouteImport } from './routes/_authenticated/_shell/evidence/$sourceId'
+import { Route as AuthenticatedShellMethodologyIndexRouteImport } from './routes/_authenticated/_shell/methodology/index'
+import { Route as AuthenticatedShellMethodologyMethodIdRouteImport } from './routes/_authenticated/_shell/methodology/$methodId'
 import { Route as AuthenticatedShellCasesCaseIdIndexRouteImport } from './routes/_authenticated/_shell/cases/$caseId/index'
 import { Route as AuthenticatedShellCasesCaseIdComparablesRouteImport } from './routes/_authenticated/_shell/cases/$caseId/comparables'
 import { Route as AuthenticatedShellCasesCaseIdDuplicatesRouteImport } from './routes/_authenticated/_shell/cases/$caseId/duplicates'
 import { Route as AuthenticatedShellCasesCaseIdIntelligenceRouteImport } from './routes/_authenticated/_shell/cases/$caseId/intelligence'
 import { Route as AuthenticatedShellCasesCaseIdPropertyRouteImport } from './routes/_authenticated/_shell/cases/$caseId/property'
+import { Route as AuthenticatedShellMethodologySourcesIndexRouteImport } from './routes/_authenticated/_shell/methodology/sources/index'
+import { Route as AuthenticatedShellMethodologySourcesSourceIdRouteImport } from './routes/_authenticated/_shell/methodology/sources/$sourceId'
+import { Route as AuthenticatedShellMethodologySpecificationsSpecIdRouteImport } from './routes/_authenticated/_shell/methodology/specifications/$specId'
 import { Route as AuthenticatedShellCasesCaseIdMarketIndexRouteImport } from './routes/_authenticated/_shell/cases/$caseId/market/index'
 import { Route as AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRouteImport } from './routes/_authenticated/_shell/cases/$caseId/market/$marketPropertyId'
 import { Route as AuthenticatedShellCasesCaseIdResearchIndexRouteImport } from './routes/_authenticated/_shell/cases/$caseId/research/index'
@@ -103,6 +108,18 @@ const AuthenticatedShellEvidenceSourceIdRoute =
     path: '/evidence/$sourceId',
     getParentRoute: () => AuthenticatedShellRoute,
   } as any)
+const AuthenticatedShellMethodologyIndexRoute =
+  AuthenticatedShellMethodologyIndexRouteImport.update({
+    id: '/methodology/',
+    path: '/methodology/',
+    getParentRoute: () => AuthenticatedShellRoute,
+  } as any)
+const AuthenticatedShellMethodologyMethodIdRoute =
+  AuthenticatedShellMethodologyMethodIdRouteImport.update({
+    id: '/methodology/$methodId',
+    path: '/methodology/$methodId',
+    getParentRoute: () => AuthenticatedShellRoute,
+  } as any)
 const AuthenticatedShellCasesCaseIdIndexRoute =
   AuthenticatedShellCasesCaseIdIndexRouteImport.update({
     id: '/',
@@ -132,6 +149,24 @@ const AuthenticatedShellCasesCaseIdPropertyRoute =
     id: '/property',
     path: '/property',
     getParentRoute: () => AuthenticatedShellCasesCaseIdRoute,
+  } as any)
+const AuthenticatedShellMethodologySourcesIndexRoute =
+  AuthenticatedShellMethodologySourcesIndexRouteImport.update({
+    id: '/methodology/sources/',
+    path: '/methodology/sources/',
+    getParentRoute: () => AuthenticatedShellRoute,
+  } as any)
+const AuthenticatedShellMethodologySourcesSourceIdRoute =
+  AuthenticatedShellMethodologySourcesSourceIdRouteImport.update({
+    id: '/methodology/sources/$sourceId',
+    path: '/methodology/sources/$sourceId',
+    getParentRoute: () => AuthenticatedShellRoute,
+  } as any)
+const AuthenticatedShellMethodologySpecificationsSpecIdRoute =
+  AuthenticatedShellMethodologySpecificationsSpecIdRouteImport.update({
+    id: '/methodology/specifications/$specId',
+    path: '/methodology/specifications/$specId',
+    getParentRoute: () => AuthenticatedShellRoute,
   } as any)
 const AuthenticatedShellCasesCaseIdMarketIndexRoute =
   AuthenticatedShellCasesCaseIdMarketIndexRouteImport.update({
@@ -167,14 +202,19 @@ export interface FileRoutesByFullPath {
   '/cases/$caseId': typeof AuthenticatedShellCasesCaseIdRouteWithChildren
   '/datasets/$datasetId': typeof AuthenticatedShellDatasetsDatasetIdRoute
   '/evidence/$sourceId': typeof AuthenticatedShellEvidenceSourceIdRoute
+  '/methodology/$methodId': typeof AuthenticatedShellMethodologyMethodIdRoute
   '/cases/': typeof AuthenticatedShellCasesIndexRoute
   '/datasets/': typeof AuthenticatedShellDatasetsIndexRoute
   '/evidence/': typeof AuthenticatedShellEvidenceIndexRoute
+  '/methodology/': typeof AuthenticatedShellMethodologyIndexRoute
   '/cases/$caseId/comparables': typeof AuthenticatedShellCasesCaseIdComparablesRoute
   '/cases/$caseId/duplicates': typeof AuthenticatedShellCasesCaseIdDuplicatesRoute
   '/cases/$caseId/intelligence': typeof AuthenticatedShellCasesCaseIdIntelligenceRoute
   '/cases/$caseId/property': typeof AuthenticatedShellCasesCaseIdPropertyRoute
+  '/methodology/sources/$sourceId': typeof AuthenticatedShellMethodologySourcesSourceIdRoute
+  '/methodology/specifications/$specId': typeof AuthenticatedShellMethodologySpecificationsSpecIdRoute
   '/cases/$caseId/': typeof AuthenticatedShellCasesCaseIdIndexRoute
+  '/methodology/sources/': typeof AuthenticatedShellMethodologySourcesIndexRoute
   '/cases/$caseId/market/$marketPropertyId': typeof AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRoute
   '/cases/$caseId/research/$runId': typeof AuthenticatedShellCasesCaseIdResearchRunIdRoute
   '/cases/$caseId/market/': typeof AuthenticatedShellCasesCaseIdMarketIndexRoute
@@ -188,14 +228,19 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedShellReportsRoute
   '/datasets/$datasetId': typeof AuthenticatedShellDatasetsDatasetIdRoute
   '/evidence/$sourceId': typeof AuthenticatedShellEvidenceSourceIdRoute
+  '/methodology/$methodId': typeof AuthenticatedShellMethodologyMethodIdRoute
   '/cases': typeof AuthenticatedShellCasesIndexRoute
   '/datasets': typeof AuthenticatedShellDatasetsIndexRoute
   '/evidence': typeof AuthenticatedShellEvidenceIndexRoute
+  '/methodology': typeof AuthenticatedShellMethodologyIndexRoute
   '/cases/$caseId/comparables': typeof AuthenticatedShellCasesCaseIdComparablesRoute
   '/cases/$caseId/duplicates': typeof AuthenticatedShellCasesCaseIdDuplicatesRoute
   '/cases/$caseId/intelligence': typeof AuthenticatedShellCasesCaseIdIntelligenceRoute
   '/cases/$caseId/property': typeof AuthenticatedShellCasesCaseIdPropertyRoute
+  '/methodology/sources/$sourceId': typeof AuthenticatedShellMethodologySourcesSourceIdRoute
+  '/methodology/specifications/$specId': typeof AuthenticatedShellMethodologySpecificationsSpecIdRoute
   '/cases/$caseId': typeof AuthenticatedShellCasesCaseIdIndexRoute
+  '/methodology/sources': typeof AuthenticatedShellMethodologySourcesIndexRoute
   '/cases/$caseId/market/$marketPropertyId': typeof AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRoute
   '/cases/$caseId/research/$runId': typeof AuthenticatedShellCasesCaseIdResearchRunIdRoute
   '/cases/$caseId/market': typeof AuthenticatedShellCasesCaseIdMarketIndexRoute
@@ -213,14 +258,19 @@ export interface FileRoutesById {
   '/_authenticated/_shell/cases/$caseId': typeof AuthenticatedShellCasesCaseIdRouteWithChildren
   '/_authenticated/_shell/datasets/$datasetId': typeof AuthenticatedShellDatasetsDatasetIdRoute
   '/_authenticated/_shell/evidence/$sourceId': typeof AuthenticatedShellEvidenceSourceIdRoute
+  '/_authenticated/_shell/methodology/$methodId': typeof AuthenticatedShellMethodologyMethodIdRoute
   '/_authenticated/_shell/cases/': typeof AuthenticatedShellCasesIndexRoute
   '/_authenticated/_shell/datasets/': typeof AuthenticatedShellDatasetsIndexRoute
   '/_authenticated/_shell/evidence/': typeof AuthenticatedShellEvidenceIndexRoute
+  '/_authenticated/_shell/methodology/': typeof AuthenticatedShellMethodologyIndexRoute
   '/_authenticated/_shell/cases/$caseId/comparables': typeof AuthenticatedShellCasesCaseIdComparablesRoute
   '/_authenticated/_shell/cases/$caseId/duplicates': typeof AuthenticatedShellCasesCaseIdDuplicatesRoute
   '/_authenticated/_shell/cases/$caseId/intelligence': typeof AuthenticatedShellCasesCaseIdIntelligenceRoute
   '/_authenticated/_shell/cases/$caseId/property': typeof AuthenticatedShellCasesCaseIdPropertyRoute
+  '/_authenticated/_shell/methodology/sources/$sourceId': typeof AuthenticatedShellMethodologySourcesSourceIdRoute
+  '/_authenticated/_shell/methodology/specifications/$specId': typeof AuthenticatedShellMethodologySpecificationsSpecIdRoute
   '/_authenticated/_shell/cases/$caseId/': typeof AuthenticatedShellCasesCaseIdIndexRoute
+  '/_authenticated/_shell/methodology/sources/': typeof AuthenticatedShellMethodologySourcesIndexRoute
   '/_authenticated/_shell/cases/$caseId/market/$marketPropertyId': typeof AuthenticatedShellCasesCaseIdMarketMarketPropertyIdRoute
   '/_authenticated/_shell/cases/$caseId/research/$runId': typeof AuthenticatedShellCasesCaseIdResearchRunIdRoute
   '/_authenticated/_shell/cases/$caseId/market/': typeof AuthenticatedShellCasesCaseIdMarketIndexRoute
@@ -237,14 +287,19 @@ export interface FileRouteTypes {
     | '/cases/$caseId'
     | '/datasets/$datasetId'
     | '/evidence/$sourceId'
+    | '/methodology/$methodId'
     | '/cases/'
     | '/datasets/'
     | '/evidence/'
+    | '/methodology/'
     | '/cases/$caseId/comparables'
     | '/cases/$caseId/duplicates'
     | '/cases/$caseId/intelligence'
     | '/cases/$caseId/property'
+    | '/methodology/sources/$sourceId'
+    | '/methodology/specifications/$specId'
     | '/cases/$caseId/'
+    | '/methodology/sources/'
     | '/cases/$caseId/market/$marketPropertyId'
     | '/cases/$caseId/research/$runId'
     | '/cases/$caseId/market/'
@@ -258,14 +313,19 @@ export interface FileRouteTypes {
     | '/reports'
     | '/datasets/$datasetId'
     | '/evidence/$sourceId'
+    | '/methodology/$methodId'
     | '/cases'
     | '/datasets'
     | '/evidence'
+    | '/methodology'
     | '/cases/$caseId/comparables'
     | '/cases/$caseId/duplicates'
     | '/cases/$caseId/intelligence'
     | '/cases/$caseId/property'
+    | '/methodology/sources/$sourceId'
+    | '/methodology/specifications/$specId'
     | '/cases/$caseId'
+    | '/methodology/sources'
     | '/cases/$caseId/market/$marketPropertyId'
     | '/cases/$caseId/research/$runId'
     | '/cases/$caseId/market'
@@ -282,14 +342,19 @@ export interface FileRouteTypes {
     | '/_authenticated/_shell/cases/$caseId'
     | '/_authenticated/_shell/datasets/$datasetId'
     | '/_authenticated/_shell/evidence/$sourceId'
+    | '/_authenticated/_shell/methodology/$methodId'
     | '/_authenticated/_shell/cases/'
     | '/_authenticated/_shell/datasets/'
     | '/_authenticated/_shell/evidence/'
+    | '/_authenticated/_shell/methodology/'
     | '/_authenticated/_shell/cases/$caseId/comparables'
     | '/_authenticated/_shell/cases/$caseId/duplicates'
     | '/_authenticated/_shell/cases/$caseId/intelligence'
     | '/_authenticated/_shell/cases/$caseId/property'
+    | '/_authenticated/_shell/methodology/sources/$sourceId'
+    | '/_authenticated/_shell/methodology/specifications/$specId'
     | '/_authenticated/_shell/cases/$caseId/'
+    | '/_authenticated/_shell/methodology/sources/'
     | '/_authenticated/_shell/cases/$caseId/market/$marketPropertyId'
     | '/_authenticated/_shell/cases/$caseId/research/$runId'
     | '/_authenticated/_shell/cases/$caseId/market/'
@@ -395,6 +460,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellEvidenceSourceIdRouteImport
       parentRoute: typeof AuthenticatedShellRoute
     }
+    '/_authenticated/_shell/methodology/': {
+      id: '/_authenticated/_shell/methodology/'
+      path: '/methodology'
+      fullPath: '/methodology/'
+      preLoaderRoute: typeof AuthenticatedShellMethodologyIndexRouteImport
+      parentRoute: typeof AuthenticatedShellRoute
+    }
+    '/_authenticated/_shell/methodology/$methodId': {
+      id: '/_authenticated/_shell/methodology/$methodId'
+      path: '/methodology/$methodId'
+      fullPath: '/methodology/$methodId'
+      preLoaderRoute: typeof AuthenticatedShellMethodologyMethodIdRouteImport
+      parentRoute: typeof AuthenticatedShellRoute
+    }
     '/_authenticated/_shell/cases/$caseId/': {
       id: '/_authenticated/_shell/cases/$caseId/'
       path: '/'
@@ -429,6 +508,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/cases/$caseId/property'
       preLoaderRoute: typeof AuthenticatedShellCasesCaseIdPropertyRouteImport
       parentRoute: typeof AuthenticatedShellCasesCaseIdRoute
+    }
+    '/_authenticated/_shell/methodology/sources/': {
+      id: '/_authenticated/_shell/methodology/sources/'
+      path: '/methodology/sources'
+      fullPath: '/methodology/sources/'
+      preLoaderRoute: typeof AuthenticatedShellMethodologySourcesIndexRouteImport
+      parentRoute: typeof AuthenticatedShellRoute
+    }
+    '/_authenticated/_shell/methodology/sources/$sourceId': {
+      id: '/_authenticated/_shell/methodology/sources/$sourceId'
+      path: '/methodology/sources/$sourceId'
+      fullPath: '/methodology/sources/$sourceId'
+      preLoaderRoute: typeof AuthenticatedShellMethodologySourcesSourceIdRouteImport
+      parentRoute: typeof AuthenticatedShellRoute
+    }
+    '/_authenticated/_shell/methodology/specifications/$specId': {
+      id: '/_authenticated/_shell/methodology/specifications/$specId'
+      path: '/methodology/specifications/$specId'
+      fullPath: '/methodology/specifications/$specId'
+      preLoaderRoute: typeof AuthenticatedShellMethodologySpecificationsSpecIdRouteImport
+      parentRoute: typeof AuthenticatedShellRoute
     }
     '/_authenticated/_shell/cases/$caseId/market/': {
       id: '/_authenticated/_shell/cases/$caseId/market/'
@@ -507,9 +607,14 @@ interface AuthenticatedShellRouteChildren {
   AuthenticatedShellCasesCaseIdRoute: typeof AuthenticatedShellCasesCaseIdRouteWithChildren
   AuthenticatedShellDatasetsDatasetIdRoute: typeof AuthenticatedShellDatasetsDatasetIdRoute
   AuthenticatedShellEvidenceSourceIdRoute: typeof AuthenticatedShellEvidenceSourceIdRoute
+  AuthenticatedShellMethodologyMethodIdRoute: typeof AuthenticatedShellMethodologyMethodIdRoute
   AuthenticatedShellCasesIndexRoute: typeof AuthenticatedShellCasesIndexRoute
   AuthenticatedShellDatasetsIndexRoute: typeof AuthenticatedShellDatasetsIndexRoute
   AuthenticatedShellEvidenceIndexRoute: typeof AuthenticatedShellEvidenceIndexRoute
+  AuthenticatedShellMethodologyIndexRoute: typeof AuthenticatedShellMethodologyIndexRoute
+  AuthenticatedShellMethodologySourcesSourceIdRoute: typeof AuthenticatedShellMethodologySourcesSourceIdRoute
+  AuthenticatedShellMethodologySpecificationsSpecIdRoute: typeof AuthenticatedShellMethodologySpecificationsSpecIdRoute
+  AuthenticatedShellMethodologySourcesIndexRoute: typeof AuthenticatedShellMethodologySourcesIndexRoute
 }
 
 const AuthenticatedShellRouteChildren: AuthenticatedShellRouteChildren = {
@@ -522,9 +627,19 @@ const AuthenticatedShellRouteChildren: AuthenticatedShellRouteChildren = {
     AuthenticatedShellDatasetsDatasetIdRoute,
   AuthenticatedShellEvidenceSourceIdRoute:
     AuthenticatedShellEvidenceSourceIdRoute,
+  AuthenticatedShellMethodologyMethodIdRoute:
+    AuthenticatedShellMethodologyMethodIdRoute,
   AuthenticatedShellCasesIndexRoute: AuthenticatedShellCasesIndexRoute,
   AuthenticatedShellDatasetsIndexRoute: AuthenticatedShellDatasetsIndexRoute,
   AuthenticatedShellEvidenceIndexRoute: AuthenticatedShellEvidenceIndexRoute,
+  AuthenticatedShellMethodologyIndexRoute:
+    AuthenticatedShellMethodologyIndexRoute,
+  AuthenticatedShellMethodologySourcesSourceIdRoute:
+    AuthenticatedShellMethodologySourcesSourceIdRoute,
+  AuthenticatedShellMethodologySpecificationsSpecIdRoute:
+    AuthenticatedShellMethodologySpecificationsSpecIdRoute,
+  AuthenticatedShellMethodologySourcesIndexRoute:
+    AuthenticatedShellMethodologySourcesIndexRoute,
 }
 
 const AuthenticatedShellRouteWithChildren =

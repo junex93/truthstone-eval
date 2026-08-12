@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Settings,
   Layers,
+  BookMarked,
 } from "lucide-react";
 
 import {
@@ -25,6 +26,7 @@ const NAV_ITEMS = [
   { title: "Casos de Avaliação", url: "/cases", icon: Layers },
   { title: "Evidências", url: "/evidence", icon: FileSearch },
   { title: "Datasets", url: "/datasets", icon: Database },
+  { title: "Metodologia", url: "/methodology", icon: BookMarked },
   { title: "Relatórios", url: "/reports", icon: FileText },
   { title: "Administração", url: "/admin", icon: Settings },
 ] as const;

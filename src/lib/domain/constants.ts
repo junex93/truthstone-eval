@@ -166,7 +166,8 @@ export type AuditEventType =
   | "FIELD_REVISED"
   | MarketAuditEventType
   | ResearchAuditEventType
-  | IntelligenceAuditEventType;
+  | IntelligenceAuditEventType
+  | MethodologyAuditEventType;
 
 
 /* ==========================================================================
@@ -595,3 +596,34 @@ export const INTELLIGENCE_AUDIT_EVENT_TYPES = [
   "SNAPSHOT_INTEGRITY_VERIFIED",
 ] as const;
 export type IntelligenceAuditEventType = (typeof INTELLIGENCE_AUDIT_EVENT_TYPES)[number];
+
+/* ==========================================================================
+ * PHASE 6 — methodology governance audit vocabulary.
+ * Eventos de criação/registro. Toda transição crítica (verificação de fonte,
+ * submissão, aprovação, rejeição, resolução de conflito) grava seu próprio
+ * evento DENTRO da RPC, na mesma transação.
+ * ========================================================================== */
+
+export const METHODOLOGY_AUDIT_EVENT_TYPES = [
+  "METHODOLOGY_SOURCE_CREATED",
+  "METHODOLOGY_SOURCE_UPDATED",
+  "METHODOLOGY_SOURCE_ARTIFACT_ATTACHED",
+  "METHODOLOGY_SOURCE_LOCATOR_CREATED",
+  "METHODOLOGY_SOURCE_CONFLICT_OPENED",
+  "METHOD_SPECIFICATION_CREATED",
+  "METHOD_SPECIFICATION_UPDATED",
+  "METHOD_SPECIFICATION_SECTION_UPDATED",
+  "METHOD_SPECIFICATION_VERSION_CREATED",
+  "METHODOLOGY_RULE_CREATED",
+  "METHODOLOGY_RULE_UPDATED",
+  "METHODOLOGY_RULE_SOURCE_ATTACHED",
+  "METHODOLOGY_FORMULA_CREATED",
+  "METHODOLOGY_FORMULA_VARIABLE_CREATED",
+  "METHODOLOGY_PARAMETER_CREATED",
+  "METHOD_APPLICABILITY_RULE_CREATED",
+  "METHOD_TEST_CASE_CREATED",
+  "METHOD_OUTPUT_CONTRACT_CREATED",
+  "METHODOLOGY_CHANGE_REQUEST_CREATED",
+  "METHODOLOGY_CHANGE_REQUEST_REVIEWED",
+] as const;
+export type MethodologyAuditEventType = (typeof METHODOLOGY_AUDIT_EVENT_TYPES)[number];
