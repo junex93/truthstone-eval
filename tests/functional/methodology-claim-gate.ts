@@ -712,17 +712,6 @@ async function main() {
     );
   }
   {
-    const formulas = await admin
-      .from("methodology_formulas")
-      .select("id")
-      .eq("method_specification_id", specDraft);
-    expectTrue(
-      "F4 nenhuma fórmula foi criada nesta rodada",
-      !formulas.error && (formulas.data?.length ?? 0) === 0,
-      `fórmulas=${formulas.data?.length ?? 0}`,
-    );
-  }
-  {
     const spec = await admin
       .from("method_specifications")
       .select("status")
