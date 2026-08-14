@@ -10,6 +10,7 @@
 import { createServerFn } from "@tanstack/react-start";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Json } from "@/integrations/supabase/types";
 import {
   METHODOLOGY_SOURCE_BUCKET,
   asJsonObject,
@@ -23,6 +24,7 @@ import {
   requireSpecificationInScope,
 } from "@/lib/methodology.server";
 import type {
+  ClaimDossierReport,
   CompletenessReport,
   IntegrityReport,
   SourceReadinessReport,
@@ -30,6 +32,11 @@ import type {
 import {
   approveSpecificationSchema,
   attachRuleSourceSchema,
+  claimDossierSchema,
+  createClaimRuleAssessmentSchema,
+  createSourceClaimSchema,
+  reviewSourceClaimSchema,
+  satisfyRequirementSchema,
   attachSourceArtifactSchema,
   createApplicabilityRuleSchema,
   createChangeRequestSchema,
@@ -1718,4 +1725,200 @@ export const reviewMethodologyChangeRequest = createServerFn({ method: "POST" })
       after: { status: data.status, reviewed_by: userId },
     });
     return { changeRequestId: data.changeRequestId };
+  });
+
+/* ============================================ FASE 7E — CLAIMS CANDIDATAS */
+
+/**
+ * Claims candidatas de uma fonte. O gate (documento autorizado +
+ * CONTENT_VERIFIED + LOCATOR_VERIFIED) é do banco; aqui só há leitura.
+ */
+export const listSourceClaims = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => sourceScopeSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const membership = await requireMembership(supabase, userId);
+    await requireSourceInScope(supabase, data.sourceId, membership);
+
+    const claims = await supabase
+      .from("methodology_source_claims")
+      .select("*")
+      .eq("source_id", data.sourceId)
+      .order("created_at", { ascending: false });
+    if (claims.error) throw new Error(claims.error.message);
+
+    const ids = (claims.data ?? []).map((c) => c.id);
+    const [reviews, assessments] = await Promise.all([
+      ids.length
+        ? supabase
+            .from("methodology_claim_reviews")
+            .select("*")
+            .in("claim_id", ids)
+            .order("reviewed_at", { ascending: false })
+        : Promise.resolve({ data: [], error: null }),
+      ids.length
+        ? supabase.from("methodology_claim_rule_assessments").select("*").in("claim_id", ids)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+    if (reviews.error) throw new Error(reviews.error.message);
+    if (assessments.error) throw new Error(assessments.error.message);
+
+    return {
+      claims: claims.data ?? [],
+      reviews: reviews.data ?? [],
+      assessments: assessments.data ?? [],
+      role: membership.role,
+    };
+  });
+
+/** Especificações DRAFT e seus temas: alvo possível de uma claim candidata. */
+export const listClaimTargets = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const membership = await requireMembership(supabase, userId);
+    const specs = await supabase
+      .from("method_specifications")
+      .select("id, version, title, status")
+      .eq("status", "DRAFT")
+      .or(orgFilter(membership.organizationId))
+      .order("version");
+    if (specs.error) throw new Error(specs.error.message);
+    const specIds = (specs.data ?? []).map((s) => s.id);
+    const requirements = specIds.length
+      ? await supabase
+          .from("method_specification_source_requirements")
+          .select("id, method_specification_id, requirement_code, description, is_satisfied")
+          .in("method_specification_id", specIds)
+          .order("requirement_code")
+      : { data: [], error: null };
+    if (requirements.error) throw new Error(requirements.error.message);
+    return { specifications: specs.data ?? [], requirements: requirements.data ?? [] };
+  });
+
+export const createSourceClaim = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => createSourceClaimSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const membership = await requireWriteAccess(supabase, userId);
+    await requireSourceInScope(supabase, data.sourceId, membership);
+
+    const { data: row, error } = await supabase
+      .from("methodology_source_claims")
+      .insert({
+        organization_id: membership.organizationId,
+        source_id: data.sourceId,
+        locator_id: data.locatorId,
+        method_specification_id: data.specificationId,
+        requirement_code: data.requirementCode,
+        claim_code: data.claimCode,
+        claim_kind: data.claimKind,
+        statement: data.statement,
+        verbatim_excerpt: data.verbatimExcerpt,
+        numeric_payload: (data.numericPayload ?? null) as Json,
+        deferred_target: data.deferredTarget,
+        extraction_method: data.extractionMethod,
+        reviewer_alerts: data.reviewerAlerts,
+        notes: data.notes,
+        created_by: userId,
+      })
+      .select("id")
+      .single();
+    if (error) throw new Error(error.message);
+
+    await writeAudit(supabase, {
+      organizationId: membership.organizationId,
+      actorUserId: userId,
+      eventType: "METHODOLOGY_CLAIM_PROPOSED",
+      entityType: "methodology_source_claims",
+      entityId: row.id,
+      after: {
+        claim_code: data.claimCode,
+        requirement_code: data.requirementCode,
+        claim_kind: data.claimKind,
+        extraction_method: data.extractionMethod,
+      },
+    });
+    return { claimId: row.id };
+  });
+
+/** Operação oficial: decisão e autor vêm da RPC, nunca do payload. */
+export const reviewSourceClaim = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => reviewSourceClaimSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireReviewAccess(supabase, userId);
+    const { data: reviewId, error } = await supabase.rpc("review_methodology_claim", {
+      _claim_id: data.claimId,
+      _decision: data.decision,
+      _justification: data.justification,
+    });
+    if (error) throw new Error(error.message);
+    return { reviewId };
+  });
+
+export const createClaimRuleAssessment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => createClaimRuleAssessmentSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const membership = await requireWriteAccess(supabase, userId);
+    const { data: row, error } = await supabase
+      .from("methodology_claim_rule_assessments")
+      .insert({
+        organization_id: membership.organizationId,
+        claim_id: data.claimId,
+        rule_id: data.ruleId ?? null,
+        assessment: data.assessment,
+        proposed_relationship: data.proposedRelationship ?? null,
+        proposed_normative_strength: data.proposedNormativeStrength ?? null,
+        rationale: data.rationale,
+        created_by: userId,
+      })
+      .select("id")
+      .single();
+    if (error) throw new Error(error.message);
+    await writeAudit(supabase, {
+      organizationId: membership.organizationId,
+      actorUserId: userId,
+      eventType: "METHODOLOGY_CLAIM_RULE_ASSESSED",
+      entityType: "methodology_claim_rule_assessments",
+      entityId: row.id,
+      after: { claim_id: data.claimId, assessment: data.assessment, rule_id: data.ruleId ?? null },
+    });
+    return { assessmentId: row.id };
+  });
+
+export const getClaimDossier = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => claimDossierSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const membership = await requireMembership(supabase, userId);
+    await requireSpecificationInScope(supabase, data.specificationId, membership);
+    const { data: report, error } = await supabase.rpc("methodology_claim_dossier", {
+      _specification_id: data.specificationId,
+      ...(data.requirementCodes?.length ? { _requirement_codes: data.requirementCodes } : {}),
+    });
+    if (error) throw new Error(error.message);
+    return { dossier: asJsonObject(report) as unknown as ClaimDossierReport };
+  });
+
+/** Operação oficial: tema só é satisfeito por claim ACEITA, com justificativa. */
+export const satisfySpecificationRequirement = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => satisfyRequirementSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireReviewAccess(supabase, userId);
+    const { error } = await supabase.rpc("satisfy_specification_requirement", {
+      _requirement_id: data.requirementId,
+      _claim_id: data.claimId,
+      _justification: data.justification,
+    });
+    if (error) throw new Error(error.message);
+    return { requirementId: data.requirementId };
   });

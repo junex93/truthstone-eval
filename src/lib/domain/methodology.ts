@@ -722,3 +722,82 @@ export const READINESS_BLOCKER_LABEL: Record<string, string> = {
   CONTENT_NOT_VERIFIED: "Conteúdo ainda não conferido contra o documento",
   NO_VERIFIED_LOCATOR: "Nenhum localizador verificado (seção/cláusula/página)",
 };
+
+/* ============================================================ FASE 7E ==== */
+
+/** Natureza da afirmação candidata extraída de documento autorizado. */
+export const METHODOLOGY_CLAIM_KINDS = [
+  "DEFINITION",
+  "NORMATIVE_TEXT",
+  "NUMERIC_NORMATIVE_CANDIDATE",
+  "TABLE_REFERENCE",
+  "DEFERRED_REFERENCE",
+] as const;
+export type MethodologyClaimKind = (typeof METHODOLOGY_CLAIM_KINDS)[number];
+
+export const CLAIM_KIND_LABEL: Record<MethodologyClaimKind, string> = {
+  DEFINITION: "Definição",
+  NORMATIVE_TEXT: "Texto normativo",
+  NUMERIC_NORMATIVE_CANDIDATE: "Número normativo candidato",
+  TABLE_REFERENCE: "Referência a tabela",
+  DEFERRED_REFERENCE: "Referência diferida a outro documento",
+};
+
+export const METHODOLOGY_CLAIM_DECISIONS = ["ACCEPTED", "REJECTED", "SUPERSEDED"] as const;
+export type MethodologyClaimDecision = (typeof METHODOLOGY_CLAIM_DECISIONS)[number];
+
+export const CLAIM_DECISION_LABEL: Record<MethodologyClaimDecision, string> = {
+  ACCEPTED: "Aceita",
+  REJECTED: "Rejeitada",
+  SUPERSEDED: "Superada",
+};
+
+export const METHODOLOGY_CLAIM_RULE_ASSESSMENTS = [
+  "SUPPORTS_EXISTING_RULE",
+  "CONTRADICTS_EXISTING_RULE",
+  "NOT_COVERED_BY_EXISTING_RULE",
+  "NEEDS_NEW_RULE",
+] as const;
+export type MethodologyClaimRuleAssessment =
+  (typeof METHODOLOGY_CLAIM_RULE_ASSESSMENTS)[number];
+
+export const CLAIM_RULE_ASSESSMENT_LABEL: Record<MethodologyClaimRuleAssessment, string> = {
+  SUPPORTS_EXISTING_RULE: "Apoia regra existente",
+  CONTRADICTS_EXISTING_RULE: "Contradiz regra existente",
+  NOT_COVERED_BY_EXISTING_RULE: "Tema não coberto pelas regras atuais",
+  NEEDS_NEW_RULE: "Exige nova regra (proposta)",
+};
+
+/**
+ * Método de obtenção do trecho. OCR e leitura de PDF produzem CANDIDATO:
+ * nenhuma delas substitui a conferência humana do documento.
+ */
+export const CLAIM_EXTRACTION_METHODS = [
+  "HUMAN_READING",
+  "PDF_TEXT_LAYER",
+  "OCR_ASSISTED",
+] as const;
+export type ClaimExtractionMethod = (typeof CLAIM_EXTRACTION_METHODS)[number];
+
+export const CLAIM_EXTRACTION_METHOD_LABEL: Record<ClaimExtractionMethod, string> = {
+  HUMAN_READING: "Leitura humana direta do documento",
+  PDF_TEXT_LAYER: "Camada de texto do PDF (candidato)",
+  OCR_ASSISTED: "OCR assistido (candidato, sujeito a erro de reconhecimento)",
+};
+
+/** Dossiê de claims por tema (RPC `methodology_claim_dossier`). */
+export interface ClaimDossierRequirement {
+  requirement_code: string;
+  description: string | null;
+  is_satisfied: boolean;
+  claims_total: number;
+  claims_accepted: number;
+  claims_pending: number;
+}
+
+export interface ClaimDossierReport {
+  specification_id: string;
+  specification_status: string;
+  organization_id: string;
+  requirements: ClaimDossierRequirement[];
+}
