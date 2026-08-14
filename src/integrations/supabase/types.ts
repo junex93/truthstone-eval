@@ -2991,6 +2991,124 @@ export type Database = {
           },
         ]
       }
+      methodology_claim_reviews: {
+        Row: {
+          claim_id: string
+          decision: Database["public"]["Enums"]["methodology_claim_decision"]
+          id: string
+          justification: string
+          organization_id: string
+          reviewed_at: string
+          reviewer_id: string
+        }
+        Insert: {
+          claim_id: string
+          decision: Database["public"]["Enums"]["methodology_claim_decision"]
+          id?: string
+          justification: string
+          organization_id: string
+          reviewed_at?: string
+          reviewer_id: string
+        }
+        Update: {
+          claim_id?: string
+          decision?: Database["public"]["Enums"]["methodology_claim_decision"]
+          id?: string
+          justification?: string
+          organization_id?: string
+          reviewed_at?: string
+          reviewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "methodology_claim_reviews_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_source_claims"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_claim_reviews_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      methodology_claim_rule_assessments: {
+        Row: {
+          assessment: Database["public"]["Enums"]["methodology_claim_rule_assessment"]
+          claim_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          organization_id: string
+          proposed_normative_strength:
+            | Database["public"]["Enums"]["methodology_normative_strength"]
+            | null
+          proposed_relationship:
+            | Database["public"]["Enums"]["methodology_source_relationship"]
+            | null
+          rationale: string
+          rule_id: string | null
+        }
+        Insert: {
+          assessment: Database["public"]["Enums"]["methodology_claim_rule_assessment"]
+          claim_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          organization_id: string
+          proposed_normative_strength?:
+            | Database["public"]["Enums"]["methodology_normative_strength"]
+            | null
+          proposed_relationship?:
+            | Database["public"]["Enums"]["methodology_source_relationship"]
+            | null
+          rationale: string
+          rule_id?: string | null
+        }
+        Update: {
+          assessment?: Database["public"]["Enums"]["methodology_claim_rule_assessment"]
+          claim_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          organization_id?: string
+          proposed_normative_strength?:
+            | Database["public"]["Enums"]["methodology_normative_strength"]
+            | null
+          proposed_relationship?:
+            | Database["public"]["Enums"]["methodology_source_relationship"]
+            | null
+          rationale?: string
+          rule_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "methodology_claim_rule_assessments_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_source_claims"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_claim_rule_assessments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_claim_rule_assessments_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       methodology_crosswalks: {
         Row: {
           created_at: string
@@ -3512,6 +3630,95 @@ export type Database = {
           },
           {
             foreignKeyName: "methodology_source_artifacts_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      methodology_source_claims: {
+        Row: {
+          claim_code: string
+          claim_kind: Database["public"]["Enums"]["methodology_claim_kind"]
+          created_at: string
+          created_by: string | null
+          deferred_target: string | null
+          extraction_method: string
+          id: string
+          locator_id: string
+          method_specification_id: string
+          notes: string | null
+          numeric_payload: Json | null
+          organization_id: string
+          requirement_code: string
+          reviewer_alerts: Json
+          source_id: string
+          statement: string
+          verbatim_excerpt: string | null
+        }
+        Insert: {
+          claim_code: string
+          claim_kind: Database["public"]["Enums"]["methodology_claim_kind"]
+          created_at?: string
+          created_by?: string | null
+          deferred_target?: string | null
+          extraction_method: string
+          id?: string
+          locator_id: string
+          method_specification_id: string
+          notes?: string | null
+          numeric_payload?: Json | null
+          organization_id: string
+          requirement_code: string
+          reviewer_alerts?: Json
+          source_id: string
+          statement: string
+          verbatim_excerpt?: string | null
+        }
+        Update: {
+          claim_code?: string
+          claim_kind?: Database["public"]["Enums"]["methodology_claim_kind"]
+          created_at?: string
+          created_by?: string | null
+          deferred_target?: string | null
+          extraction_method?: string
+          id?: string
+          locator_id?: string
+          method_specification_id?: string
+          notes?: string | null
+          numeric_payload?: Json | null
+          organization_id?: string
+          requirement_code?: string
+          reviewer_alerts?: Json
+          source_id?: string
+          statement?: string
+          verbatim_excerpt?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "methodology_source_claims_locator_id_fkey"
+            columns: ["locator_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_source_locators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_source_claims_method_specification_id_fkey"
+            columns: ["method_specification_id"]
+            isOneToOne: false
+            referencedRelation: "method_specifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_source_claims_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_source_claims_source_id_fkey"
             columns: ["source_id"]
             isOneToOne: false
             referencedRelation: "methodology_sources"
@@ -5786,6 +5993,10 @@ export type Database = {
         Returns: string
       }
       market_universe_metrics: { Args: { _case_id: string }; Returns: Json }
+      methodology_claim_dossier: {
+        Args: { _requirement_codes?: string[]; _specification_id: string }
+        Returns: Json
+      }
       methodology_source_org_access_basis: {
         Args: { _org: string; _source_id: string }
         Returns: Database["public"]["Enums"]["methodology_access_status"]
@@ -5853,6 +6064,14 @@ export type Database = {
         }
         Returns: string
       }
+      review_methodology_claim: {
+        Args: {
+          _claim_id: string
+          _decision: Database["public"]["Enums"]["methodology_claim_decision"]
+          _justification: string
+        }
+        Returns: string
+      }
       revise_evidence_field: {
         Args: {
           _field_id: string
@@ -5866,6 +6085,14 @@ export type Database = {
           _unit: string
         }
         Returns: string
+      }
+      satisfy_specification_requirement: {
+        Args: {
+          _claim_id: string
+          _justification: string
+          _requirement_id: string
+        }
+        Returns: boolean
       }
       specification_completeness: { Args: { _spec_id: string }; Returns: Json }
       start_sample_selection: {
@@ -6133,6 +6360,18 @@ export type Database = {
         | "SCOPE_CHANGE"
         | "TEST_CHANGE"
         | "BUG_FIX"
+      methodology_claim_decision: "ACCEPTED" | "REJECTED" | "SUPERSEDED"
+      methodology_claim_kind:
+        | "DEFINITION"
+        | "NORMATIVE_TEXT"
+        | "NUMERIC_NORMATIVE_CANDIDATE"
+        | "TABLE_REFERENCE"
+        | "DEFERRED_REFERENCE"
+      methodology_claim_rule_assessment:
+        | "SUPPORTS_EXISTING_RULE"
+        | "CONTRADICTS_EXISTING_RULE"
+        | "NOT_COVERED_BY_EXISTING_RULE"
+        | "NEEDS_NEW_RULE"
       methodology_conflict_status:
         | "OPEN"
         | "UNDER_ANALYSIS"
@@ -6746,6 +6985,20 @@ export const Constants = {
         "SCOPE_CHANGE",
         "TEST_CHANGE",
         "BUG_FIX",
+      ],
+      methodology_claim_decision: ["ACCEPTED", "REJECTED", "SUPERSEDED"],
+      methodology_claim_kind: [
+        "DEFINITION",
+        "NORMATIVE_TEXT",
+        "NUMERIC_NORMATIVE_CANDIDATE",
+        "TABLE_REFERENCE",
+        "DEFERRED_REFERENCE",
+      ],
+      methodology_claim_rule_assessment: [
+        "SUPPORTS_EXISTING_RULE",
+        "CONTRADICTS_EXISTING_RULE",
+        "NOT_COVERED_BY_EXISTING_RULE",
+        "NEEDS_NEW_RULE",
       ],
       methodology_conflict_status: [
         "OPEN",

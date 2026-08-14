@@ -4,7 +4,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { ClaimDossierPanel } from "@/components/app/ClaimBits";
 import {
+
   ChecklistRow,
   HashRow,
   NormativeStrengthBadge,
@@ -236,6 +238,8 @@ function SpecificationPage() {
           </div>
         ) : null}
       </section>
+
+      <ClaimDossierPanel specificationId={specId} />
 
       <section>
         <SectionTitle

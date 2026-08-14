@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { Batch01Panel, SourceClaimsPanel } from "@/components/app/ClaimBits";
 import {
   AccessStatusBadge,
   SpecStatusBadge,
@@ -189,6 +190,10 @@ function SourceDetailPage() {
           <VerifyForm sourceId={sourceId} contentAllowed={contentAllowed} locators={locators} />
         ) : null}
       </section>
+
+      <Batch01Panel sourceId={sourceId} canPropose={canWrite(role)} />
+
+      <SourceClaimsPanel sourceId={sourceId} />
 
       <section>
         <SectionTitle
@@ -457,7 +462,7 @@ function NewLocatorForm({
           locatorType: form.locatorType,
           section: form.section || null,
           clause: form.clause || null,
-          page: form.page === "" ? null : Number(form.page),
+          page: form.page === "" ? null : form.page,
           supportExcerpt: form.supportExcerpt || null,
           artifactId: form.artifactId === "" ? null : form.artifactId,
         }),

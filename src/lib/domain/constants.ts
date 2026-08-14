@@ -625,5 +625,11 @@ export const METHODOLOGY_AUDIT_EVENT_TYPES = [
   "METHOD_OUTPUT_CONTRACT_CREATED",
   "METHODOLOGY_CHANGE_REQUEST_CREATED",
   "METHODOLOGY_CHANGE_REQUEST_REVIEWED",
+  /* Fase 7E — claims candidatas de fonte primária. A decisão humana
+     (METHODOLOGY_CLAIM_REVIEWED) e a satisfação de tema
+     (METHODOLOGY_REQUIREMENT_SATISFIED) são gravadas dentro da RPC. */
+  "METHODOLOGY_CLAIM_PROPOSED",
+  "METHODOLOGY_CLAIM_RULE_ASSESSED",
 ] as const;
+
 export type MethodologyAuditEventType = (typeof METHODOLOGY_AUDIT_EVENT_TYPES)[number];

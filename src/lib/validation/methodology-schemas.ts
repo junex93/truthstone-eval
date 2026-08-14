@@ -9,12 +9,16 @@
 import { z } from "zod";
 
 import {
+  CLAIM_EXTRACTION_METHODS,
   METHOD_APPLICABILITY_RESULTS,
   METHOD_SPEC_SECTION_KEYS,
   METHOD_TEST_TYPES,
   METHODOLOGY_ACCESS_STATUSES,
   METHODOLOGY_AUTHORITY_LEVELS,
   METHODOLOGY_CHANGE_TYPES,
+  METHODOLOGY_CLAIM_DECISIONS,
+  METHODOLOGY_CLAIM_KINDS,
+  METHODOLOGY_CLAIM_RULE_ASSESSMENTS,
   METHODOLOGY_CONFLICT_STATUSES,
   METHODOLOGY_DATA_TYPES,
   METHODOLOGY_JURISDICTIONS,
@@ -306,4 +310,52 @@ export const reviewChangeRequestSchema = z.object({
   changeRequestId: uuid,
   status: z.enum(["UNDER_REVIEW", "APPROVED", "REJECTED", "WITHDRAWN"]),
   reviewNotes: text(10, 4000),
+});
+
+/* ========================================= FASE 7E — claims candidatas === */
+
+/**
+ * Claim é CANDIDATO. Nenhum campo de decisão, autoria de revisão ou
+ * "satisfação de tema" entra por aqui: isso é operação oficial do banco.
+ */
+export const createSourceClaimSchema = z.object({
+  sourceId: uuid,
+  locatorId: uuid,
+  specificationId: uuid,
+  requirementCode: text(3, 80),
+  claimCode: text(2, 60),
+  claimKind: z.enum(METHODOLOGY_CLAIM_KINDS),
+  statement: text(10, 4000),
+  verbatimExcerpt: optionalText(6000),
+  numericPayload: z.record(z.string(), z.unknown()).optional().nullable(),
+  deferredTarget: optionalText(300),
+  extractionMethod: z.enum(CLAIM_EXTRACTION_METHODS),
+  reviewerAlerts: z.array(text(3, 400)).max(20).default([]),
+  notes: optionalText(2000),
+});
+
+export const reviewSourceClaimSchema = z.object({
+  claimId: uuid,
+  decision: z.enum(METHODOLOGY_CLAIM_DECISIONS),
+  justification: text(20, 4000),
+});
+
+export const createClaimRuleAssessmentSchema = z.object({
+  claimId: uuid,
+  ruleId: uuid.optional().nullable(),
+  assessment: z.enum(METHODOLOGY_CLAIM_RULE_ASSESSMENTS),
+  proposedRelationship: z.enum(METHODOLOGY_SOURCE_RELATIONSHIPS).optional().nullable(),
+  proposedNormativeStrength: z.enum(METHODOLOGY_NORMATIVE_STRENGTHS).optional().nullable(),
+  rationale: text(20, 4000),
+});
+
+export const claimDossierSchema = z.object({
+  specificationId: uuid,
+  requirementCodes: z.array(text(3, 80)).max(64).optional().nullable(),
+});
+
+export const satisfyRequirementSchema = z.object({
+  requirementId: uuid,
+  claimId: uuid,
+  justification: text(20, 4000),
 });
