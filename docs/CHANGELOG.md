@@ -369,3 +369,15 @@ price_history` update/delete) **sem** GRANT — só pelas RPCs oficiais.
   `market-flow` 33/33, `research-flow` 28/28.
 - Relatório: `docs/FACTORS_PRIMARY_SOURCE_REVIEW_BATCH_01.md`.
 - Especificação MCDDM permanece `DRAFT`; nenhuma lógica matemática introduzida.
+
+## Fase 7E — Claims candidatas de fonte primária
+
+- Painéis de proposta assistida, revisão de claims (`ClaimBits`) integrados em
+  `/methodology/sources/$sourceId` e dossiê de temas em
+  `/methodology/specifications/$specId`.
+- Claims, revisões e avaliações de regra tornadas append-only no banco
+  (`REVOKE UPDATE/DELETE` + trigger `block_claim_mutation`).
+- Nova suíte `tests/functional/methodology-claim-gate.ts`: **38/38 PASS**.
+  Prova o gate CONTENT_VERIFIED → LOCATOR → LOCATOR_VERIFIED → claim → aceite por
+  revisor distinto → tema satisfeito, e a recusa de todos os atalhos.
+- Nenhum cálculo de fatores foi introduzido; especificação MCDDM segue `DRAFT`.
