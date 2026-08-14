@@ -224,6 +224,186 @@ async function main() {
       .insert({
         organization_id: orgA,
         source_id: sourceId,
+        locator_id: locatorNoExcerpt,
+        method_specification_id: specDraft,
+        requirement_code: "T07_SAMPLE_REQUIREMENTS",
+        claim_code: `CG-NOACCESS-${stamp}`,
+        claim_kind: "NORMATIVE_TEXT",
+        statement: "TEST_ONLY afirmação sem base de acesso",
+        verbatim_excerpt: "TEST_ONLY trecho",
+        extraction_method: "HUMAN_READING",
+        created_by: valuer.id,
+      })
+      .select("id")
+      .single();
+    expectFail("A3 claim sem documento autorizado é recusada", r.error);
+  }
+
+  console.log("\n=== B. DOCUMENTO AUTORIZADO E VERIFICAÇÕES ===");
+  const fileBytes = new TextEncoder().encode(`TEST_ONLY norma simulada ${stamp}`);
+  const expectedHash = await sha256Hex(fileBytes.buffer as ArrayBuffer);
+  const path = `${orgA}/${sourceId}/${stamp}-norma.txt`;
+  {
+    const up = await owner.client.storage
+      .from(BUCKET)
+      .upload(path, new Blob([fileBytes]), { contentType: "text/plain" });
+    expectOk("B1 documento enviado no caminho canônico", up.error);
+  }
+
+  const libSource = await admin
+    .from("evidence_sources")
+    .insert({
+      organization_id: orgA,
+      valuation_case_id: null,
+      source_type: "PRIVATE_DOCUMENT",
+      source_name: "Biblioteca metodológica — documentos autorizados",
+      notes: "TEST_ONLY biblioteca",
+      created_by: owner.id,
+    })
+    .select("id")
+    .single();
+  if (libSource.error) throw new Error(`library: ${libSource.error.message}`);
+
+  const artifact = await admin
+    .from("evidence_artifacts")
+    .insert({
+      organization_id: orgA,
+      evidence_source_id: libSource.data.id,
+      storage_bucket: BUCKET,
+      storage_path: path,
+      file_name: "norma.txt",
+      mime_type: "text/plain",
+      file_size: fileBytes.byteLength,
+      sha256_hash: expectedHash,
+      hash_computed_by: "SERVER",
+      created_by: owner.id,
+    })
+    .select("id")
+    .single();
+  if (artifact.error) throw new Error(`artifact: ${artifact.error.message}`);
+
+  {
+    const link = await owner.client
+      .from("methodology_source_artifacts")
+      .insert({
+        organization_id: orgA,
+        source_id: sourceId,
+        evidence_artifact_id: artifact.data.id,
+        access_basis: "LICENSED_COPY",
+        notes: "TEST_ONLY exemplar licenciado",
+        created_by: owner.id,
+      })
+      .select("id")
+      .single();
+    expectOk("B2 vínculo documento↔fonte com base legítima", link.error);
+  }
+  {
+    const r = await valuer.client
+      .from("methodology_source_claims")
+      .insert({
+        organization_id: orgA,
+        source_id: sourceId,
+        locator_id: locatorNoExcerpt,
+        method_specification_id: specDraft,
+        requirement_code: "T07_SAMPLE_REQUIREMENTS",
+        claim_code: `CG-NOCONTENT-${stamp}`,
+        claim_kind: "NORMATIVE_TEXT",
+        statement: "TEST_ONLY afirmação sem verificação de conteúdo",
+        verbatim_excerpt: "TEST_ONLY trecho",
+        extraction_method: "HUMAN_READING",
+        created_by: valuer.id,
+      })
+      .select("id")
+      .single();
+    expectFail("B3 claim com documento mas sem CONTENT_VERIFIED é recusada", r.error);
+  }
+  {
+    const r = await reviewer.client.rpc("verify_methodology_source", {
+      _source_id: sourceId,
+      _verification_type: "METADATA_VERIFIED",
+      _notes: "TEST_ONLY metadados conferidos",
+    });
+    expectOk("B4 METADATA_VERIFIED registrada por revisor", r.error);
+  }
+  {
+    const r = await valuer.client.rpc("verify_methodology_source", {
+      _source_id: sourceId,
+      _verification_type: "CONTENT_VERIFIED",
+      _notes: "TEST_ONLY tentativa por papel produtor",
+    });
+    expectFail("B5 papel produtor não verifica conteúdo", r.error);
+  }
+  {
+    const r = await reviewer.client.rpc("verify_methodology_source", {
+      _source_id: sourceId,
+      _verification_type: "CONTENT_VERIFIED",
+      _notes: "TEST_ONLY conteúdo conferido contra o exemplar licenciado",
+    });
+    expectOk("B6 CONTENT_VERIFIED registrada por revisor", r.error);
+  }
+
+  console.log("\n=== C. LOCALIZADOR COM CITAÇÃO E CLAIM CANDIDATA ===");
+  let locator = "";
+  {
+    const r = await valuer.client
+      .from("methodology_source_locators")
+      .insert({
+        organization_id: orgA,
+        source_id: sourceId,
+        locator_type: "ANNEX",
+        clause: "B.2.2",
+        page: "40",
+        support_excerpt: "TEST_ONLY cada fator contido entre 0,50 e 2,00",
+        artifact_id: artifact.data.id,
+        created_by: valuer.id,
+      })
+      .select("id")
+      .single();
+    expectOk("C1 trecho literal permitido após CONTENT_VERIFIED", r.error);
+    locator = r.data?.id ?? "";
+  }
+  let otherLocator = "";
+  {
+    const r = await admin
+      .from("methodology_source_locators")
+      .insert({
+        organization_id: orgA,
+        source_id: otherSourceId,
+        locator_type: "CLAUSE",
+        clause: "9.9",
+        created_by: valuer.id,
+      })
+      .select("id")
+      .single();
+    if (r.error) throw new Error(`other locator: ${r.error.message}`);
+    otherLocator = r.data.id as string;
+  }
+  {
+    const r = await valuer.client
+      .from("methodology_source_claims")
+      .insert({
+        organization_id: orgA,
+        source_id: sourceId,
+        locator_id: otherLocator,
+        method_specification_id: specDraft,
+        requirement_code: "T07_SAMPLE_REQUIREMENTS",
+        claim_code: `CG-WRONGLOC-${stamp}`,
+        claim_kind: "NORMATIVE_TEXT",
+        statement: "TEST_ONLY localizador de outra fonte",
+        verbatim_excerpt: "TEST_ONLY trecho",
+        extraction_method: "HUMAN_READING",
+        created_by: valuer.id,
+      })
+      .select("id")
+      .single();
+    expectFail("C2 claim com localizador de outra fonte é recusada", r.error);
+  }
+  {
+    const r = await valuer.client
+      .from("methodology_source_claims")
+      .insert({
+        organization_id: orgA,
+        source_id: sourceId,
         locator_id: locator,
         method_specification_id: specDraft,
         requirement_code: `T99_INEXISTENTE_${stamp}`,
