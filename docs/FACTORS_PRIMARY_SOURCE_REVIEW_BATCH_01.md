@@ -225,3 +225,21 @@ Regressão desta rodada (sem alteração de código de domínio):
 `methodology-source-ingestion` 40/40, `factors-specification-governance` 100/100,
 `methodology-governance-flow` 161/161, `market-intelligence-flow` 81/81,
 `market-flow` 33/33, `research-flow` 28/28. Typecheck PASS.
+
+## Fase 7H.1 — Onboarding do revisor humano (2026-08-15)
+
+O Batch 01 permanece `BLOCKED_BY_HUMAN_REVIEWER`. Nesta rodada foi implementado
+apenas o caminho de onboarding: o OWNER passa a poder convidar uma pessoa real
+como REVIEWER, com convite governado, aceite autenticado e auditoria
+(`MEMBERSHIP_ONBOARDING.md`).
+
+Nada de conteúdo normativo mudou:
+
+- nenhuma verificação de metadata ou conteúdo das NBRs foi executada;
+- nenhum locator foi criado;
+- nenhuma claim foi aceita, rejeitada ou superseded;
+- Batch 02 não iniciou;
+- specification MCDDM permanece `DRAFT`.
+
+A existência de um REVIEWER ativo apenas **habilita** os atos manuais da Fase
+7G/7I; não os executa.
