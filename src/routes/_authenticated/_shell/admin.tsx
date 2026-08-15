@@ -235,10 +235,14 @@ function InvitationsPanel() {
     mutationFn: (invitationId: string) => revoke({ data: { invitationId } }),
     onSuccess: () => {
       setIssuedLink(null);
-      toast.success("Convite revogado.");
+      setRevokeTarget(null);
+      toast.success("Convite removido. Você já pode convidar este e-mail novamente.");
       refresh();
     },
-    onError: (error) => toast.error(error instanceof Error ? error.message : "Falha ao revogar."),
+    onError: () => {
+      setRevokeTarget(null);
+      toast.error("Não foi possível remover o convite. Tente novamente.");
+    },
   });
 
   const invitations = query.data?.invitations ?? [];
