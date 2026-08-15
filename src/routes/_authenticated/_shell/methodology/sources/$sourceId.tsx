@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { Batch01Panel, SourceClaimsPanel } from "@/components/app/ClaimBits";
 import { ReviewerGatePanel } from "@/components/app/ReviewerGate";
+import { SourceVerificationCheckpoint } from "@/components/app/SourceVerificationCheckpoint";
 import {
   AccessStatusBadge,
   SpecStatusBadge,
@@ -82,6 +83,7 @@ function SourceDetailPage() {
   }
 
   const { source, locators, verifications, artifacts, ruleSources, conflicts, role } = query.data;
+  const verifierNames = query.data.verifierNames ?? {};
   const readiness = readinessQuery.data?.readiness;
   // O gate é do banco: a interface apenas reflete o diagnóstico da RPC.
   const contentAllowed = readiness ? readiness.organization_access_basis !== null : false;
@@ -94,6 +96,29 @@ function SourceDetailPage() {
   const verificationTypes = new Set(verifications.map((v) => v.verification_type));
   const humanCheckpointDone =
     verificationTypes.has("METADATA_VERIFIED") && verificationTypes.has("CONTENT_VERIFIED");
+
+  /** Ordem dos campos igual à do material de conferência (src/lib/domain/source-identity.ts). */
+  const registeredIdentity = [
+    { label: "Número da norma", value: source.identifier ?? "—" },
+    { label: "Parte", value: source.short_title ?? source.identifier ?? "—" },
+    { label: "Título", value: source.title },
+    { label: "Emissor", value: source.issuing_body ?? source.authors ?? "—" },
+    { label: "Edição", value: source.edition ?? "—" },
+    {
+      label: "Data de publicação",
+      value: source.publication_date ?? (source.publication_year ? String(source.publication_year) : "—"),
+    },
+    { label: "Versão corrigida / vigência", value: source.effective_from ?? "—" },
+    { label: "Idioma", value: source.language ?? "—" },
+  ];
+
+  const artifactFiles = artifacts.map((a) => ({
+    file_name: a.evidence_artifacts?.file_name ?? "—",
+    sha256_hash: a.evidence_artifacts?.sha256_hash ?? null,
+    hash_computed_by: a.evidence_artifacts?.hash_computed_by ?? null,
+    storage_bucket: a.evidence_artifacts?.storage_bucket ?? null,
+    file_size: a.evidence_artifacts?.file_size ?? null,
+  }));
 
 
   return (
@@ -138,6 +163,17 @@ function SourceDetailPage() {
         <ArtifactList artifacts={artifacts} />
         {canWrite(role) ? <DocumentIngestionForm sourceId={sourceId} /> : null}
       </section>
+
+      <SourceVerificationCheckpoint
+        sourceId={sourceId}
+        identifier={source.identifier}
+        registered={registeredIdentity}
+        artifactFiles={artifactFiles}
+        verifications={verifications}
+        verifierNames={verifierNames}
+        canReview={canReview(role)}
+        contentAllowed={contentAllowed}
+      />
 
       <section>
         <SectionTitle
@@ -190,6 +226,9 @@ function SourceDetailPage() {
               <li key={v.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
                 <span className="text-xs text-muted-foreground">
                   {new Date(v.verified_at).toLocaleString("pt-BR")}
+                  {v.verified_by
+                    ? ` · ${verifierNames[v.verified_by] ?? v.verified_by}`
+                    : ""}
                   {v.notes ? ` — ${v.notes}` : ""}
                 </span>
                 <VerificationBadge type={v.verification_type} />
@@ -197,8 +236,10 @@ function SourceDetailPage() {
             ))}
           </ul>
         )}
-        {canReview(role) ? (
-          <VerifyForm sourceId={sourceId} contentAllowed={contentAllowed} locators={locators} />
+        {/* Metadado e conteúdo são assinados no checkpoint acima, na ordem obrigatória.
+            Aqui resta apenas a conferência de localizador, que exige localizador existente. */}
+        {canReview(role) && contentAllowed && locators.length > 0 ? (
+          <VerifyForm sourceId={sourceId} locators={locators} />
         ) : null}
       </section>
 
@@ -580,17 +621,15 @@ function NewLocatorForm({
 
 function VerifyForm({
   sourceId,
-  contentAllowed,
   locators,
 }: {
   sourceId: string;
-  contentAllowed: boolean;
   locators: Array<{ id: string; locator_type: string; section: string | null }>;
 }) {
   const queryClient = useQueryClient();
   const verify = useServerFn(verifyMethodologySource);
   const [form, setForm] = useState({
-    verificationType: "METADATA_VERIFIED",
+    verificationType: "LOCATOR_VERIFIED",
     locatorId: "",
     notes: "",
   });
@@ -617,9 +656,7 @@ function VerifyForm({
     onError: (error) => toast.error(error instanceof Error ? error.message : "Falha"),
   });
 
-  const options = contentAllowed
-    ? METHODOLOGY_VERIFICATION_TYPES
-    : METHODOLOGY_VERIFICATION_TYPES.filter((t) => t === "METADATA_VERIFIED");
+  const options = METHODOLOGY_VERIFICATION_TYPES.filter((t) => t === "LOCATOR_VERIFIED");
 
   return (
     <div className="panel mt-3 space-y-3 p-4">

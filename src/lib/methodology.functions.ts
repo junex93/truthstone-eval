@@ -119,7 +119,12 @@ export const getMethodologySource = createServerFn({ method: "GET" })
     const [source, artifacts, locators, verifications, ruleSources, crosswalks, conflicts] =
       await Promise.all([
         supabase.from("methodology_sources").select("*").eq("id", data.sourceId).single(),
-        supabase.from("methodology_source_artifacts").select("*").eq("source_id", data.sourceId),
+        supabase
+          .from("methodology_source_artifacts")
+          .select(
+            "*, evidence_artifacts(id, file_name, sha256_hash, hash_computed_by, storage_bucket, file_size, mime_type)",
+          )
+          .eq("source_id", data.sourceId),
         supabase
           .from("methodology_source_locators")
           .select("*")
@@ -158,11 +163,27 @@ export const getMethodologySource = createServerFn({ method: "GET" })
       if (r.error) throw new Error(r.error.message);
     }
 
+    // Autoria humana visível: nome de quem verificou, lido do perfil (nunca do payload).
+    const verifierIds = Array.from(
+      new Set((verifications.data ?? []).map((v) => v.verified_by).filter(Boolean) as string[]),
+    );
+    const verifierNames: Record<string, string> = {};
+    if (verifierIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .in("id", verifierIds);
+      for (const p of profiles ?? []) {
+        verifierNames[p.id] = p.full_name ?? p.email ?? p.id;
+      }
+    }
+
     return {
       source: source.data,
       artifacts: artifacts.data ?? [],
       locators: locators.data ?? [],
       verifications: verifications.data ?? [],
+      verifierNames,
       ruleSources: ruleSources.data ?? [],
       crosswalks: crosswalks.data ?? [],
       conflicts: conflicts.data ?? [],
