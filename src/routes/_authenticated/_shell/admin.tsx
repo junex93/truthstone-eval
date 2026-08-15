@@ -187,6 +187,7 @@ function InvitationsPanel() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<InvitableRole>("REVIEWER");
   const [issuedLink, setIssuedLink] = useState<string | null>(null);
+  const [revokeTarget, setRevokeTarget] = useState<{ id: string; email: string } | null>(null);
 
   const query = useQuery({ queryKey: ["invitations"], queryFn: () => fetchInvitations() });
 
