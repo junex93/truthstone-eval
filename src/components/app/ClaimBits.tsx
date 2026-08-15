@@ -45,9 +45,12 @@ import {
 export function Batch01Panel({
   sourceId,
   canPropose,
+  checkpointDone = true,
 }: {
   sourceId: string;
   canPropose: boolean;
+  /** Metadado E conteúdo já conferidos por humano autorizado nesta fonte. */
+  checkpointDone?: boolean;
 }) {
   const items = batch01ItemsForSource(sourceId);
   if (items.length === 0) return null;
@@ -58,6 +61,14 @@ export function Batch01Panel({
         title="Batch 01 — proposta assistida (T01 / T04 / T07)"
         description="Localizador e claim candidata na mesma ação. Cada trecho foi lido da cópia autorizada desta organização e permanece CANDIDATO até conferência humana."
       />
+      {!checkpointDone ? (
+        <p className="mt-3 rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+          Checkpoint humano pendente nesta fonte: registre METADATA_VERIFIED e CONTENT_VERIFIED
+          antes de propor claims candidatas. Até lá, T01, T04 e T07 permanecem
+          PENDING_PRIMARY_SOURCE e a sugestão abaixo é apenas material de leitura para o revisor —
+          não é conteúdo verificado nem requisito normativo.
+        </p>
+      ) : null}
       <div className="mt-3 grid gap-3">
         {items.map((item) => (
           <Batch01Card key={item.claim.claimCode} item={item} canPropose={canPropose} />
