@@ -123,6 +123,23 @@ function DashboardPage() {
 function OrganizationBootstrap() {
   const queryClient = useQueryClient();
   const bootstrap = useServerFn(bootstrapWorkspace);
+  const fetchPending = useServerFn(listMyPendingInvitations);
+  const [name, setName] = useState("");
+  const [legalName, setLegalName] = useState("");
+  const [storedToken, setStoredToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    setStoredToken(readInviteIntent());
+  }, []);
+
+  /** Convite pendente não pode ficar invisível para quem ainda não tem organização. */
+  const pending = useQuery({
+    queryKey: ["my-pending-invitations"],
+    queryFn: () => fetchPending(),
+    retry: false,
+  });
+
+  const bootstrap = useServerFn(bootstrapWorkspace);
   const [name, setName] = useState("");
   const [legalName, setLegalName] = useState("");
 
