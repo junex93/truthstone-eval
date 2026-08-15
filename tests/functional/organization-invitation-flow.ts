@@ -423,6 +423,57 @@ async function main() {
     (revokedAudit ?? []).length === 1,
     `rows=${(revokedAudit ?? []).length}`,
   );
+  // remoção lógica: linha preservada, status REVOKED, autoria e horário registrados
+  const { data: revokedRow } = await admin
+    .from("organization_invitations")
+    .select("id, status, email, invited_role, invited_by, revoked_by, revoked_at")
+    .eq("id", revokedId!)
+    .maybeSingle();
+  expectTrue(
+    "remoção é lógica: convite permanece com status REVOKED e autoria registrada",
+    Boolean(
+      revokedRow &&
+        revokedRow.status === "REVOKED" &&
+        revokedRow.email === revokedUser.email &&
+        revokedRow.invited_role === "REVIEWER" &&
+        revokedRow.revoked_by &&
+        revokedRow.revoked_at,
+    ),
+    JSON.stringify(revokedRow),
+  );
+  // após remoção, o mesmo e-mail pode ser convidado novamente e o novo token funciona
+  const reinviteToken = randomToken();
+  const { data: reinviteId, error: reinviteError } = await ownerA.client.rpc(
+    "create_organization_invitation",
+    {
+      _organization_id: orgA!.id,
+      _email: revokedUser.email,
+      _role: "REVIEWER",
+      _token_hash: await sha256Hex(reinviteToken),
+    },
+  );
+  expectOk("novo convite para o mesmo e-mail é permitido após remoção", reinviteError);
+  expectTrue(
+    "novo convite possui identidade própria",
+    Boolean(reinviteId) && reinviteId !== revokedId,
+    `novo=${reinviteId} antigo=${revokedId}`,
+  );
+  expectFail(
+    "token antigo continua recusado após novo convite",
+    (
+      await revokedUser.client.rpc("accept_organization_invitation", {
+        _token_hash: await sha256Hex(revokedToken),
+      })
+    ).error,
+  );
+  expectOk(
+    "novo token conclui o aceite",
+    (
+      await revokedUser.client.rpc("accept_organization_invitation", {
+        _token_hash: await sha256Hex(reinviteToken),
+      })
+    ).error,
+  );
 
   // ---------- 8. REENVIO ROTACIONA TOKEN ----------
   const resendUser = await createUser("resend");
