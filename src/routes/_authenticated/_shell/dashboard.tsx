@@ -123,24 +123,41 @@ function DashboardPage() {
   );
 }
 
+/**
+ * Estado zero-org resolvido por uma única fonte de verdade: convite pendente tem
+ * precedência sobre "Criar organização"; nada final é renderizado antes de sessão,
+ * memberships e convites estarem resolvidos.
+ */
+function ZeroOrgOnboarding() {
+  const onboarding = useOnboardingState();
+
+  if (onboarding.state === "AUTH_LOADING") {
+    return (
+      <div className="mx-auto max-w-xl space-y-4">
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-40 w-full" />
+      </div>
+    );
+  }
+
+  if (onboarding.state === "PENDING_INVITATION") {
+    return (
+      <PendingInvitationPanel
+        invitations={onboarding.invitations}
+        inviteToken={onboarding.inviteToken}
+        email={onboarding.email}
+      />
+    );
+  }
+
+  return <OrganizationBootstrap />;
+}
+
 function OrganizationBootstrap() {
   const queryClient = useQueryClient();
   const bootstrap = useServerFn(bootstrapWorkspace);
-  const fetchPending = useServerFn(listMyPendingInvitations);
   const [name, setName] = useState("");
   const [legalName, setLegalName] = useState("");
-  const [storedToken, setStoredToken] = useState<string | null>(null);
-
-  useEffect(() => {
-    setStoredToken(readInviteIntent());
-  }, []);
-
-  /** Convite pendente não pode ficar invisível para quem ainda não tem organização. */
-  const pending = useQuery({
-    queryKey: ["my-pending-invitations"],
-    queryFn: () => fetchPending(),
-    retry: false,
-  });
 
   const mutation = useMutation({
     mutationFn: () => bootstrap({ data: { name, legalName } }),
