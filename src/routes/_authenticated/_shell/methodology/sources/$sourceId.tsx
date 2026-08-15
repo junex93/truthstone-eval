@@ -86,6 +86,16 @@ function SourceDetailPage() {
   // O gate é do banco: a interface apenas reflete o diagnóstico da RPC.
   const contentAllowed = readiness ? readiness.organization_access_basis !== null : false;
 
+  /**
+   * Checkpoint humano do Batch 01: proposta de claim candidata só é oferecida
+   * depois de metadado E conteúdo conferidos por humano autorizado nesta fonte.
+   * O banco continua sendo quem recusa o atalho; aqui apenas não convidamos a ele.
+   */
+  const verificationTypes = new Set(verifications.map((v) => v.verification_type));
+  const humanCheckpointDone =
+    verificationTypes.has("METADATA_VERIFIED") && verificationTypes.has("CONTENT_VERIFIED");
+
+
   return (
     <div className="space-y-6">
       <PageHeader
