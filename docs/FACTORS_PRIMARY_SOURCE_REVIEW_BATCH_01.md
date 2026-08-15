@@ -193,3 +193,35 @@ essa substituição é proibida pela arquitetura.
 5. Claims candidatas propostas e aceitas por revisor distinto.
 6. Só então `satisfy_specification_requirement` para T01/T04/T07 — a
    especificação permanece `DRAFT` de qualquer modo.
+
+## Fase 7H — Tentativa de condução humana do Batch 01 (2026-08-15)
+
+Auditoria factual do tenant de produção (`Fazenda Albuquerque`,
+`07424a7e-2444-497b-92a4-090def6c0b9b`) nesta rodada:
+
+| Fato | Valor |
+| --- | --- |
+| Linhas em `organization_members` (qualquer status) | 1 |
+| Membro | `ed3f216b-199f-4931-aeda-dbf4ace8ea3b` · `OWNER` · `ACTIVE` |
+| Convites pendentes (`INVITED`/`SUSPENDED`) | 0 |
+| REVIEWER / ADMIN / VALUER ativos | 0 |
+| `methodology_source_verifications` (org) | 0 |
+| `methodology_source_locators` (org) | 0 |
+| `methodology_source_claims` / `methodology_claim_reviews` (org) | 0 / 0 |
+| T01 / T04 / T07 | `is_satisfied = false` |
+| Especificação MCDDM | `DRAFT` |
+| Fórmulas / parâmetros / implementações da especificação | 0 / 0 / 0 |
+
+**STATUS: `BLOCKED_BY_HUMAN_REVIEWER`.**
+
+O segundo membro REVIEWER informado não existe no banco: a organização continua
+com um único vínculo ativo. Nenhum usuário, papel, verificação, localizador ou
+claim foi criado por automação, `service_role`, migração, fixture ou IA para
+destravar o fluxo — essa substituição é proibida pela arquitetura e permanece
+proibida.
+
+Regressão desta rodada (sem alteração de código de domínio):
+`negative-tests` 84/84, `methodology-claim-gate` 47/47,
+`methodology-source-ingestion` 40/40, `factors-specification-governance` 100/100,
+`methodology-governance-flow` 161/161, `market-intelligence-flow` 81/81,
+`market-flow` 33/33, `research-flow` 28/28. Typecheck PASS.
