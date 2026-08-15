@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { EmptyState, GovernanceNote, PageHeader } from "@/components/app/Primitives";
@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ORG_ROLE_LABELS, type OrgRole } from "@/lib/domain/constants";
+import { readInviteIntent } from "@/lib/invite-intent";
+import { listMyPendingInvitations } from "@/lib/invitations.functions";
 import { bootstrapWorkspace, getDashboardMetrics } from "@/lib/workspace.functions";
 
 export const Route = createFileRoute("/_authenticated/_shell/dashboard")({
