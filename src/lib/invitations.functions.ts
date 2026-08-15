@@ -10,7 +10,7 @@ import {
   readInvitations,
   resolveInvitationActors,
 } from "@/lib/invitations.server";
-import { requireAdminAccess, requireMembership } from "@/lib/workspace.server";
+import { requireAdminAccess } from "@/lib/workspace.server";
 
 const inviteInputSchema = z.object({
   email: z.string().trim().email("Informe um e-mail válido").max(255),
