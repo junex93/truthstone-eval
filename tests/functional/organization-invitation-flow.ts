@@ -22,7 +22,7 @@
  */
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-import { resolveOnboardingState } from "../../src/hooks/use-onboarding-state";
+import { resolveOnboardingState } from "../../src/lib/onboarding-state";
 
 const url = process.env["SUPABASE_URL"] ?? process.env["VITE_SUPABASE_URL"]!;
 const anonKey =
