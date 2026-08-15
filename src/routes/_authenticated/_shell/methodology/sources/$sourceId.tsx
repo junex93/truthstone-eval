@@ -191,7 +191,13 @@ function SourceDetailPage() {
         ) : null}
       </section>
 
-      <Batch01Panel sourceId={sourceId} canPropose={canWrite(role)} />
+      <ReviewerGatePanel />
+
+      <Batch01Panel
+        sourceId={sourceId}
+        canPropose={canWrite(role) && humanCheckpointDone}
+        checkpointDone={humanCheckpointDone}
+      />
 
       <SourceClaimsPanel sourceId={sourceId} />
 
