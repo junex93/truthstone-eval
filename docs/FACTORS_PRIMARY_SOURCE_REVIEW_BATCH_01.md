@@ -1,80 +1,140 @@
 # FACTORS — PRIMARY SOURCE REVIEW, BATCH 01 (T01 / T04 / T07)
 
-Escopo exclusivo desta rodada: **T01** (definição/posição metodológica do MCDDM e
-do Tratamento por Fatores), **T04** (aplicabilidade) e **T07** (requisitos da
-amostra), do shell `MCDDM — Tratamento por Fatores`
+Escopo: **T01** (definição/posição metodológica do MCDDM), **T04** (aplicabilidade)
+e **T07** (requisitos da amostra), do shell `MCDDM — Tratamento por Fatores`
 (`method_specifications` `33333333-0000-4000-8000-000000000001`, status `DRAFT`).
 
-## STATUS
+## STATUS DO BATCH 01
 
-**BLOCKED_BY_USER_ARTIFACT.**
+**BLOCKED_BY_HUMAN_VERIFICATION.**
 
-Nenhuma extração de conteúdo normativo foi feita. Nenhuma regra real da
-especificação foi alterada. Nenhuma seção foi preenchida com conteúdo externo.
+Os dois documentos normativos foram enviados e existem no acervo com hash
+íntegro. O que falta não é arquivo: falta **verificação humana registrada**
+(`METADATA_VERIFIED` → `CONTENT_VERIFIED` → localizador → `LOCATOR_VERIFIED`).
+Sem esse gate, nenhuma claim de T01/T04/T07 pode existir — por desenho do banco,
+não por escolha de redação.
 
-## Source gate — estado auditado
+## A. Artifacts reais auditados
 
 | Item | ABNT NBR 14653-1 | ABNT NBR 14653-2 |
 | --- | --- | --- |
 | `source_id` | `11111111-0000-4000-8000-000000000002` | `11111111-0000-4000-8000-000000000003` |
-| Artefato autorizado vinculado | **não** (0 em `methodology_source_artifacts`) | **não** (0) |
-| Base de acesso (`access_status`) | `METADATA_ONLY` | `METADATA_ONLY` |
-| SHA-256 do artefato | inexistente (sem bytes no acervo) | inexistente |
-| Verificação de metadados | pendente | pendente |
-| Verificação de conteúdo | **não** — bloqueada por desenho em `METADATA_ONLY` | **não** |
-| Capacidade de localizador | nenhuma (localizador exige artefato da mesma fonte) | nenhuma |
-| Escopo organizacional | global (`organization_id = NULL`, somente leitura ao tenant) | global |
+| Vínculo fonte-artefato | `7d36f9cf-1407-403d-900a-008bb97fb7eb` | `cc93cd97-40e1-4192-b2f3-6acab1701159` |
+| `evidence_artifact_id` | `87439023-2be7-4b55-964e-65b1351adead` | `e763f5cc-082b-47f4-a3bc-d1beba7f193a` |
+| Arquivo | `1016407685-ABNT-NBR-14653-1-Procedimentos-Gerais.pdf` | `622822811-NBR-14653-2-2011.pdf` |
+| Bytes | 363.398 | 20.774.958 |
+| MIME | `application/pdf` | `application/pdf` |
+| Bucket | `methodology-sources` (privado) | `methodology-sources` (privado) |
+| Base de acesso | `LICENSED_COPY` | `LICENSED_COPY` |
+| Captura | `USER_UPLOAD` | `USER_UPLOAD` |
+| Organização | `07424a7e-2444-497b-92a4-090def6c0b9b` | idem |
+| Registro em | 2026-08-14T19:27:48Z | 2026-08-14T19:27:19Z |
 
-Consequência: o gate
-`ARTIFACT → CONTENT_VERIFIED → LOCATOR → LOCATOR_VERIFIED → RULE CANDIDATE`
-não pode ser iniciado. Reconstruir conteúdo por memória do modelo, internet ou
-literatura secundária é proibido (`docs/METHODOLOGY_SOURCE_GOVERNANCE.md`).
+Ambos os arquivos trazem marca d'água de uso exclusivo do licenciado — fato
+reportado ao revisor, não removido nem ignorado. A Parte 2 é digitalização de
+imagem: leitura exige OCR, e OCR produz apenas candidato.
 
-## T01 / T04 / T07 — achados
+## B. Integridade (recomputada no servidor nesta rodada)
 
-Nenhuma claim foi criada. Não existe `claim_id`, `artifact_id`, `locator_id` nem
-`support status` a reportar, porque não há fonte com conteúdo verificado.
+| Fonte | SHA-256 registrado | SHA-256 recomputado | Resultado |
+| --- | --- | --- | --- |
+| 14653-1 | `a4c8fa5fac086dd289fa7831b961515c244a538f73b73c6626bf56f2962082d2` | idêntico | **VALID** |
+| 14653-2 | `1b8d683a2d6e020cba1c852826850f84f2c86e5f67e04ec21d279bfe073d10a7` | idêntico | **VALID** |
 
-| Tópico | Requisito no topic map | Estado |
-| --- | --- | --- |
-| T01 | `T01_DEFINITION_MCDDM` | `is_satisfied = false`, `PENDING_PRIMARY_SOURCE` |
-| T04 | `T04_APPLICABILITY` | `is_satisfied = false`, `PENDING_PRIMARY_SOURCE` |
-| T07 | `T07_SAMPLE_REQUIREMENTS` | `is_satisfied = false`, nenhum mínimo amostral admissível |
+`hash_computed_by = SERVER` nos dois casos; hash de cliente nunca é aceito.
 
-## Regras candidatas relacionadas
+## C. Verificação humana — estado factual
 
-As regras `CANDIDATE_INTERPRETATION` correlacionadas a T01/T04/T07
-(FAC-A01, FAC-A02, FAC-A03, FAC-A04 e, por tema de amostra, FAC-I02/FAC-I03)
-permanecem **KEEP CANDIDATE**: `normative_strength = INTERNAL_CONTROL`,
-procedência `INTERNAL_DESIGN`, vínculo `BACKGROUND` com a norma. Reclassificar
-para `INTERPRETATION` de claim externa exigiria a claim externa — que não existe.
+| Fonte | `METADATA_VERIFIED` | `CONTENT_VERIFIED` | `LOCATOR_VERIFIED` |
+| --- | --- | --- | --- |
+| 14653-1 | ausente | ausente | ausente |
+| 14653-2 | ausente | ausente | ausente |
 
-Regras `INTERNAL_CONTROL` de plataforma (hash, provenance, ausência declarada)
-seguem internas e não foram fundidas com requisito de fonte.
+Total de linhas em `methodology_source_verifications` para as duas fontes: **0**.
+A organização tem hoje **1 membro ativo (OWNER)**. OWNER satisfaz `can_review`,
+portanto a verificação é possível — porém aceitar a própria claim depois exige
+revisor **distinto** do proponente, o que hoje não existe no tenant. Essa é uma
+pendência operacional declarada, não um bug.
 
-## Conflitos de fonte
+## D. Locators e claims do Batch 01
 
-Nenhum. `methodology_source_conflicts` global permanece vazio: sem duas fontes
-com conteúdo verificado, conflito material não é afirmável.
+| Objeto | Contagem para as duas fontes reais |
+| --- | --- |
+| `methodology_source_locators` | 0 |
+| `methodology_source_claims` | 0 |
+| `methodology_claim_reviews` | 0 |
+| `methodology_claim_rule_assessments` | 0 |
 
-## Questões abertas
+As únicas claims existentes no banco são fixtures `TEST_ONLY` de suíte, em
+organizações de teste, e são removidas no cleanup.
 
-1. Aquisição autorizada do texto da NBR 14653-1 e 14653-2, com base de acesso
-   registrada e artefato carregado no bucket privado `methodology-sources`.
-2. `CONTENT_VERIFIED` por revisor humano (`can_review`), com justificativa.
-3. Localizadores de cláusula para T01, T04 e T07 + `LOCATOR_VERIFIED`.
-4. T04: tradução de eventual claim externa em regra computacional só depois da
-   claim — nunca antes, e sempre como `INTERPRETATION` separada.
-5. T07: quantidade amostral permanece proibida até haver fonte + localizador.
+### Inventário T01 / T04 / T07
 
-## Mapeamento à Fase 5 (preparado, não aplicado)
+| Tema | `requirement_code` | `is_satisfied` | Motivo registrado |
+| --- | --- | --- | --- |
+| T01 | `T01_DEFINITION_MCDDM` | `false` | `PENDING_PRIMARY_SOURCE` |
+| T04 | `T04_APPLICABILITY` | `false` | `PENDING_PRIMARY_SOURCE` para condições normativas |
+| T07 | `T07_SAMPLE_REQUIREMENTS` | `false` | nenhum mínimo amostral pode ser inventado |
 
-Quando T07 tiver claim verificada, o alvo de mapeamento já existente é:
-Market Evidence Snapshot, imóveis físicos independentes, evidência verificada,
-diagnóstico de fonte/temporal/espacial, cobertura de atributos, seleção amostral
-e prontidão. Nenhum dado da Fase 5 foi alterado nesta rodada.
+Sugestões assistidas de leitura (páginas candidatas) permanecem em
+`src/lib/domain/factors-batch01.ts` como **proposta de trabalho para revisor
+humano**. Elas não são claim, não satisfazem tema e não entram no banco sozinhas.
 
-## Próximo batch recomendado
+## E. Imutabilidade e correção de claim
 
-Repetir o Batch 01 (T01/T04/T07) assim que houver artefato autorizado. Sem isso,
-avançar para T02/T03/T05 é igualmente bloqueado.
+- `authenticated` não tem `UPDATE` nem `DELETE` em `methodology_source_claims`,
+  `methodology_claim_reviews` e `methodology_claim_rule_assessments`; o trigger
+  `block_claim_mutation` reforça o comportamento append-only.
+- Correção de leitura agora tem linhagem de primeira classe:
+  `methodology_source_claims.supersedes_claim_id`, com
+  `guard_claim_supersession` impondo que
+  1. a antecessora seja da mesma organização, mesma especificação e mesmo tema;
+  2. só claim **`REJECTED`** ou **`SUPERSEDED`** por revisor humano possa ser
+     substituída;
+  3. o vínculo seja imutável após criado, sem autossubstituição nem ciclo direto.
+- Consequência: erro de transcrição vira **nova claim ligada à anterior**, nunca
+  edição silenciosa; a versão anterior permanece legível no acervo.
+
+## F. Rastreabilidade das regras FAC-*
+
+As regras do shell seguem `INTERNAL_CONTROL` com procedência `INTERNAL_DESIGN`
+(fonte de política interna `…00000000000f`) e vínculo `BACKGROUND` com a
+NBR 14653-2 apenas como tema correlato — nunca como exigência afirmada.
+Nenhum `source_locator_id` está preenchido nesses vínculos, porque não há
+localizador verificado.
+
+## G. Ausência de motor de cálculo (verificado)
+
+| Objeto sob a especificação MCDDM | Contagem |
+| --- | --- |
+| `methodology_formulas` | 0 |
+| `methodology_parameters` | 0 |
+| `method_applicability_rules` | 5 (critérios declarativos, sem número) |
+| `method_implementations` (todo o banco) | 0 |
+
+Especificação MCDDM: **`DRAFT`**. Nenhum fator, faixa numérica, fórmula ou
+valor avaliatório foi criado nesta rodada.
+
+## H. Regressão desta rodada
+
+| Suíte | Resultado |
+| --- | --- |
+| `tests/security/negative-tests.ts` | 84/84 PASS |
+| `tests/functional/factors-specification-governance.ts` | 100/100 PASS |
+| `tests/functional/methodology-source-ingestion.ts` | 40/40 PASS |
+| `tests/functional/methodology-governance-flow.ts` | 161/161 PASS |
+| `tests/functional/methodology-claim-gate.ts` | 47/47 PASS |
+
+`methodology-source-ingestion` foi ajustada ao gate da Fase 7E: trecho literal em
+localizador só é aceito após `CONTENT_VERIFIED` (novo assert `D0`).
+
+## I. Próximo passo humano (pré-requisito, não opcional)
+
+1. `METADATA_VERIFIED` nas duas fontes, com justificativa.
+2. `CONTENT_VERIFIED` nas duas fontes (base de acesso já é `LICENSED_COPY`).
+3. Criar localizadores de cláusula para T01, T04 e T07 e verificá-los.
+4. Registrar claims candidatas e submetê-las a revisor **distinto** do proponente
+   — o que exige um segundo membro com `can_review` na organização.
+5. Só então `satisfy_specification_requirement` pode marcar T01/T04/T07.
+
+Batch 02 permanece fechado até o Batch 01 ter claim aceita.
