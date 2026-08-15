@@ -14,6 +14,7 @@ import type { Json } from "@/integrations/supabase/types";
 import {
   METHODOLOGY_SOURCE_BUCKET,
   readReviewerSegregationGate,
+  resolveActorNames,
   asJsonObject,
   asStringArray,
   assertMethodologyStoragePath,
@@ -1767,7 +1768,7 @@ export const listSourceClaims = createServerFn({ method: "GET" })
 
     const actorNames = await resolveActorNames(supabase, [
       ...(claims.data ?? []).map((c) => c.created_by),
-      ...(reviews.data ?? []).map((r) => r.reviewed_by),
+      ...(reviews.data ?? []).map((r) => r.reviewer_id),
     ]);
 
     return {
