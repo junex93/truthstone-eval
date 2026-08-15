@@ -1765,10 +1765,17 @@ export const listSourceClaims = createServerFn({ method: "GET" })
     if (reviews.error) throw new Error(reviews.error.message);
     if (assessments.error) throw new Error(assessments.error.message);
 
+    const actorNames = await resolveActorNames(supabase, [
+      ...(claims.data ?? []).map((c) => c.created_by),
+      ...(reviews.data ?? []).map((r) => r.reviewed_by),
+    ]);
+
     return {
       claims: claims.data ?? [],
       reviews: reviews.data ?? [],
       assessments: assessments.data ?? [],
+      /** Autoria explícita: proponente e revisor nunca aparecem anônimos. */
+      actorNames,
       role: membership.role,
     };
   });
