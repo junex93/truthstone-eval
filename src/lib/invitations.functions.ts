@@ -10,7 +10,7 @@ import {
   readInvitations,
   resolveInvitationActors,
 } from "@/lib/invitations.server";
-import { requireAdminAccess, requireMembership } from "@/lib/workspace.server";
+import { requireAdminAccess } from "@/lib/workspace.server";
 
 const inviteInputSchema = z.object({
   email: z.string().trim().email("Informe um e-mail válido").max(255),
@@ -173,10 +173,28 @@ export const acceptInvitation = createServerFn({ method: "POST" })
     return result as unknown as { organization_id: string; member_id: string; role: string };
   });
 
-export const getMyPendingInvitationCount = createServerFn({ method: "GET" })
+/**
+ * Convites pendentes endereçados ao e-mail autenticado. O RPC filtra pelo e-mail do
+ * token — nunca por parâmetro do cliente — e não devolve token nem digest. Serve
+ * apenas para orientar o convidado; nenhum vínculo nasce daqui.
+ */
+export const listMyPendingInvitations = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    await requireMembership(supabase, userId);
-    return { ok: true };
+    const { supabase } = context;
+    const { data, error } = await supabase.rpc("list_my_pending_invitations");
+    if (error) throw new Error(humanize(error.message));
+
+    return {
+      invitations: (data ?? []).map((row) => ({
+        invitationId: row.invitation_id,
+        organizationId: row.organization_id,
+        organizationName: row.organization_name,
+        invitedRole: row.invited_role,
+        email: row.email,
+        invitedAt: row.invited_at,
+        expiresAt: row.expires_at,
+      })),
+    };
   });
+

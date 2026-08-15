@@ -2,6 +2,30 @@
 
 Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
 
+## Fase 7H.2 — Continuidade convite → signup → confirmação → aceite (2026-08-15)
+
+- Causa raiz corrigida: a confirmação de e-mail retornava para `/` sem search
+  params, perdendo o contexto `convite=<token>` e deixando o convidado no
+  dashboard sem organização e sem caminho de volta.
+- Nova RPC `list_my_pending_invitations()` (`SECURITY DEFINER`,
+  `search_path = public`) devolve, para o e-mail autenticado, apenas convites
+  `INVITED` não expirados com nome da organização. Projeção sem `token_hash` e
+  sem token; nenhum acesso de `anon`.
+- `src/lib/invite-intent.ts` persiste a intenção de convite no `localStorage`
+  com TTL de 7 dias, para sobreviver à abertura do link de confirmação em nova
+  aba. Token nunca vai para log, telemetria ou auditoria de cliente.
+- `/auth` define `emailRedirectTo` apontando para o convite e retoma a intenção
+  após autenticar; `/convite/$token` grava a intenção na montagem, limpa após o
+  aceite e mantém o aceite como ato humano explícito.
+- Dashboard de primeiro acesso passa a listar convites pendentes antes do
+  bootstrap de organização, com papel proposto e prazo.
+- Invariante reafirmada: coincidência de e-mail **não** cria vínculo. Membership
+  nasce apenas de token válido + aceite explícito, validado no banco.
+- Testes: `tests/functional/organization-invitation-flow.ts` 61/61 PASS (14 novas
+  verificações de handoff). Regressão: negative-tests 84/84, market 33/33,
+  market-intelligence 81/81, research 28/28, methodology-governance 161/161,
+  factors 100/100, claim-gate 47/47, source-ingestion 40/40.
+
 ## Fase 7H.1 — Convite governado de membro / REVIEWER (2026-08-15)
 
 - Nova tabela `organization_invitations` com estados `INVITED` / `ACCEPTED` /

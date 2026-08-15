@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { ORG_ROLE_LABELS, type OrgRole } from "@/lib/domain/constants";
 import { acceptInvitation, inspectInvitation } from "@/lib/invitations.functions";
+import { clearInviteIntent, rememberInviteIntent } from "@/lib/invite-intent";
 
 export const Route = createFileRoute("/convite/$token")({
   ssr: false,
@@ -48,10 +49,19 @@ function Shell({ children }: { children: React.ReactNode }) {
 function InvitePage() {
   const { token } = Route.useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const inspect = useServerFn(inspectInvitation);
   const accept = useServerFn(acceptInvitation);
 
   const [sessionState, setSessionState] = useState<"loading" | "anon" | "authenticated">("loading");
+
+  /**
+   * Guarda a intenção de voltar a este convite depois do ciclo signup → confirmação
+   * de e-mail → login. Nada é aceito por isso: o aceite continua sendo ato explícito.
+   */
+  useEffect(() => {
+    rememberInviteIntent(token);
+  }, [token]);
 
   useEffect(() => {
     void supabase.auth.getSession().then(({ data }) => {
@@ -68,13 +78,17 @@ function InvitePage() {
 
   const acceptMutation = useMutation({
     mutationFn: () => accept({ data: { token } }),
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
+      clearInviteIntent();
       toast.success(
         `Convite aceito. Você agora participa desta organização como ${
           ORG_ROLE_LABELS[result.role as OrgRole] ?? result.role
         }.`,
       );
-      void navigate({ to: "/dashboard", replace: true });
+      // Contexto de organização, papel e permissões precisa refletir o novo vínculo
+      // sem exigir logout/login.
+      await queryClient.invalidateQueries();
+      await navigate({ to: "/dashboard", replace: true });
     },
     onError: (error) =>
       toast.error(
@@ -96,7 +110,8 @@ function InvitePage() {
         <h1 className="text-2xl font-semibold">Convite para uma organização</h1>
         <p className="text-sm leading-relaxed text-muted-foreground">
           Entre com a conta do mesmo e-mail que recebeu o convite, ou crie a conta com esse e-mail. O
-          vínculo só é criado depois do aceite autenticado.
+          vínculo só é criado depois do aceite autenticado — autenticar-se, por si só, não gera
+          participação na organização.
         </p>
         <Button asChild className="w-full">
           <Link to="/auth" search={{ convite: token }}>
@@ -106,6 +121,7 @@ function InvitePage() {
       </Shell>
     );
   }
+
 
   if (query.isPending) {
     return (
@@ -134,15 +150,18 @@ function InvitePage() {
       ? invite.status === "ACCEPTED"
         ? "Este convite já foi utilizado."
         : invite.status === "REVOKED"
-          ? "Este convite foi revogado."
-          : "Este convite expirou."
+          ? "Este convite foi revogado. Solicite um novo convite ao administrador."
+          : "O convite expirou. Solicite um novo convite ao administrador."
       : invite.expired
-        ? "Este convite expirou."
+        ? "O convite expirou. Solicite um novo convite ao administrador."
         : invite.already_member
           ? "Este usuário já pertence à organização."
           : !invite.email_matches
-            ? "Este convite foi endereçado a outro e-mail. Entre com a conta do e-mail convidado."
+            ? "Este convite foi enviado para outro endereço de e-mail."
             : null;
+
+  /** Já pertence à organização: nada a aceitar, segue para uma tela útil. */
+  const alreadyIn = invite.already_member === true;
 
   return (
     <Shell>
@@ -157,19 +176,50 @@ function InvitePage() {
         . O papel é definido pelo convite aprovado e não pode ser alterado no aceite.
       </p>
 
+      <dl className="panel space-y-2 p-4 text-sm">
+        <div className="flex justify-between gap-3">
+          <dt className="text-muted-foreground">E-mail convidado</dt>
+          <dd className="mono-value text-xs">
+            {invite.email_matches ? "corresponde à sua conta" : "outro endereço"}
+          </dd>
+        </div>
+        <div className="flex justify-between gap-3">
+          <dt className="text-muted-foreground">Expira em</dt>
+          <dd className="mono-value text-xs">
+            {invite.expires_at
+              ? `${new Date(invite.expires_at).toLocaleString("pt-BR", { timeZone: "UTC" })} UTC`
+              : "—"}
+          </dd>
+        </div>
+      </dl>
+
       {blocked ? (
-        <p className="rounded-sm border-l-2 border-destructive/50 bg-destructive/5 px-3 py-2 text-sm text-muted-foreground">
-          {blocked}
-        </p>
+        <div className="space-y-3">
+          <p className="rounded-sm border-l-2 border-destructive/50 bg-destructive/5 px-3 py-2 text-sm text-muted-foreground">
+            {blocked}
+          </p>
+          {alreadyIn || invite.status === "ACCEPTED" ? (
+            <Button asChild variant="outline" className="w-full">
+              <Link to="/dashboard">Ir para o painel</Link>
+            </Button>
+          ) : null}
+        </div>
       ) : (
-        <Button
-          className="w-full"
-          disabled={acceptMutation.isPending}
-          onClick={() => acceptMutation.mutate()}
-        >
-          Aceitar convite
-        </Button>
+        <>
+          <Button
+            className="w-full"
+            disabled={acceptMutation.isPending}
+            onClick={() => acceptMutation.mutate()}
+          >
+            Aceitar convite
+          </Button>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            O vínculo é criado apenas neste ato explícito de aceite, validado no servidor pelo token
+            do convite e pelo e-mail autenticado.
+          </p>
+        </>
       )}
     </Shell>
   );
+
 }

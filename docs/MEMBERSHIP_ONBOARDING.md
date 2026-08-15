@@ -107,3 +107,21 @@ de confirmação de cadastro seguem pelo remetente padrão da plataforma.
 Cobre criação, isolamento por tenant, aceite, integridade de papel, expiração,
 revogação, reenvio com rotação de token, duplicidade, auditoria e ativação de
 membership, além de provar que nenhum ato normativo é criado pelo onboarding.
+
+## Continuidade do handoff (Fase 7H.2)
+
+O convidado pode não ter conta. O ciclo real é: link do convite → criação de
+conta → confirmação de e-mail (frequentemente em outra aba) → autenticação →
+aceite. Duas peças garantem a continuidade sem afrouxar a segurança:
+
+1. `src/lib/invite-intent.ts` guarda o token no `localStorage` do navegador com
+   TTL de 7 dias. É contexto de navegação, não credencial de autorização: o
+   banco revalida tudo no aceite.
+2. `list_my_pending_invitations()` mostra ao usuário autenticado os convites
+   pendentes endereçados ao seu e-mail, inclusive quando ele ainda não pertence
+   a nenhuma organização — sem expor digest, token ou dados de outra pessoa.
+
+Limitação declarada: coincidência de e-mail nunca cria vínculo. Sem o token do
+convite, o aceite é impossível; o usuário precisa do link entregue pelo
+administrador. A entrega do link permanece manual
+(`BLOCKED_BY_EMAIL_CONFIGURATION`).

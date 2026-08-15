@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { EmptyState, GovernanceNote, PageHeader } from "@/components/app/Primitives";
@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ORG_ROLE_LABELS, type OrgRole } from "@/lib/domain/constants";
+import { readInviteIntent } from "@/lib/invite-intent";
+import { listMyPendingInvitations } from "@/lib/invitations.functions";
 import { bootstrapWorkspace, getDashboardMetrics } from "@/lib/workspace.functions";
 
 export const Route = createFileRoute("/_authenticated/_shell/dashboard")({
@@ -123,8 +126,21 @@ function DashboardPage() {
 function OrganizationBootstrap() {
   const queryClient = useQueryClient();
   const bootstrap = useServerFn(bootstrapWorkspace);
+  const fetchPending = useServerFn(listMyPendingInvitations);
   const [name, setName] = useState("");
   const [legalName, setLegalName] = useState("");
+  const [storedToken, setStoredToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    setStoredToken(readInviteIntent());
+  }, []);
+
+  /** Convite pendente não pode ficar invisível para quem ainda não tem organização. */
+  const pending = useQuery({
+    queryKey: ["my-pending-invitations"],
+    queryFn: () => fetchPending(),
+    retry: false,
+  });
 
   const mutation = useMutation({
     mutationFn: () => bootstrap({ data: { name, legalName } }),
@@ -135,6 +151,8 @@ function OrganizationBootstrap() {
     onError: (error) => toast.error(error instanceof Error ? error.message : "Falha"),
   });
 
+  const invitations = pending.data?.invitations ?? [];
+
   return (
     <div className="mx-auto max-w-xl space-y-6">
       <PageHeader
@@ -142,6 +160,51 @@ function OrganizationBootstrap() {
         title="Criar organização"
         description="Todos os dados da plataforma pertencem a uma organização. Você será registrado como titular (OWNER) e poderá conceder papéis a outros usuários."
       />
+
+      {invitations.length > 0 ? (
+        <div className="panel space-y-4 p-5">
+          <div>
+            <p className="label-meta">Convite pendente</p>
+            <h2 className="mt-1 text-base font-semibold">
+              {invitations.length === 1
+                ? "Você possui um convite pendente."
+                : `Você possui ${invitations.length} convites pendentes.`}
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              Nenhum vínculo é criado automaticamente por coincidência de e-mail. Abra o link do
+              convite recebido e confirme o aceite para ingressar na organização.
+            </p>
+          </div>
+
+          <ul className="space-y-3">
+            {invitations.map((invite) => (
+              <li key={invite.invitationId} className="border-t border-border pt-3 text-sm">
+                <p className="font-medium">{invite.organizationName}</p>
+                <p className="text-xs text-muted-foreground">
+                  Papel proposto:{" "}
+                  {ORG_ROLE_LABELS[invite.invitedRole as OrgRole] ?? invite.invitedRole} · expira em{" "}
+                  {new Date(invite.expiresAt).toLocaleString("pt-BR", { timeZone: "UTC" })} UTC
+                </p>
+              </li>
+            ))}
+          </ul>
+
+          {storedToken ? (
+            <Button asChild variant="outline">
+              <Link to="/convite/$token" params={{ token: storedToken }}>
+                Abrir convite
+              </Link>
+            </Button>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Use o link do convite entregue pelo administrador: o aceite exige o token do convite,
+              que nunca é armazenado em texto no banco.
+            </p>
+          )}
+        </div>
+      ) : null}
+
+
       <div className="panel space-y-4 p-5">
         <div className="space-y-1.5">
           <Label htmlFor="org-name">Nome da organização</Label>

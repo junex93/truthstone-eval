@@ -599,6 +599,141 @@ async function main() {
     `baseline=${verificationsBaseline} depois=${verificationsAfter ?? 0}`,
   );
 
+  // ---------- 12. HANDOFF AUTH → CONVITE (fase 7H.2) ----------
+  // Caso real: convidado ainda sem conta, cria conta/confirma e-mail, autentica e
+  // só então aceita explicitamente. Autenticar-se não pode criar vínculo.
+  const handoff = await createUser("handoff");
+
+  const handoffToken = randomToken();
+  const { data: handoffInviteId, error: handoffInviteError } = await ownerA.client.rpc(
+    "create_organization_invitation",
+    {
+      _organization_id: orgA!.id,
+      _email: handoff.email,
+      _role: "REVIEWER",
+      _token_hash: await sha256Hex(handoffToken),
+      _ttl_hours: 168,
+    },
+  );
+  expectOk("handoff: OWNER cria convite REVIEWER", handoffInviteError, String(handoffInviteId));
+
+  // signup + login concluídos: NENHUMA membership pode existir ainda.
+  const { count: handoffMembershipBefore } = await admin
+    .from("organization_members")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", handoff.id);
+  expectTrue(
+    "handoff: autenticação sozinha não cria membership",
+    (handoffMembershipBefore ?? 0) === 0,
+    `memberships=${handoffMembershipBefore ?? 0}`,
+  );
+
+  // Convite pendente é visível ao próprio convidado (item 12/13), sem token.
+  const { data: pendingSelf, error: pendingSelfError } = await handoff.client.rpc(
+    "list_my_pending_invitations",
+  );
+  expectOk("handoff: convidado enxerga o próprio convite pendente", pendingSelfError);
+  expectTrue(
+    "handoff: lista de pendentes contém exatamente o convite do próprio e-mail",
+    Array.isArray(pendingSelf) &&
+      pendingSelf.length === 1 &&
+      pendingSelf[0].email === handoff.email &&
+      pendingSelf[0].organization_id === orgA!.id &&
+      pendingSelf[0].invited_role === "REVIEWER",
+    JSON.stringify(pendingSelf),
+  );
+  expectTrue(
+    "handoff: lista de pendentes não expõe token nem digest",
+    Array.isArray(pendingSelf) &&
+      pendingSelf.every(
+        (row: Record<string, unknown>) => !("token_hash" in row) && !("token" in row),
+      ),
+    "projeção sem segredo",
+  );
+
+  // Terceiro autenticado não vê convite de outro e-mail.
+  const { data: pendingOther } = await ownerB.client.rpc("list_my_pending_invitations");
+  expectTrue(
+    "handoff: convite de outro e-mail permanece invisível",
+    Array.isArray(pendingOther) &&
+      !pendingOther.some((row: Record<string, unknown>) => row["email"] === handoff.email),
+    JSON.stringify(pendingOther ?? []),
+  );
+
+  // Inspeção antes do aceite: continua INVITED, sem membership.
+  const { data: handoffInspect, error: handoffInspectError } = await handoff.client.rpc(
+    "inspect_organization_invitation",
+    { _token_hash: await sha256Hex(handoffToken) },
+  );
+  expectOk("handoff: inspeção autenticada do convite", handoffInspectError);
+  expectTrue(
+    "handoff: convite permanece INVITED até o aceite explícito",
+    (handoffInspect as Record<string, unknown>)?.["status"] === "INVITED" &&
+      (handoffInspect as Record<string, unknown>)?.["email_matches"] === true &&
+      (handoffInspect as Record<string, unknown>)?.["already_member"] === false,
+    JSON.stringify(handoffInspect),
+  );
+
+  // Ato humano explícito.
+  const { error: handoffAcceptError } = await handoff.client.rpc(
+    "accept_organization_invitation",
+    { _token_hash: await sha256Hex(handoffToken) },
+  );
+  expectOk("handoff: aceite explícito após o ciclo de autenticação", handoffAcceptError);
+
+  const { data: handoffMember } = await admin
+    .from("organization_members")
+    .select("role, status, organization_id")
+    .eq("user_id", handoff.id)
+    .maybeSingle();
+  expectTrue(
+    "handoff: membership REVIEWER ACTIVE na organização correta",
+    handoffMember?.role === "REVIEWER" &&
+      handoffMember?.status === "ACTIVE" &&
+      handoffMember?.organization_id === orgA!.id,
+    JSON.stringify(handoffMember),
+  );
+
+  // Contexto de organização passa a existir imediatamente para a mesma sessão.
+  const { data: handoffOrg } = await handoff.client
+    .from("organizations")
+    .select("id, name")
+    .eq("id", orgA!.id)
+    .maybeSingle();
+  expectTrue(
+    "handoff: organização visível na mesma sessão, sem novo login",
+    handoffOrg?.id === orgA!.id,
+    JSON.stringify(handoffOrg),
+  );
+
+  const { data: pendingAfter } = await handoff.client.rpc("list_my_pending_invitations");
+  expectTrue(
+    "handoff: convite deixa a lista de pendentes após o aceite",
+    Array.isArray(pendingAfter) && pendingAfter.length === 0,
+    JSON.stringify(pendingAfter ?? []),
+  );
+
+  expectFail(
+    "handoff: reaceite do mesmo token é recusado",
+    (
+      await handoff.client.rpc("accept_organization_invitation", {
+        _token_hash: await sha256Hex(handoffToken),
+      })
+    ).error,
+  );
+
+  const { data: handoffTokenLeak } = await admin
+    .from("organization_invitations")
+    .select("token_hash")
+    .eq("id", handoffInviteId as unknown as string)
+    .maybeSingle();
+  expectTrue(
+    "handoff: token em texto puro não é persistido",
+    handoffTokenLeak?.token_hash === (await sha256Hex(handoffToken)) &&
+      handoffTokenLeak?.token_hash !== handoffToken,
+    "apenas digest SHA-256 no banco",
+  );
+
   // ---------- CLEANUP ----------
   await admin.from("audit_log").delete().in("organization_id", [orgA!.id, orgB!.id]);
   await admin.from("organization_invitations").delete().in("organization_id", [orgA!.id, orgB!.id]);
