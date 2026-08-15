@@ -2,6 +2,31 @@
 
 Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
 
+## Fase 7K — Checkpoint humano de verificação de fonte (2026-08-15)
+
+- Somente apresentação e leitura: nenhuma migração, nenhum RPC novo, nenhuma
+  política alterada. `verify_methodology_source` continua sendo a única porta.
+- Nova tela de conferência em `/methodology/sources/$sourceId`
+  (`SourceVerificationCheckpoint`): Etapa 1 — Verificar metadados (comparação
+  campo a campo entre cadastro e identidade documental esperada) e Etapa 2 —
+  Verificar conteúdo (checklist explícito de correspondência, legibilidade,
+  edição, troca de parte e integridade).
+- Ordem imposta na interface: documento presente → integridade válida →
+  `METADATA_VERIFIED` → `CONTENT_VERIFIED`. O formulário técnico anterior foi
+  reduzido a `LOCATOR_VERIFIED`.
+- `getMethodologySource` passa a devolver nome do arquivo, SHA-256 do artefato e
+  o nome de quem verificou (lido de `profiles`, nunca do payload).
+- Material de conferência da NBR 14653-1 e -2 em
+  `src/lib/domain/source-identity.ts`: é leitura para o revisor, não claim,
+  não requisito satisfeito e não preenche cadastro automaticamente.
+- Nenhuma verificação, localizador ou claim foi criada por automação nesta
+  rodada. Especificação MCDDM permanece `DRAFT`.
+- Regressão: security 84/84, source-ingestion 40/40, claim-gate 47/47,
+  factors-governance 100/100, methodology-governance 161/161, invitations
+  77/77, market-intelligence 81/81, market 33/33, research 28/28. Typecheck e
+  build PASS.
+
+
 ## Fase 7H.5 — Entrega manual de convite como fluxo padrão de desenvolvimento (2026-08-15)
 
 - Apenas camada de apresentação e texto: nenhuma migração, nenhum RPC, nenhuma
