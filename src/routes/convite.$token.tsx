@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { ORG_ROLE_LABELS, type OrgRole } from "@/lib/domain/constants";
 import { acceptInvitation, inspectInvitation } from "@/lib/invitations.functions";
+import { clearInviteIntent, rememberInviteIntent } from "@/lib/invite-intent";
 
 export const Route = createFileRoute("/convite/$token")({
   ssr: false,
