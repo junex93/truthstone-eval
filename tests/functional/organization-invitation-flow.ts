@@ -96,6 +96,11 @@ function randomToken() {
 }
 
 async function main() {
+  const { count: baselineCount } = await admin
+    .from("methodology_source_verifications")
+    .select("id", { count: "exact", head: true });
+  const verificationsBaseline = baselineCount ?? 0;
+
   // ---------- SETUP: duas organizações reais, atores distintos ----------
   const ownerA = await createUser("owner-a");
   const ownerB = await createUser("owner-b");
@@ -348,6 +353,12 @@ async function main() {
       })
     ).error,
   );
+  // A recusa do aceite é atômica: nada muda na mesma transação que falhou.
+  // A transição para EXPIRED é feita pela rotina de expiração governada.
+  expectOk(
+    "rotina de expiração transiciona convite vencido",
+    (await ownerA.client.rpc("expire_stale_invitations", { _organization_id: orgA!.id })).error,
+  );
   const { data: expiredRow } = await admin
     .from("organization_invitations")
     .select("status")
@@ -357,6 +368,16 @@ async function main() {
     "convite expirado é marcado EXPIRED",
     expiredRow?.status === "EXPIRED",
     `${expiredRow?.status}`,
+  );
+  const { data: expiredAudit } = await admin
+    .from("audit_log")
+    .select("event_type")
+    .eq("entity_id", expiredId)
+    .eq("event_type", "INVITE_EXPIRED");
+  expectTrue(
+    "auditoria registra INVITE_EXPIRED",
+    (expiredAudit ?? []).length === 1,
+    `rows=${(expiredAudit ?? []).length}`,
   );
 
   // ---------- 7. REVOGAÇÃO ----------
@@ -569,13 +590,13 @@ async function main() {
   );
 
   // ---------- 11. NENHUMA VERIFICAÇÃO NORMATIVA AUTOMÁTICA ----------
-  const { count: verifications } = await admin
+  const { count: verificationsAfter } = await admin
     .from("methodology_source_verifications")
     .select("id", { count: "exact", head: true });
   expectTrue(
     "onboarding não cria verificação normativa automática",
-    (verifications ?? 0) === 0,
-    `methodology_source_verifications=${verifications ?? 0}`,
+    (verificationsAfter ?? 0) === verificationsBaseline,
+    `baseline=${verificationsBaseline} depois=${verificationsAfter ?? 0}`,
   );
 
   // ---------- CLEANUP ----------
