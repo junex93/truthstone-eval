@@ -3655,6 +3655,7 @@ export type Database = {
           reviewer_alerts: Json
           source_id: string
           statement: string
+          supersedes_claim_id: string | null
           verbatim_excerpt: string | null
         }
         Insert: {
@@ -3674,6 +3675,7 @@ export type Database = {
           reviewer_alerts?: Json
           source_id: string
           statement: string
+          supersedes_claim_id?: string | null
           verbatim_excerpt?: string | null
         }
         Update: {
@@ -3693,6 +3695,7 @@ export type Database = {
           reviewer_alerts?: Json
           source_id?: string
           statement?: string
+          supersedes_claim_id?: string | null
           verbatim_excerpt?: string | null
         }
         Relationships: [
@@ -3723,6 +3726,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "methodology_sources"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methodology_source_claims_supersedes_fk"
+            columns: ["organization_id", "supersedes_claim_id"]
+            isOneToOne: false
+            referencedRelation: "methodology_source_claims"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }

@@ -684,7 +684,125 @@ async function main() {
     );
   }
 
+  console.log("\n=== G. CORREÇÃO DE CLAIM POR NOVA VERSÃO (LINHAGEM) ===");
+  {
+    const base = {
+      organization_id: orgA,
+      source_id: sourceId,
+      locator_id: locator,
+      method_specification_id: specDraft,
+      requirement_code: "T07_SAMPLE_REQUIREMENTS",
+      claim_kind: "NORMATIVE_TEXT" as const,
+      verbatim_excerpt: "TEST_ONLY trecho literal",
+      extraction_method: "HUMAN_READING" as const,
+      created_by: valuer.id,
+    };
+
+    // G1: não se substitui claim ACEITA sem decisão de supersessão humana.
+    const g1 = await valuer.client
+      .from("methodology_source_claims")
+      .insert({
+        ...base,
+        claim_code: `CG-SUP-BAD-${stamp}`,
+        statement: "TEST_ONLY tentativa de substituir claim aceita",
+        supersedes_claim_id: claimId,
+      })
+      .select("id")
+      .single();
+    expectFail("G1 claim aceita não pode ser substituída sem supersessão humana", g1.error);
+
+    // Claim V1 rejeitada explicitamente, para servir de antecessora legítima.
+    const v1 = await valuer.client
+      .from("methodology_source_claims")
+      .insert({
+        ...base,
+        claim_code: `CG-V1-${stamp}`,
+        statement: "TEST_ONLY leitura inicial, com erro de transcrição",
+      })
+      .select("id")
+      .single();
+    expectOk("G2 claim V1 registrada", v1.error);
+    const v1Id = (v1.data as any)?.id as string;
+
+    const g3 = await valuer.client
+      .from("methodology_source_claims")
+      .insert({
+        ...base,
+        claim_code: `CG-V2-EARLY-${stamp}`,
+        statement: "TEST_ONLY correção antes de qualquer revisão",
+        supersedes_claim_id: v1Id,
+      })
+      .select("id")
+      .single();
+    expectFail("G3 claim sem revisão ainda não pode ser substituída", g3.error);
+
+    const rej = await reviewer.client.rpc("review_methodology_claim", {
+      _claim_id: v1Id,
+      _decision: "REJECTED",
+      _justification: "TEST_ONLY transcrição divergente do documento verificado.",
+    });
+    expectOk("G4 revisor rejeita a claim V1", rej.error);
+
+    const v2 = await valuer.client
+      .from("methodology_source_claims")
+      .insert({
+        ...base,
+        claim_code: `CG-V2-${stamp}`,
+        statement: "TEST_ONLY leitura corrigida, substitui a V1 rejeitada",
+        supersedes_claim_id: v1Id,
+      })
+      .select("id, supersedes_claim_id")
+      .single();
+    expectOk("G5 correção entra como nova claim ligada à antecessora", v2.error);
+    expectTrue(
+      "G6 linhagem com a V1 fica preservada na nova claim",
+      (v2.data as any)?.supersedes_claim_id === v1Id,
+      `supersedes=${(v2.data as any)?.supersedes_claim_id}`,
+    );
+
+    const stillThere = await admin
+      .from("methodology_source_claims")
+      .select("id, statement")
+      .eq("id", v1Id)
+      .maybeSingle();
+    expectTrue(
+      "G7 claim V1 continua no acervo, sem edição nem delete",
+      !stillThere.error &&
+        (stillThere.data as any)?.statement === "TEST_ONLY leitura inicial, com erro de transcrição",
+      `presente=${!!stillThere.data}`,
+    );
+
+    const relink = await valuer.client
+      .from("methodology_source_claims")
+      .update({ supersedes_claim_id: null })
+      .eq("id", (v2.data as any)?.id);
+    const after = await admin
+      .from("methodology_source_claims")
+      .select("supersedes_claim_id")
+      .eq("id", (v2.data as any)?.id)
+      .maybeSingle();
+    expectTrue(
+      "G8 linhagem de claim é imutável",
+      (after.data as any)?.supersedes_claim_id === v1Id,
+      `erro=${relink.error ? "sim" : "não"} valor=${(after.data as any)?.supersedes_claim_id}`,
+    );
+
+    const crossTopic = await valuer.client
+      .from("methodology_source_claims")
+      .insert({
+        ...base,
+        requirement_code: "T01_DEFINITION_MCDDM",
+        claim_code: `CG-V2-XTOPIC-${stamp}`,
+        statement: "TEST_ONLY correção mudando de tema",
+        supersedes_claim_id: v1Id,
+      })
+      .select("id")
+      .single();
+    expectFail("G9 substituição não atravessa temas diferentes", crossTopic.error);
+  }
+
   console.log("\n=== F. ISOLAMENTO E AUSÊNCIA DE CÁLCULO ===");
+
   {
     const r = await outsider.client
       .from("methodology_source_claims")

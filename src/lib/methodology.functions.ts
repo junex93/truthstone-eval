@@ -1822,7 +1822,9 @@ export const createSourceClaim = createServerFn({ method: "POST" })
         extraction_method: data.extractionMethod,
         reviewer_alerts: data.reviewerAlerts,
         notes: data.notes,
+        supersedes_claim_id: data.supersedesClaimId ?? null,
         created_by: userId,
+
       })
       .select("id")
       .single();

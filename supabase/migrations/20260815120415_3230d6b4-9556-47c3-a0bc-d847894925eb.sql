@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.guard_claim_supersession() FROM PUBLIC, anon, authenticated;

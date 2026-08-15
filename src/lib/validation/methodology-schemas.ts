@@ -332,7 +332,13 @@ export const createSourceClaimSchema = z.object({
   extractionMethod: z.enum(CLAIM_EXTRACTION_METHODS),
   reviewerAlerts: z.array(text(3, 400)).max(20).default([]),
   notes: optionalText(2000),
+  /**
+   * Correção de claim: nova claim que substitui uma antecessora já rejeitada ou
+   * superada. Linhagem validada em banco (mesma org, spec e tema).
+   */
+  supersedesClaimId: uuid.optional().nullable(),
 });
+
 
 export const reviewSourceClaimSchema = z.object({
   claimId: uuid,

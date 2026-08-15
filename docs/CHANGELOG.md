@@ -381,3 +381,29 @@ price_history` update/delete) **sem** GRANT — só pelas RPCs oficiais.
   Prova o gate CONTENT_VERIFIED → LOCATOR → LOCATOR_VERIFIED → claim → aceite por
   revisor distinto → tema satisfeito, e a recusa de todos os atalhos.
 - Nenhum cálculo de fatores foi introduzido; especificação MCDDM segue `DRAFT`.
+
+## Fase 7F — Batch 01 Normative Content Closeout
+
+- Auditoria factual dos dois artifacts reais enviados pelo usuário
+  (NBR 14653-1: 363.398 bytes; NBR 14653-2: 20.774.958 bytes, digitalização),
+  ambos `LICENSED_COPY`, `hash_computed_by = SERVER`, SHA-256 recomputado no
+  servidor nesta rodada: **VALID** nos dois casos.
+- Estado do Batch 01: **BLOCKED_BY_HUMAN_VERIFICATION**. Documento existe, mas
+  as duas fontes têm 0 verificações, 0 localizadores e 0 claims; T01/T04/T07
+  permanecem `is_satisfied = false` com `PENDING_PRIMARY_SOURCE`.
+- Nova linhagem de correção de claim: coluna
+  `methodology_source_claims.supersedes_claim_id`, chave única composta
+  `(organization_id, id)`, FK composta por organização e trigger
+  `guard_claim_supersession` (mesma org/spec/tema, apenas antecessora `REJECTED`
+  ou `SUPERSEDED`, vínculo imutável, sem autossubstituição). Claims seguem
+  append-only; correção é nova versão ligada à anterior.
+- `guard_claim_supersession` sem `EXECUTE` para `anon`/`authenticated`.
+- `tests/functional/methodology-claim-gate.ts`: 38 → **47/47 PASS** (seção G de
+  linhagem de correção).
+- `tests/functional/methodology-source-ingestion.ts` ajustada ao gate da Fase 7E
+  (trecho literal exige `CONTENT_VERIFIED`): **40/40 PASS**.
+- Regressão: `negative-tests` 84/84, `factors-specification-governance` 100/100,
+  `methodology-governance-flow` 161/161.
+- Ausência de cálculo verificada: 0 fórmulas e 0 parâmetros sob a especificação
+  MCDDM, 0 `method_implementations`, especificação em `DRAFT`.
+- Relatório: `docs/FACTORS_PRIMARY_SOURCE_REVIEW_BATCH_01.md`.

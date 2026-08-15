@@ -377,7 +377,8 @@ async function main() {
   console.log("\n=== D. LOCALIZADORES E LINHAGEM ===");
   let locatorId = "";
   {
-    const loc = await ownerA.client
+    // Trecho literal antes de CONTENT_VERIFIED é recusado (gate da Fase 7E).
+    const r = await ownerA.client
       .from("methodology_source_locators")
       .insert({
         organization_id: orgA,
@@ -390,9 +391,25 @@ async function main() {
       })
       .select("id")
       .single();
+    expectFail("D0 trecho literal sem conteúdo verificado é recusado", r.error);
+  }
+  {
+    const loc = await ownerA.client
+      .from("methodology_source_locators")
+      .insert({
+        organization_id: orgA,
+        source_id: globalSourceId,
+        locator_type: "SECTION",
+        section: "TEST_ONLY 7.1",
+        artifact_id: artifactA,
+        created_by: ownerA.id,
+      })
+      .select("id")
+      .single();
     expectOk("D1 localizador com documento de apoio", loc.error);
     locatorId = loc.data?.id ?? "";
   }
+
   {
     const loc = await ownerA.client.from("methodology_source_locators").insert({
       organization_id: orgA,
