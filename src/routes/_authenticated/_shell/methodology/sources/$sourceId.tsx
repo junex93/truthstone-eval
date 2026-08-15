@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Batch01Panel, SourceClaimsPanel } from "@/components/app/ClaimBits";
+import { ReviewerGatePanel } from "@/components/app/ReviewerGate";
 import {
   AccessStatusBadge,
   SpecStatusBadge,
@@ -84,6 +85,16 @@ function SourceDetailPage() {
   const readiness = readinessQuery.data?.readiness;
   // O gate é do banco: a interface apenas reflete o diagnóstico da RPC.
   const contentAllowed = readiness ? readiness.organization_access_basis !== null : false;
+
+  /**
+   * Checkpoint humano do Batch 01: proposta de claim candidata só é oferecida
+   * depois de metadado E conteúdo conferidos por humano autorizado nesta fonte.
+   * O banco continua sendo quem recusa o atalho; aqui apenas não convidamos a ele.
+   */
+  const verificationTypes = new Set(verifications.map((v) => v.verification_type));
+  const humanCheckpointDone =
+    verificationTypes.has("METADATA_VERIFIED") && verificationTypes.has("CONTENT_VERIFIED");
+
 
   return (
     <div className="space-y-6">
@@ -191,7 +202,13 @@ function SourceDetailPage() {
         ) : null}
       </section>
 
-      <Batch01Panel sourceId={sourceId} canPropose={canWrite(role)} />
+      <ReviewerGatePanel />
+
+      <Batch01Panel
+        sourceId={sourceId}
+        canPropose={canWrite(role) && humanCheckpointDone}
+        checkpointDone={humanCheckpointDone}
+      />
 
       <SourceClaimsPanel sourceId={sourceId} />
 

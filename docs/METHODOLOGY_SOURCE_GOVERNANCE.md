@@ -41,3 +41,22 @@ operação é **recusada**, não ignorada.
 - Registrar citação literal sob `METADATA_ONLY`.
 - Deduzir conteúdo normativo a partir de resumo, ementa ou memória de modelo.
 - Usar IA para verificar fonte ou interpretar cláusula.
+
+## Segregação humana de revisão (Fase 7G)
+
+Verificar fonte não é aprovar norma. Os atos são distintos e cumulativos:
+`METADATA_VERIFIED` → `CONTENT_VERIFIED` → `LOCATOR_VERIFIED` →
+`CLAIM_ACCEPTED` → `METHOD_RULE_APPROVED` → `SPEC_APPROVED`. Nenhum degrau
+implica o seguinte, e a interface apresenta essa escada literalmente.
+
+Regras permanentes:
+
+- Ato profissional exige pessoa real com papel de revisão (`OWNER`, `ADMIN` ou
+  `REVIEWER`). `service_role`, fixture, IA, conta de sistema e conta de teste
+  nunca ocupam esse papel em produção.
+- Quem propõe claim candidata não pode aceitá-la: recusa imposta em
+  `review_methodology_claim`.
+- Com um único membro ativo, o lote de revisão de fonte primária permanece
+  `BLOCKED_BY_HUMAN_REVIEWER` e os temas permanecem `PENDING_PRIMARY_SOURCE`.
+- IA pode sugerir localizador e redação candidata; IA não verifica e não recebe
+  autoria. Proveniência de descoberta é registrada separadamente da autoria.

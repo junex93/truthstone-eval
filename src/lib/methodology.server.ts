@@ -199,3 +199,118 @@ export function assertMethodologyStoragePath(
     throw new Error("Caminho de armazenamento não corresponde à fonte metodológica informada.");
   }
 }
+
+/* ============================== FASE 7G — gate de revisor independente === */
+
+/** Papéis que a arquitetura admite para revisão metodológica independente. */
+export const METHODOLOGY_REVIEWER_ROLES = ["OWNER", "ADMIN", "REVIEWER"] as const;
+
+export interface ReviewerGateMember {
+  memberId: string;
+  role: string;
+  status: string;
+  displayName: string;
+  isSelf: boolean;
+  canReviewMethodology: boolean;
+}
+
+export interface ReviewerGateReport {
+  organizationId: string;
+  currentRole: string;
+  totalMembers: number;
+  activeMembers: number;
+  roleCounts: Record<string, number>;
+  members: ReviewerGateMember[];
+  /** Existe outra pessoa ativa, distinta do ator, com papel de revisão. */
+  independentReviewerPresent: boolean;
+  independentReviewerRoles: string[];
+  /** Estado factual do lote: nunca "PASS" sem revisor humano independente. */
+  batchStatus: "BLOCKED_BY_HUMAN_REVIEWER" | "READY_FOR_HUMAN_VERIFICATION";
+  blockedReason: string | null;
+}
+
+/**
+ * Leitura factual da segregação humana. Não cria, não convida e não promove
+ * ninguém: apenas relata quem existe. O banco continua sendo quem recusa o
+ * ato profissional sem revisor distinto (`review_methodology_claim`).
+ */
+export async function readReviewerSegregationGate(
+  supabase: Db,
+  membership: Membership,
+  actorUserId: string,
+): Promise<ReviewerGateReport> {
+  const { data, error } = await supabase
+    .from("organization_members")
+    .select("id, user_id, role, status, created_at")
+    .eq("organization_id", membership.organizationId)
+    .order("created_at", { ascending: true });
+  if (error) throw new Error(error.message);
+  const rows = data ?? [];
+
+  const ids = rows.map((r) => r.user_id);
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, full_name, email")
+    .in("id", ids.length > 0 ? ids : ["00000000-0000-0000-0000-000000000000"]);
+
+  const reviewerRoles = new Set<string>(METHODOLOGY_REVIEWER_ROLES);
+  const members: ReviewerGateMember[] = rows.map((r) => {
+    const profile = (profiles ?? []).find((p) => p.id === r.user_id);
+    return {
+      memberId: r.id,
+      role: r.role,
+      status: r.status,
+      displayName: profile?.full_name ?? profile?.email ?? "Membro sem perfil preenchido",
+      isSelf: r.user_id === actorUserId,
+      canReviewMethodology: r.status === "ACTIVE" && reviewerRoles.has(r.role),
+    };
+  });
+
+  const active = members.filter((m) => m.status === "ACTIVE");
+  const roleCounts = active.reduce<Record<string, number>>((acc, m) => {
+    acc[m.role] = (acc[m.role] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  const independents = active.filter((m) => !m.isSelf && m.canReviewMethodology);
+  const independentReviewerPresent = independents.length > 0;
+
+  return {
+    organizationId: membership.organizationId,
+    currentRole: membership.role,
+    totalMembers: members.length,
+    activeMembers: active.length,
+    roleCounts,
+    members,
+    independentReviewerPresent,
+    independentReviewerRoles: [...new Set(independents.map((m) => m.role))],
+    batchStatus: independentReviewerPresent
+      ? "READY_FOR_HUMAN_VERIFICATION"
+      : "BLOCKED_BY_HUMAN_REVIEWER",
+    blockedReason: independentReviewerPresent
+      ? null
+      : "É necessário um segundo membro autorizado para revisão independente.",
+  };
+}
+
+/**
+ * Nome legível dos atores envolvidos em proposta e revisão de claim.
+ * Autoria nunca é anônima e nunca é atribuída a IA: a identidade vem do token
+ * gravado pelo banco, e aqui apenas traduzimos para nome/e-mail do perfil.
+ */
+export async function resolveActorNames(
+  supabase: Db,
+  userIds: (string | null)[],
+): Promise<Record<string, string>> {
+  const ids = [...new Set(userIds.filter((id): id is string => typeof id === "string"))];
+  if (ids.length === 0) return {};
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, full_name, email")
+    .in("id", ids);
+  if (error) throw new Error(error.message);
+  return (data ?? []).reduce<Record<string, string>>((acc, p) => {
+    acc[p.id] = p.full_name ?? p.email ?? "Membro sem perfil preenchido";
+    return acc;
+  }, {});
+}

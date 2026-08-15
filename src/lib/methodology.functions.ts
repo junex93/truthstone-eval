@@ -13,6 +13,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
 import {
   METHODOLOGY_SOURCE_BUCKET,
+  readReviewerSegregationGate,
+  resolveActorNames,
   asJsonObject,
   asStringArray,
   assertMethodologyStoragePath,
@@ -1764,10 +1766,17 @@ export const listSourceClaims = createServerFn({ method: "GET" })
     if (reviews.error) throw new Error(reviews.error.message);
     if (assessments.error) throw new Error(assessments.error.message);
 
+    const actorNames = await resolveActorNames(supabase, [
+      ...(claims.data ?? []).map((c) => c.created_by),
+      ...(reviews.data ?? []).map((r) => r.reviewer_id),
+    ]);
+
     return {
       claims: claims.data ?? [],
       reviews: reviews.data ?? [],
       assessments: assessments.data ?? [],
+      /** Autoria explícita: proponente e revisor nunca aparecem anônimos. */
+      actorNames,
       role: membership.role,
     };
   });
@@ -1923,4 +1932,19 @@ export const satisfySpecificationRequirement = createServerFn({ method: "POST" }
     });
     if (error) throw new Error(error.message);
     return { requirementId: data.requirementId };
+  });
+
+/**
+ * Fase 7G — leitura do gate de revisor independente.
+ *
+ * Somente diagnóstico. A segregação continua imposta pelo banco em
+ * `review_methodology_claim` (revisor distinto de quem propôs) e nas RPCs de
+ * verificação. Nenhum papel é criado, convidado ou elevado por esta função.
+ */
+export const getReviewerSegregationGate = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const membership = await requireMembership(supabase, userId);
+    return { gate: await readReviewerSegregationGate(supabase, membership, userId) };
   });

@@ -138,3 +138,58 @@ localizador só é aceito após `CONTENT_VERIFIED` (novo assert `D0`).
 5. Só então `satisfy_specification_requirement` pode marcar T01/T04/T07.
 
 Batch 02 permanece fechado até o Batch 01 ter claim aceita.
+
+## Fase 7G — Gate de revisor humano independente (2026-08-15)
+
+Estado factual da organização de produção (`Fazenda Albuquerque`) nesta data:
+
+| Fato | Valor |
+| --- | --- |
+| Membros ativos | 1 |
+| OWNER | 1 |
+| ADMIN / REVIEWER / VALUER | 0 |
+| Revisor independente presente | NÃO |
+| `METADATA_VERIFIED` | 0 |
+| `CONTENT_VERIFIED` | 0 |
+| `LOCATOR_VERIFIED` | 0 |
+| Localizadores reais | 0 |
+| Claims normativas reais | 0 |
+| T01 / T04 / T07 | `PENDING_PRIMARY_SOURCE` |
+| Especificação MCDDM | `DRAFT` |
+| Fórmulas / parâmetros / implementações operacionais | 0 / 0 / 0 |
+
+**STATUS: `BLOCKED_BY_HUMAN_REVIEWER`.**
+
+Motivo declarado: a organização possui um único membro ativo. A aceitação
+profissional de claim exige revisor distinto do proponente, imposto pelo banco em
+`review_methodology_claim`. Nenhum revisor fictício, conta de teste, conta de
+sistema, `service_role`, fixture ou IA foi criado para satisfazer a segregação —
+essa substituição é proibida pela arquitetura.
+
+### O que foi entregue nesta rodada
+
+- `readReviewerSegregationGate` (`src/lib/methodology.server.ts`) e a server
+  function de leitura `getReviewerSegregationGate`: diagnóstico factual de
+  membros, papéis e presença de revisor independente. Não cria, não convida e não
+  eleva papel.
+- `src/components/app/ReviewerGate.tsx`: painel humano nas telas de fonte e de
+  especificação, com o roster real, o status do lote e a escada de atos
+  distintos — `METADATA_VERIFIED` ≠ `CONTENT_VERIFIED` ≠ `LOCATOR_VERIFIED` ≠
+  `CLAIM_ACCEPTED` ≠ `METHOD_RULE_APPROVED` ≠ `SPEC_APPROVED`.
+- Checkpoint humano do Batch 01 na interface: a proposta assistida de claim
+  candidata só é oferecida após metadado **e** conteúdo conferidos na própria
+  fonte; antes disso o texto sugerido é declarado material de leitura, nunca
+  conteúdo verificado ou requisito normativo.
+- Autoria explícita: cada claim exibe quem propôs, quando, e quem revisou com a
+  justificativa registrada. Autoria humana nunca é atribuída a IA.
+
+### Próximos atos humanos necessários (nesta ordem)
+
+1. Convidar uma segunda pessoa real com papel `REVIEWER` (não conceder `OWNER`
+   para destravar teste).
+2. `METADATA_VERIFIED` na NBR 14653-1 e na NBR 14653-2 por humano autorizado.
+3. `CONTENT_VERIFIED` nas duas fontes; parar e registrar o checkpoint.
+4. Localizadores de T01/T04/T07 conferidos (`LOCATOR_VERIFIED`).
+5. Claims candidatas propostas e aceitas por revisor distinto.
+6. Só então `satisfy_specification_requirement` para T01/T04/T07 — a
+   especificação permanece `DRAFT` de qualquer modo.

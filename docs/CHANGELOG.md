@@ -407,3 +407,24 @@ price_history` update/delete) **sem** GRANT — só pelas RPCs oficiais.
 - Ausência de cálculo verificada: 0 fórmulas e 0 parâmetros sob a especificação
   MCDDM, 0 `method_implementations`, especificação em `DRAFT`.
 - Relatório: `docs/FACTORS_PRIMARY_SOURCE_REVIEW_BATCH_01.md`.
+
+## Fase 7G — Gate de revisor humano independente (2026-08-15)
+
+- `readReviewerSegregationGate` + `getReviewerSegregationGate`: diagnóstico
+  factual de membros, papéis e presença de revisor independente. Somente leitura;
+  nenhum papel é criado, convidado ou elevado.
+- `src/components/app/ReviewerGate.tsx`: painel do gate humano nas telas de fonte
+  metodológica e de especificação, com roster real, status do lote e a escada
+  `METADATA_VERIFIED` ≠ `CONTENT_VERIFIED` ≠ `LOCATOR_VERIFIED` ≠
+  `CLAIM_ACCEPTED` ≠ `METHOD_RULE_APPROVED` ≠ `SPEC_APPROVED`.
+- Batch 01: proposta assistida de claim só é oferecida após metadado e conteúdo
+  conferidos na fonte; antes disso o texto sugerido é declarado material de
+  leitura, nunca conteúdo verificado.
+- Autoria explícita de proponente e de revisor em cada claim (`resolveActorNames`).
+- Estado da organização de produção: 1 membro ativo (OWNER) →
+  **`BLOCKED_BY_HUMAN_REVIEWER`**. Nenhum revisor fictício criado.
+- Regressão: claim-gate 47/47, source-ingestion 40/40, factors-governance
+  100/100, methodology-governance 161/161, security 84/84,
+  market-intelligence 81/81, market 33/33, research 28/28. Typecheck PASS.
+- Sem cálculo: 0 fórmulas, 0 parâmetros, 0 fatores, 0 `method_implementations`.
+  Especificação MCDDM permanece `DRAFT`. Batch 02 não iniciado.
