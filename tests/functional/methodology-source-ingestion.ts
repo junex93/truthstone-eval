@@ -375,7 +375,17 @@ async function main() {
   }
 
   console.log("\n=== D. LOCALIZADORES E LINHAGEM ===");
+  {
+    // Trecho literal exige CONTENT_VERIFIED humano (gate da Fase 7E).
+    const r = await ownerA.client.rpc("verify_methodology_source", {
+      _source_id: globalSourceId,
+      _verification_type: "CONTENT_VERIFIED",
+      _notes: "TEST_ONLY conteúdo conferido contra o documento autorizado da organização A",
+    });
+    expectOk("D0 conteúdo verificado por revisor da organização A", r.error);
+  }
   let locatorId = "";
+
   {
     const loc = await ownerA.client
       .from("methodology_source_locators")
