@@ -22,6 +22,8 @@
  */
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
+import { resolveOnboardingState } from "../../src/hooks/use-onboarding-state";
+
 const url = process.env["SUPABASE_URL"] ?? process.env["VITE_SUPABASE_URL"]!;
 const anonKey =
   process.env["SUPABASE_PUBLISHABLE_KEY"] ?? process.env["VITE_SUPABASE_PUBLISHABLE_KEY"]!;
