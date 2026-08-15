@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
+import { readInviteIntent, rememberInviteIntent } from "@/lib/invite-intent";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (search: Record<string, unknown>): { convite?: string } =>
