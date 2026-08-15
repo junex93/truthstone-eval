@@ -6,7 +6,7 @@ import { organizationSchema, profileSchema } from "@/lib/validation/schemas";
 import {
   getMembership,
   requireAdminAccess,
-  requireMembership,
+  
   writeAudit,
 } from "@/lib/workspace.server";
 import { z } from "zod";
@@ -109,7 +109,10 @@ export const listMembers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    const membership = await requireMembership(supabase, userId);
+    const membership = await getMembership(supabase, userId);
+    if (!membership) {
+      return { currentRole: null, members: [] };
+    }
 
     const { data, error } = await supabase
       .from("organization_members")
