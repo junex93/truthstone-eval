@@ -192,6 +192,13 @@ function InvitationsPanel() {
   const createMutation = useMutation({
     mutationFn: () => create({ data: { email, role } }),
     onSuccess: (result) => {
+      if (result.outcome === "PENDING_ALREADY_EXISTS") {
+        toast.info(
+          `Já existe um convite pendente para ${result.email}. Use "Gerar novo link" no convite pendente abaixo, ou revogue-o antes de convidar novamente.`,
+        );
+        refresh();
+        return;
+      }
       setIssuedLink(linkFor(result.token));
       setEmail("");
       toast.success("Convite criado. Copie este link e envie para a pessoa convidada.");
