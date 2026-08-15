@@ -272,7 +272,7 @@ function InvitationsPanel() {
 
         {issuedLink ? (
           <div className="rounded-sm border-l-2 border-info/50 bg-info/5 px-3 py-3">
-            <p className="label-meta">Link de convite — exibido uma única vez</p>
+            <p className="label-meta">Link de convite para desenvolvimento</p>
             <p className="mono-value mt-1.5 break-all text-xs">{issuedLink}</p>
             <div className="mt-2 flex gap-2">
               <Button
@@ -290,10 +290,11 @@ function InvitationsPanel() {
               </Button>
             </div>
             <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-              O envio automático por e-mail depende de um domínio de e-mail configurado para este
-              projeto. Enquanto isso, entregue o link pessoalmente ao convidado. O sistema guarda
-              apenas o resumo criptográfico do código — o link não pode ser recuperado depois.
+              Envie este link diretamente para a pessoa convidada. O envio automático por e-mail será
+              configurado antes da produção. Este link aparece uma única vez: se fechar esta tela,
+              gere um novo link no convite pendente.
             </p>
+
           </div>
         ) : null}
       </div>
