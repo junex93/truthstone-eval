@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { ClaimDossierPanel } from "@/components/app/ClaimBits";
+import { ReviewerGatePanel } from "@/components/app/ReviewerGate";
 import {
 
   ChecklistRow,
@@ -238,6 +239,8 @@ function SpecificationPage() {
           </div>
         ) : null}
       </section>
+
+      <ReviewerGatePanel compact />
 
       <ClaimDossierPanel specificationId={specId} />
 
