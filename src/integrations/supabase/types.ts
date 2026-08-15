@@ -6090,6 +6090,18 @@ export type Database = {
       is_org_admin: { Args: { _org: string }; Returns: boolean }
       is_org_creator: { Args: { _org: string }; Returns: boolean }
       is_org_member: { Args: { _org: string }; Returns: boolean }
+      list_my_pending_invitations: {
+        Args: never
+        Returns: {
+          email: string
+          expires_at: string
+          invitation_id: string
+          invited_at: string
+          invited_role: Database["public"]["Enums"]["org_role"]
+          organization_id: string
+          organization_name: string
+        }[]
+      }
       market_intelligence_report: { Args: { _case_id: string }; Returns: Json }
       market_source_domain: {
         Args: { _portal: string; _publisher: string; _url: string }
