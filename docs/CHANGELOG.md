@@ -2,6 +2,41 @@
 
 Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
 
+## Fase 7H.1 — Convite governado de membro / REVIEWER (2026-08-15)
+
+- Nova tabela `organization_invitations` com estados `INVITED` / `ACCEPTED` /
+  `EXPIRED` / `REVOKED`, e-mail normalizado por CHECK, papel convidado com CHECK
+  `<> OWNER` e apenas o digest SHA-256 do token (texto puro nunca persistido nem
+  registrado em log). Índice único parcial impede duplicidade pendente por
+  (organização, e-mail).
+- Mutações apenas por RPC `SECURITY DEFINER` (`search_path = public`) com
+  autorização interna a OWNER/ADMIN ativo da própria organização:
+  `create_organization_invitation`, `resend_organization_invitation`,
+  `revoke_organization_invitation`, `expire_stale_invitations`,
+  `inspect_organization_invitation`, `accept_organization_invitation`.
+  `authenticated` recebe somente `SELECT` na tabela.
+- Aceite atômico valida no banco: token, status, expiração, revogação, consumo,
+  igualdade entre `auth.jwt() ->> 'email'` e o e-mail convidado, papel autorizado
+  e ausência de vínculo prévio. O papel efetivo vem sempre do convite aprovado.
+- RLS: OWNER/ADMIN leem os convites da própria organização; o convidado lê apenas
+  o convite pendente endereçado ao seu e-mail; nenhum acesso cross-tenant; sem
+  GRANT para `anon`.
+- Auditoria na mesma transação: `INVITE_CREATED`, `INVITE_SENT`,
+  `INVITE_ACCEPTED`, `INVITE_REVOKED`, `INVITE_EXPIRED` — sem token.
+- Interface `/admin` passa a separar **membros ativos** e **convites pendentes**,
+  com convite, reenvio (rotação de token) e revogação. Nova rota pública
+  `/convite/$token` para aceite autenticado; `/auth?convite=<token>` retorna ao
+  convite após login.
+- Envio automático de e-mail: `BLOCKED_BY_EMAIL_CONFIGURATION` — o projeto não
+  possui domínio de e-mail configurado. O fluxo opera com entrega manual do link,
+  sem atalho inseguro.
+- Nova suíte `tests/functional/organization-invitation-flow.ts`
+  (`bun run test:invitations`): **47/47 PASS**. Regressão sem alterações:
+  security 84/84, claim-gate 47/47, source-ingestion 40/40, factors 100/100,
+  methodology 161/161, market-intelligence 81/81, market 33/33, research 28/28.
+- Nenhuma verificação normativa foi executada, o Batch 02 não iniciou e a
+  specification MCDDM permanece `DRAFT`. Documentação: `MEMBERSHIP_ONBOARDING.md`.
+
 ## Fase 7 — MCDDM / Tratamento por Fatores (specification real)
 
 - Migração versionada popula o shell global `MCDDM — Tratamento por Fatores`

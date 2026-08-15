@@ -160,7 +160,31 @@ export const AUDIT_EVENT_TYPES = [
   "DATASET_FROZEN",
   "ORGANIZATION_CREATED",
   "USER_ROLE_CHANGED",
+  "INVITE_CREATED",
+  "INVITE_SENT",
+  "INVITE_ACCEPTED",
+  "INVITE_REVOKED",
+  "INVITE_EXPIRED",
 ] as const;
+
+/**
+ * Onboarding humano de membro. Papel OWNER nunca é convidável: a titularidade
+ * não se transfere por convite. O papel efetivo é sempre o papel aprovado no
+ * convite, decidido no banco, nunca no payload do convidado.
+ */
+export const INVITABLE_ROLES = ["REVIEWER", "ADMIN", "VALUER", "VIEWER"] as const;
+export type InvitableRole = (typeof INVITABLE_ROLES)[number];
+
+export const INVITATION_STATUSES = ["INVITED", "ACCEPTED", "EXPIRED", "REVOKED"] as const;
+export type InvitationStatus = (typeof INVITATION_STATUSES)[number];
+
+export const INVITATION_STATUS_LABELS: Record<InvitationStatus, string> = {
+  INVITED: "Convidado",
+  ACCEPTED: "Aceito",
+  EXPIRED: "Expirado",
+  REVOKED: "Revogado",
+};
+
 export type AuditEventType =
   | (typeof AUDIT_EVENT_TYPES)[number]
   | "FIELD_REVISED"

@@ -11,6 +11,11 @@ import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (search: Record<string, unknown>): { convite?: string } =>
+    typeof search["convite"] === "string" && search["convite"].length > 0
+      ? { convite: search["convite"] }
+      : {},
+
   head: () => ({
     meta: [
       { title: "Acesso — Inteligência Pericial Imobiliária" },
@@ -36,6 +41,16 @@ const credentialsSchema = z.object({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { convite } = Route.useSearch();
+
+  /** Após autenticar, volta ao convite pendente quando o acesso partiu de um link de convite. */
+  const goToNextStep = async () => {
+    if (convite) {
+      await navigate({ to: "/convite/$token", params: { token: convite }, replace: true });
+      return;
+    }
+    await navigate({ to: "/dashboard", replace: true });
+  };
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -43,9 +58,10 @@ function AuthPage() {
 
   useEffect(() => {
     void supabase.auth.getSession().then(({ data }) => {
-      if (data.session) void navigate({ to: "/dashboard", replace: true });
+      if (data.session) void goToNextStep();
     });
-  }, [navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigate, convite]);
 
   async function handlePasswordSubmit(mode: "signin" | "signup") {
     setNotice(null);
@@ -59,7 +75,7 @@ function AuthPage() {
       if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword(parsed.data);
         if (error) throw error;
-        await navigate({ to: "/dashboard", replace: true });
+        await goToNextStep();
       } else {
         const { data, error } = await supabase.auth.signUp({
           ...parsed.data,
@@ -67,7 +83,7 @@ function AuthPage() {
         });
         if (error) throw error;
         if (data.session) {
-          await navigate({ to: "/dashboard", replace: true });
+          await goToNextStep();
         } else {
           setNotice(
             "Cadastro registrado. Confirme o e-mail enviado para ativar o acesso — a sessão só é criada após a confirmação.",
@@ -85,14 +101,16 @@ function AuthPage() {
     setBusy(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: convite
+          ? `${window.location.origin}/auth?convite=${encodeURIComponent(convite)}`
+          : window.location.origin,
       });
       if (result.error) {
         toast.error("Não foi possível iniciar o acesso com Google.");
         return;
       }
       if (result.redirected) return;
-      await navigate({ to: "/dashboard", replace: true });
+      await goToNextStep();
     } finally {
       setBusy(false);
     }

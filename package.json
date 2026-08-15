@@ -17,7 +17,8 @@
     "test:market-intelligence": "bun run tests/functional/market-intelligence-flow.ts",
     "test:methodology": "bun run tests/functional/methodology-governance-flow.ts",
     "test:factors": "bun run tests/functional/factors-specification-governance.ts",
-    "test:source-ingestion": "bun run tests/functional/methodology-source-ingestion.ts"
+    "test:source-ingestion": "bun run tests/functional/methodology-source-ingestion.ts",
+    "test:invitations": "bun run tests/functional/organization-invitation-flow.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

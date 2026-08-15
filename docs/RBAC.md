@@ -41,7 +41,11 @@ banco** com o token do usuário; nenhum papel vem do corpo da requisição.
   remover e reconvidar.
 - O último `OWNER` ativo não pode ser rebaixado nem removido.
 - Somente OWNER/ADMIN podem convidar ou alterar papéis (RLS em
-  `organization_members`).
+  `organization_members` e autorização interna das RPCs de convite).
+- O fluxo de convite não pode conceder `OWNER`: CHECK na tabela, validação na RPC
+  de criação e nova validação no aceite. O papel efetivo é o papel aprovado no
+  convite, decidido no banco — nunca no payload do convidado.
+  Ver `MEMBERSHIP_ONBOARDING.md`.
 
 ## UI
 
