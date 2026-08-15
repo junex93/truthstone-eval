@@ -2,6 +2,30 @@
 
 Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
 
+## Fase 7H.5 — Entrega manual de convite como fluxo padrão de desenvolvimento (2026-08-15)
+
+- Apenas camada de apresentação e texto: nenhuma migração, nenhum RPC, nenhuma
+  política alterada. Arquitetura de convite/aceite permanece idêntica.
+- `/admin` passa a exibir aviso discreto de ambiente de desenvolvimento
+  ("convites são entregues por link manual") e o bloco "Link de convite para
+  desenvolvimento" com ação de copiar, sem tratar ausência de provedor de
+  e-mail como erro.
+- Ação "Reenviar" renomeada para "Gerar novo link" (rotação de token já
+  existente: novo digest válido, link anterior invalidado, organização, e-mail
+  e papel preservados, auditoria registrada).
+- Convidado sem link disponível recebe orientação direta: "Solicite ao
+  administrador o link do convite."
+- `/convite/$token` exibe organização, papel e e-mail autenticado antes da ação
+  "Aceitar convite".
+- Envio automático de e-mail: `DEFERRED_TO_PRODUCTION_READINESS`. Confirmação
+  de e-mail no signup NÃO foi alterada — não há separação confiável entre
+  desenvolvimento e produção para essa política neste projeto.
+- Regressões: convites 72/72, segurança 84/84, claim-gate 47/47,
+  source-ingestion 40/40, factors 100/100, methodology 161/161,
+  market-intelligence 81/81, market 33/33, research 28/28. Typecheck PASS.
+
+
+
 ## Fase 7H.4 — Resolver único de onboarding (zero-org + convite pendente) (2026-08-15)
 
 - Causa raiz corrigida: `/admin` e o dashboard decidiam de forma independente o
