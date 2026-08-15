@@ -118,7 +118,7 @@ export const revokeInvitation = createServerFn({ method: "POST" })
 
     const { error } = await supabase.rpc("revoke_organization_invitation", {
       _invitation_id: data.invitationId,
-      _reason: data.reason ?? null,
+      _reason: data.reason ?? undefined,
     });
     if (error) throw new Error(humanize(error.message));
     return { ok: true };
