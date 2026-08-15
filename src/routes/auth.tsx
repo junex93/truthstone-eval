@@ -205,7 +205,16 @@ function AuthPage() {
                 >
                   {mode === "signin" ? "Entrar" : "Criar conta"}
                 </Button>
+                {mode === "signin" ? (
+                  <Link
+                    to="/redefinir-senha"
+                    className="block text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Esqueci minha senha
+                  </Link>
+                ) : null}
               </TabsContent>
+
             ))}
           </Tabs>
 
