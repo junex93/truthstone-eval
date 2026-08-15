@@ -292,3 +292,25 @@ export async function readReviewerSegregationGate(
       : "É necessário um segundo membro autorizado para revisão independente.",
   };
 }
+
+/**
+ * Nome legível dos atores envolvidos em proposta e revisão de claim.
+ * Autoria nunca é anônima e nunca é atribuída a IA: a identidade vem do token
+ * gravado pelo banco, e aqui apenas traduzimos para nome/e-mail do perfil.
+ */
+export async function resolveActorNames(
+  supabase: Db,
+  userIds: (string | null)[],
+): Promise<Record<string, string>> {
+  const ids = [...new Set(userIds.filter((id): id is string => typeof id === "string"))];
+  if (ids.length === 0) return {};
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, full_name, email")
+    .in("id", ids);
+  if (error) throw new Error(error.message);
+  return (data ?? []).reduce<Record<string, string>>((acc, p) => {
+    acc[p.id] = p.full_name ?? p.email ?? "Membro sem perfil preenchido";
+    return acc;
+  }, {});
+}
