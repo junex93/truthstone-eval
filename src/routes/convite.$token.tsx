@@ -54,6 +54,7 @@ function InvitePage() {
   const accept = useServerFn(acceptInvitation);
 
   const [sessionState, setSessionState] = useState<"loading" | "anon" | "authenticated">("loading");
+  const [sessionEmail, setSessionEmail] = useState<string | null>(null);
 
   /**
    * Guarda a intenção de voltar a este convite depois do ciclo signup → confirmação
@@ -66,6 +67,7 @@ function InvitePage() {
   useEffect(() => {
     void supabase.auth.getSession().then(({ data }) => {
       setSessionState(data.session ? "authenticated" : "anon");
+      setSessionEmail(data.session?.user.email ?? null);
     });
   }, []);
 
@@ -178,10 +180,18 @@ function InvitePage() {
 
       <dl className="panel space-y-2 p-4 text-sm">
         <div className="flex justify-between gap-3">
-          <dt className="text-muted-foreground">E-mail convidado</dt>
-          <dd className="mono-value text-xs">
-            {invite.email_matches ? "corresponde à sua conta" : "outro endereço"}
+          <dt className="text-muted-foreground">Organização</dt>
+          <dd className="text-xs font-medium">{invite.organization_name ?? "—"}</dd>
+        </div>
+        <div className="flex justify-between gap-3">
+          <dt className="text-muted-foreground">Papel</dt>
+          <dd className="text-xs">
+            {ORG_ROLE_LABELS[invite.invited_role as OrgRole] ?? invite.invited_role}
           </dd>
+        </div>
+        <div className="flex justify-between gap-3">
+          <dt className="text-muted-foreground">E-mail</dt>
+          <dd className="mono-value text-xs">{sessionEmail ?? "—"}</dd>
         </div>
         <div className="flex justify-between gap-3">
           <dt className="text-muted-foreground">Expira em</dt>

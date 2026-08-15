@@ -93,6 +93,13 @@ function AdminPage() {
         description="Papéis definem permissões de escrita e revisão. A autorização é validada no servidor e também pelas políticas de acesso do banco de dados."
       />
 
+      <p className="rounded-sm border-l-2 border-info/50 bg-info/5 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+        Ambiente de desenvolvimento — convites são entregues por link manual. O envio automático por
+        e-mail será configurado antes da produção.
+      </p>
+
+
+
       <section className="space-y-3">
         <SectionTitle
           title="Membros ativos"
@@ -187,7 +194,7 @@ function InvitationsPanel() {
     onSuccess: (result) => {
       setIssuedLink(linkFor(result.token));
       setEmail("");
-      toast.success("O convite foi criado. Copie o link e envie ao convidado.");
+      toast.success("Convite criado. Copie este link e envie para a pessoa convidada.");
       refresh();
     },
     onError: (error) =>
@@ -198,11 +205,13 @@ function InvitationsPanel() {
     mutationFn: (invitationId: string) => resend({ data: { invitationId } }),
     onSuccess: (result) => {
       setIssuedLink(linkFor(result.token));
-      toast.success("Novo link de convite emitido. O link anterior deixou de valer.");
+      toast.success("Novo link gerado. O link anterior deixou de funcionar.");
       refresh();
     },
-    onError: (error) => toast.error(error instanceof Error ? error.message : "Falha ao reenviar."),
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Não foi possível gerar o link."),
   });
+
 
   const revokeMutation = useMutation({
     mutationFn: (invitationId: string) => revoke({ data: { invitationId } }),
@@ -263,7 +272,7 @@ function InvitationsPanel() {
 
         {issuedLink ? (
           <div className="rounded-sm border-l-2 border-info/50 bg-info/5 px-3 py-3">
-            <p className="label-meta">Link de convite — exibido uma única vez</p>
+            <p className="label-meta">Link de convite para desenvolvimento</p>
             <p className="mono-value mt-1.5 break-all text-xs">{issuedLink}</p>
             <div className="mt-2 flex gap-2">
               <Button
@@ -281,17 +290,18 @@ function InvitationsPanel() {
               </Button>
             </div>
             <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-              O envio automático por e-mail depende de um domínio de e-mail configurado para este
-              projeto. Enquanto isso, entregue o link pessoalmente ao convidado. O sistema guarda
-              apenas o resumo criptográfico do código — o link não pode ser recuperado depois.
+              Envie este link diretamente para a pessoa convidada. O envio automático por e-mail será
+              configurado antes da produção. Este link aparece uma única vez: se fechar esta tela,
+              gere um novo link no convite pendente.
             </p>
+
           </div>
         ) : null}
       </div>
 
       <SectionTitle
         title="Convites pendentes"
-        description="Convite enviado não é membro ativo. O papel só passa a valer depois do aceite."
+        description="Convite pendente não é membro ativo. O papel só passa a valer depois do aceite explícito. Gere um novo link sempre que precisar reenviar o convite — o link anterior deixa de funcionar."
       />
 
       {query.isPending ? (
@@ -340,7 +350,7 @@ function InvitationsPanel() {
                         disabled={resendMutation.isPending}
                         onClick={() => resendMutation.mutate(invite.id)}
                       >
-                        Reenviar
+                        Gerar novo link
                       </Button>
                       <Button
                         size="sm"
@@ -348,7 +358,7 @@ function InvitationsPanel() {
                         disabled={revokeMutation.isPending}
                         onClick={() => revokeMutation.mutate(invite.id)}
                       >
-                        Revogar
+                        Revogar convite
                       </Button>
                     </div>
                   </td>
