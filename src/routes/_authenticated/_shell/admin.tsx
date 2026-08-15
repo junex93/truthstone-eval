@@ -93,6 +93,13 @@ function AdminPage() {
         description="Papéis definem permissões de escrita e revisão. A autorização é validada no servidor e também pelas políticas de acesso do banco de dados."
       />
 
+      <p className="rounded-sm border-l-2 border-info/50 bg-info/5 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+        Ambiente de desenvolvimento — convites são entregues por link manual. O envio automático por
+        e-mail será configurado antes da produção.
+      </p>
+
+
+
       <section className="space-y-3">
         <SectionTitle
           title="Membros ativos"
