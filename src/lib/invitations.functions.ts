@@ -78,9 +78,21 @@ export const createInvitation = createServerFn({ method: "POST" })
       _token_hash: tokenHash,
       _ttl_hours: data.ttlHours ?? 168,
     });
-    if (error) throw new Error(humanize(error.message));
+
+    if (error) {
+      // Duplicidade de convite pendente é resultado esperado do fluxo, não falha de
+      // runtime: devolvemos conflito estruturado para a UI orientar o administrador.
+      if (/duplicate key|uq_invitation_pending/i.test(error.message)) {
+        return {
+          outcome: "PENDING_ALREADY_EXISTS" as const,
+          email: normalizeEmail(data.email),
+        };
+      }
+      throw new Error(humanize(error.message));
+    }
 
     return {
+      outcome: "CREATED" as const,
       invitationId: invitationId as unknown as string,
       token,
       emailDelivery: "MANUAL_LINK" as const,
