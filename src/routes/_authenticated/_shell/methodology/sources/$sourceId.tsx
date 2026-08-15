@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Batch01Panel, SourceClaimsPanel } from "@/components/app/ClaimBits";
+import { ReviewerGatePanel } from "@/components/app/ReviewerGate";
 import {
   AccessStatusBadge,
   SpecStatusBadge,
