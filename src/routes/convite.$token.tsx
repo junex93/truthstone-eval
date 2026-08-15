@@ -1,0 +1,175 @@
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
+import { ORG_ROLE_LABELS, type OrgRole } from "@/lib/domain/constants";
+import { acceptInvitation, inspectInvitation } from "@/lib/invitations.functions";
+
+export const Route = createFileRoute("/convite/$token")({
+  ssr: false,
+  head: () => ({
+    meta: [
+      { title: "Convite para organização — Inteligência Pericial Imobiliária" },
+      {
+        name: "description",
+        content:
+          "Aceite o convite para participar de uma organização da plataforma de inteligência pericial e avaliação imobiliária.",
+      },
+      { property: "og:title", content: "Convite para organização" },
+      {
+        property: "og:description",
+        content: "Aceite autenticado de convite de membro, com verificação de e-mail e auditoria.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+  component: InvitePage,
+});
+
+function Shell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex min-h-screen items-center justify-center px-6 py-12">
+      <div className="w-full max-w-md space-y-4">
+        <Link to="/" className="label-meta hover:text-foreground">
+          ← Início
+        </Link>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function InvitePage() {
+  const { token } = Route.useParams();
+  const navigate = useNavigate();
+  const inspect = useServerFn(inspectInvitation);
+  const accept = useServerFn(acceptInvitation);
+
+  const [sessionState, setSessionState] = useState<"loading" | "anon" | "authenticated">("loading");
+
+  useEffect(() => {
+    void supabase.auth.getSession().then(({ data }) => {
+      setSessionState(data.session ? "authenticated" : "anon");
+    });
+  }, []);
+
+  const query = useQuery({
+    queryKey: ["invitation", token],
+    queryFn: () => inspect({ data: { token } }),
+    enabled: sessionState === "authenticated",
+    retry: false,
+  });
+
+  const acceptMutation = useMutation({
+    mutationFn: () => accept({ data: { token } }),
+    onSuccess: (result) => {
+      toast.success(
+        `Convite aceito. Você agora participa desta organização como ${
+          ORG_ROLE_LABELS[result.role as OrgRole] ?? result.role
+        }.`,
+      );
+      void navigate({ to: "/dashboard", replace: true });
+    },
+    onError: (error) =>
+      toast.error(
+        error instanceof Error ? error.message : "Não foi possível aceitar este convite.",
+      ),
+  });
+
+  if (sessionState === "loading") {
+    return (
+      <Shell>
+        <Skeleton className="h-40 w-full" />
+      </Shell>
+    );
+  }
+
+  if (sessionState === "anon") {
+    return (
+      <Shell>
+        <h1 className="text-2xl font-semibold">Convite para uma organização</h1>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          Entre com a conta do mesmo e-mail que recebeu o convite, ou crie a conta com esse e-mail. O
+          vínculo só é criado depois do aceite autenticado.
+        </p>
+        <Button asChild className="w-full">
+          <Link to="/auth" search={{ convite: token }}>
+            Entrar ou criar conta
+          </Link>
+        </Button>
+      </Shell>
+    );
+  }
+
+  if (query.isPending) {
+    return (
+      <Shell>
+        <Skeleton className="h-40 w-full" />
+      </Shell>
+    );
+  }
+
+  const invite = query.data;
+
+  if (!invite || !invite.found) {
+    return (
+      <Shell>
+        <h1 className="text-2xl font-semibold">Convite inválido</h1>
+        <p className="text-sm text-muted-foreground">
+          Este link não corresponde a nenhum convite. Solicite um novo convite ao titular da
+          organização.
+        </p>
+      </Shell>
+    );
+  }
+
+  const blocked =
+    invite.status !== "INVITED"
+      ? invite.status === "ACCEPTED"
+        ? "Este convite já foi utilizado."
+        : invite.status === "REVOKED"
+          ? "Este convite foi revogado."
+          : "Este convite expirou."
+      : invite.expired
+        ? "Este convite expirou."
+        : invite.already_member
+          ? "Este usuário já pertence à organização."
+          : !invite.email_matches
+            ? "Este convite foi endereçado a outro e-mail. Entre com a conta do e-mail convidado."
+            : null;
+
+  return (
+    <Shell>
+      <h1 className="text-2xl font-semibold">
+        Convite para {invite.organization_name ?? "organização"}
+      </h1>
+      <p className="text-sm leading-relaxed text-muted-foreground">
+        Papel proposto:{" "}
+        <strong className="text-foreground">
+          {ORG_ROLE_LABELS[invite.invited_role as OrgRole] ?? invite.invited_role}
+        </strong>
+        . O papel é definido pelo convite aprovado e não pode ser alterado no aceite.
+      </p>
+
+      {blocked ? (
+        <p className="rounded-sm border-l-2 border-destructive/50 bg-destructive/5 px-3 py-2 text-sm text-muted-foreground">
+          {blocked}
+        </p>
+      ) : (
+        <Button
+          className="w-full"
+          disabled={acceptMutation.isPending}
+          onClick={() => acceptMutation.mutate()}
+        >
+          Aceitar convite
+        </Button>
+      )}
+    </Shell>
+  );
+}
