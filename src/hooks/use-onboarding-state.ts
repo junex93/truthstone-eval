@@ -68,20 +68,13 @@ export function useOnboardingState() {
     retry: false,
   });
 
-  let state: OnboardingState = "AUTH_LOADING";
-  if (workspace.isError) {
-    state = "ERROR";
-  } else if (workspace.isPending) {
-    state = "AUTH_LOADING";
-  } else if (hasMembership) {
-    state = "MEMBER";
-  } else if (pending.isPending) {
-    state = "AUTH_LOADING";
-  } else if ((pending.data?.invitations.length ?? 0) > 0) {
-    state = "PENDING_INVITATION";
-  } else {
-    state = "NO_ORGANIZATION";
-  }
+  const state = resolveOnboardingState({
+    workspaceLoading: workspace.isPending,
+    workspaceError: workspace.isError,
+    hasMembership,
+    invitationsLoading: !hasMembership && pending.isPending,
+    pendingInvitationCount: pending.data?.invitations.length ?? 0,
+  });
 
   return {
     state,
