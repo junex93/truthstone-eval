@@ -4072,6 +4072,77 @@ export type Database = {
         }
         Relationships: []
       }
+      organization_invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_at: string
+          invited_by: string
+          invited_role: Database["public"]["Enums"]["org_role"]
+          last_sent_at: string | null
+          organization_id: string
+          revoked_at: string | null
+          revoked_by: string | null
+          revoked_reason: string | null
+          send_count: number
+          status: Database["public"]["Enums"]["invitation_status"]
+          token_hash: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+          invited_at?: string
+          invited_by: string
+          invited_role: Database["public"]["Enums"]["org_role"]
+          last_sent_at?: string | null
+          organization_id: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          revoked_reason?: string | null
+          send_count?: number
+          status?: Database["public"]["Enums"]["invitation_status"]
+          token_hash: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_at?: string
+          invited_by?: string
+          invited_role?: Database["public"]["Enums"]["org_role"]
+          last_sent_at?: string | null
+          organization_id?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          revoked_reason?: string | null
+          send_count?: number
+          status?: Database["public"]["Enums"]["invitation_status"]
+          token_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_invitations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           created_at: string
@@ -5875,6 +5946,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_organization_invitation: {
+        Args: { _token_hash: string }
+        Returns: Json
+      }
       acknowledge_market_data_issue: {
         Args: { _issue_id: string; _notes: string }
         Returns: string
@@ -5946,6 +6021,16 @@ export type Database = {
         Args: { _case_id: string; _description: string }
         Returns: string
       }
+      create_organization_invitation: {
+        Args: {
+          _email: string
+          _organization_id: string
+          _role: Database["public"]["Enums"]["org_role"]
+          _token_hash: string
+          _ttl_hours?: number
+        }
+        Returns: string
+      }
       current_actor_organization: { Args: never; Returns: string }
       current_org_role: {
         Args: { _org: string }
@@ -5982,6 +6067,10 @@ export type Database = {
         Args: { _market_property_id: string; _subject_property_id: string }
         Returns: number
       }
+      expire_stale_invitations: {
+        Args: { _organization_id: string }
+        Returns: number
+      }
       freeze_dataset: {
         Args: { _confirmation: string; _dataset_version_id: string }
         Returns: Json
@@ -5994,6 +6083,10 @@ export type Database = {
         Returns: boolean
       }
       in_privileged_op: { Args: never; Returns: boolean }
+      inspect_organization_invitation: {
+        Args: { _token_hash: string }
+        Returns: Json
+      }
       is_org_admin: { Args: { _org: string }; Returns: boolean }
       is_org_creator: { Args: { _org: string }; Returns: boolean }
       is_org_member: { Args: { _org: string }; Returns: boolean }
@@ -6054,6 +6147,14 @@ export type Database = {
         Args: { _reason: string; _spec_id: string }
         Returns: string
       }
+      resend_organization_invitation: {
+        Args: {
+          _invitation_id: string
+          _token_hash: string
+          _ttl_hours?: number
+        }
+        Returns: string
+      }
       resolve_market_data_issue: {
         Args: { _issue_id: string; _notes: string }
         Returns: string
@@ -6094,6 +6195,10 @@ export type Database = {
           _source_locator: Json
           _unit: string
         }
+        Returns: string
+      }
+      revoke_organization_invitation: {
+        Args: { _invitation_id: string; _reason?: string }
         Returns: string
       }
       satisfy_specification_requirement: {
@@ -6240,6 +6345,7 @@ export type Database = {
         | "UNFURNISHED"
         | "PARTIALLY_FURNISHED"
         | "FURNISHED"
+      invitation_status: "INVITED" | "ACCEPTED" | "EXPIRED" | "REVOKED"
       issue_resolution_type: "SYSTEM" | "HUMAN"
       knowledge_state:
         | "KNOWN"
@@ -6851,6 +6957,7 @@ export const Constants = {
         "PARTIALLY_FURNISHED",
         "FURNISHED",
       ],
+      invitation_status: ["INVITED", "ACCEPTED", "EXPIRED", "REVOKED"],
       issue_resolution_type: ["SYSTEM", "HUMAN"],
       knowledge_state: [
         "KNOWN",
