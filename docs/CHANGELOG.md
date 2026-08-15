@@ -2,6 +2,30 @@
 
 Formato: mudanças agrupadas por fase de entrega. Datas em UTC.
 
+## Fase 7H.4 — Resolver único de onboarding (zero-org + convite pendente) (2026-08-15)
+
+- Causa raiz corrigida: `/admin` e o dashboard decidiam de forma independente o
+  estado do usuário sem organização, exibindo "Sem organização vinculada" (ou
+  uma lista de membros vazia) antes de os convites pendentes serem resolvidos.
+- Novo módulo puro `src/lib/onboarding-state.ts` com
+  `resolveOnboardingState()` e os estados `AUTH_LOADING`, `MEMBER`,
+  `PENDING_INVITATION`, `NO_ORGANIZATION`, `ERROR`. Membership ausente nunca é
+  interpretada como "novo usuário" enquanto sessão ou convites estiverem
+  pendentes.
+- `src/hooks/use-onboarding-state.ts` consome o resolver com dados reais
+  (workspace + `list_my_pending_invitations`); `src/components/app/OnboardingGate.tsx`
+  centraliza a UI e é aplicado em `/admin` e no dashboard.
+- `listMembers` deixou de lançar erro para usuário sem organização: devolve
+  `{ currentRole: null, members: [] }` e a tela renderiza o gate.
+- Aceite permanece ato humano explícito com token bruto; e-mail coincidente
+  jamais cria membership automática.
+- Suíte de convites expandida para **72/72 PASS** (antes 61), incluindo o caso
+  real zero-org com convite pendente, restauração de sessão, recusa de aceite
+  sem token válido e transição pós-aceite para `MEMBER`.
+- Regressão: negative-tests 84/84, methodology-governance 161/161, factors
+  100/100, market-intelligence 81/81, market-flow 33/33, research 28/28,
+  claim-gate 47/47, source-ingestion 40/40.
+
 ## Fase 7H.2 — Continuidade convite → signup → confirmação → aceite (2026-08-15)
 
 - Causa raiz corrigida: a confirmação de e-mail retornava para `/` sem search
