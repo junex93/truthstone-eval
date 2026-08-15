@@ -116,10 +116,13 @@ export const revokeInvitation = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await requireAdminAccess(supabase, userId);
 
-    const { error } = await supabase.rpc("revoke_organization_invitation", {
-      _invitation_id: data.invitationId,
-      _reason: data.reason ?? undefined,
-    });
+    const { error } = await supabase.rpc(
+      "revoke_organization_invitation",
+      data.reason
+        ? { _invitation_id: data.invitationId, _reason: data.reason }
+        : { _invitation_id: data.invitationId },
+    );
+
     if (error) throw new Error(humanize(error.message));
     return { ok: true };
   });
