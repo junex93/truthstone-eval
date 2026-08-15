@@ -46,7 +46,7 @@ function DashboardPage() {
   }
 
   if (query.data === null) {
-    return <OrganizationBootstrap />;
+    return <ZeroOrgOnboarding />;
   }
 
   const metrics = query.data;
