@@ -13,6 +13,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
 import {
   METHODOLOGY_SOURCE_BUCKET,
+  readReviewerSegregationGate,
   asJsonObject,
   asStringArray,
   assertMethodologyStoragePath,
