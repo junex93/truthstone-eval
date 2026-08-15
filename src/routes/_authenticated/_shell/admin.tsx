@@ -194,7 +194,7 @@ function InvitationsPanel() {
     onSuccess: (result) => {
       setIssuedLink(linkFor(result.token));
       setEmail("");
-      toast.success("O convite foi criado. Copie o link e envie ao convidado.");
+      toast.success("Convite criado. Copie este link e envie para a pessoa convidada.");
       refresh();
     },
     onError: (error) =>
@@ -205,11 +205,13 @@ function InvitationsPanel() {
     mutationFn: (invitationId: string) => resend({ data: { invitationId } }),
     onSuccess: (result) => {
       setIssuedLink(linkFor(result.token));
-      toast.success("Novo link de convite emitido. O link anterior deixou de valer.");
+      toast.success("Novo link gerado. O link anterior deixou de funcionar.");
       refresh();
     },
-    onError: (error) => toast.error(error instanceof Error ? error.message : "Falha ao reenviar."),
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Não foi possível gerar o link."),
   });
+
 
   const revokeMutation = useMutation({
     mutationFn: (invitationId: string) => revoke({ data: { invitationId } }),
