@@ -48,10 +48,19 @@ function Shell({ children }: { children: React.ReactNode }) {
 function InvitePage() {
   const { token } = Route.useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const inspect = useServerFn(inspectInvitation);
   const accept = useServerFn(acceptInvitation);
 
   const [sessionState, setSessionState] = useState<"loading" | "anon" | "authenticated">("loading");
+
+  /**
+   * Guarda a intenção de voltar a este convite depois do ciclo signup → confirmação
+   * de e-mail → login. Nada é aceito por isso: o aceite continua sendo ato explícito.
+   */
+  useEffect(() => {
+    rememberInviteIntent(token);
+  }, [token]);
 
   useEffect(() => {
     void supabase.auth.getSession().then(({ data }) => {
@@ -68,13 +77,17 @@ function InvitePage() {
 
   const acceptMutation = useMutation({
     mutationFn: () => accept({ data: { token } }),
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
+      clearInviteIntent();
       toast.success(
         `Convite aceito. Você agora participa desta organização como ${
           ORG_ROLE_LABELS[result.role as OrgRole] ?? result.role
         }.`,
       );
-      void navigate({ to: "/dashboard", replace: true });
+      // Contexto de organização, papel e permissões precisa refletir o novo vínculo
+      // sem exigir logout/login.
+      await queryClient.invalidateQueries();
+      await navigate({ to: "/dashboard", replace: true });
     },
     onError: (error) =>
       toast.error(
@@ -96,7 +109,8 @@ function InvitePage() {
         <h1 className="text-2xl font-semibold">Convite para uma organização</h1>
         <p className="text-sm leading-relaxed text-muted-foreground">
           Entre com a conta do mesmo e-mail que recebeu o convite, ou crie a conta com esse e-mail. O
-          vínculo só é criado depois do aceite autenticado.
+          vínculo só é criado depois do aceite autenticado — autenticar-se, por si só, não gera
+          participação na organização.
         </p>
         <Button asChild className="w-full">
           <Link to="/auth" search={{ convite: token }}>
@@ -106,6 +120,7 @@ function InvitePage() {
       </Shell>
     );
   }
+
 
   if (query.isPending) {
     return (
