@@ -319,62 +319,95 @@ function InvitationsPanel() {
           description="Convites aceitos, expirados ou revogados aparecem no histórico abaixo."
         />
       ) : (
-        <div className="panel overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-left">
-                <th className="label-meta px-4 py-2.5">E-mail</th>
-                <th className="label-meta px-4 py-2.5">Papel</th>
-                <th className="label-meta px-4 py-2.5">Situação</th>
-                <th className="label-meta px-4 py-2.5">Convidado por</th>
-                <th className="label-meta px-4 py-2.5">Enviado em</th>
-                <th className="label-meta px-4 py-2.5">Expira em</th>
-                <th className="label-meta px-4 py-2.5">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pending.map((invite) => (
-                <tr key={invite.id} className="border-b border-border last:border-0">
-                  <td className="px-4 py-3">{invite.email}</td>
-                  <td className="px-4 py-3">{ORG_ROLE_LABELS[invite.invited_role as OrgRole]}</td>
-                  <td className="mono-value px-4 py-3 text-muted-foreground">
+        <div className="panel divide-y divide-border">
+          {pending.map((invite) => (
+            <div
+              key={invite.id}
+              className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between"
+            >
+              <dl className="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <dt className="label-meta">E-mail</dt>
+                  <dd className="font-medium break-all">{invite.email}</dd>
+                </div>
+                <div>
+                  <dt className="label-meta">Papel</dt>
+                  <dd>{ORG_ROLE_LABELS[invite.invited_role as OrgRole]}</dd>
+                </div>
+                <div>
+                  <dt className="label-meta">Situação</dt>
+                  <dd className="mono-value text-xs text-muted-foreground">
                     {INVITATION_STATUS_LABELS[invite.status as InvitationStatus]}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {invite.invited_by_name ?? "—"}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
+                  </dd>
+                </div>
+                <div>
+                  <dt className="label-meta">Convidado por</dt>
+                  <dd className="text-muted-foreground">{invite.invited_by_name ?? "—"}</dd>
+                </div>
+                <div>
+                  <dt className="label-meta">Enviado em</dt>
+                  <dd className="text-muted-foreground">
                     {formatDate(invite.last_sent_at ?? invite.invited_at)}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {formatDate(invite.expires_at)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={resendMutation.isPending}
-                        onClick={() => resendMutation.mutate(invite.id)}
-                      >
-                        Gerar novo link
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        disabled={revokeMutation.isPending}
-                        onClick={() => revokeMutation.mutate(invite.id)}
-                      >
-                        Revogar convite
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </dd>
+                </div>
+                <div>
+                  <dt className="label-meta">Expira em</dt>
+                  <dd className="text-muted-foreground">{formatDate(invite.expires_at)}</dd>
+                </div>
+              </dl>
+
+              <div className="flex shrink-0 flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={resendMutation.isPending}
+                  onClick={() => resendMutation.mutate(invite.id)}
+                >
+                  Gerar novo link
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  disabled={revokeMutation.isPending}
+                  onClick={() => setRevokeTarget({ id: invite.id, email: invite.email })}
+                >
+                  Remover convite
+                </Button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
+
+      <AlertDialog
+        open={revokeTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setRevokeTarget(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover este convite?</AlertDialogTitle>
+            <AlertDialogDescription>
+              O convite para {revokeTarget?.email ?? "—"} será cancelado. A pessoa não poderá mais
+              usar o link atual. Depois você poderá criar um novo convite para este e-mail. O
+              histórico do convite é preservado para auditoria.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={revokeMutation.isPending}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={revokeMutation.isPending}
+              onClick={(event) => {
+                event.preventDefault();
+                if (revokeTarget) revokeMutation.mutate(revokeTarget.id);
+              }}
+            >
+              Remover convite
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {history.length > 0 ? (
         <div className="panel overflow-x-auto">
