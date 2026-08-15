@@ -11,9 +11,11 @@ import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    convite: typeof search["convite"] === "string" ? search["convite"] : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { convite?: string } =>
+    typeof search["convite"] === "string" && search["convite"].length > 0
+      ? { convite: search["convite"] }
+      : {},
+
   head: () => ({
     meta: [
       { title: "Acesso — Inteligência Pericial Imobiliária" },
