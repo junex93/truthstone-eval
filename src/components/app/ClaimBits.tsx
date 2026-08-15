@@ -176,7 +176,7 @@ export function SourceClaimsPanel({ sourceId }: { sourceId: string }) {
   if (query.isPending) return <Skeleton className="h-32 w-full" />;
   if (query.isError) return null;
 
-  const { claims, reviews, role } = query.data;
+  const { claims, reviews, role, actorNames } = query.data;
   const canReviewClaims = role === "OWNER" || role === "ADMIN" || role === "REVIEWER";
 
   return (
@@ -213,9 +213,16 @@ export function SourceClaimsPanel({ sourceId }: { sourceId: string }) {
                     {claim.verbatim_excerpt}
                   </blockquote>
                 ) : null}
+                <p className="text-xs text-muted-foreground">
+                  Proposta por: {actorNames[claim.created_by ?? ""] ?? "autoria não registrada"}
+                  {" · "}
+                  {new Date(claim.created_at).toLocaleString("pt-BR")}
+                </p>
                 {latest ? (
                   <p className="text-xs text-muted-foreground">
-                    Justificativa registrada: {latest.justification}
+                    Revisão profissional por:{" "}
+                    {actorNames[latest.reviewer_id] ?? "revisor não identificado"} —{" "}
+                    {latest.justification}
                   </p>
                 ) : canReviewClaims ? (
                   <ClaimReviewForm claimId={claim.id} sourceId={sourceId} />
