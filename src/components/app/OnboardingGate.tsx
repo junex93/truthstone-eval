@@ -74,14 +74,11 @@ export function PendingInvitationPanel({
         </div>
       ) : (
         <div className="panel space-y-2 p-5">
-          <p className="text-sm leading-relaxed">
-            Você possui um convite pendente, mas é necessário abrir o link original enviado pelo
-            administrador. O sistema guarda apenas o resumo criptográfico do código do convite: o
-            link não pode ser recuperado nem reconstruído aqui.
-          </p>
+          <p className="text-sm leading-relaxed">Solicite ao administrador o link do convite.</p>
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Peça ao titular da organização para reemitir o convite em Administração → Convites
-            pendentes → Reenviar, e entregar o novo link. O link anterior deixa de valer.
+            Nesta fase o convite é entregue por link manual: o administrador abre Administração →
+            Convites pendentes → Gerar novo link e envia o link para você. O link anterior deixa de
+            funcionar.
           </p>
         </div>
       )}
@@ -90,6 +87,7 @@ export function PendingInvitationPanel({
         Autenticado como {email ?? "—"}. O aceite só é possível quando o e-mail autenticado
         corresponde exatamente ao e-mail convidado, e é sempre um ato humano explícito.
       </GovernanceNote>
+
     </div>
   );
 }
