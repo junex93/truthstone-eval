@@ -301,7 +301,7 @@ function InvitationsPanel() {
 
       <SectionTitle
         title="Convites pendentes"
-        description="Convite enviado não é membro ativo. O papel só passa a valer depois do aceite."
+        description="Convite pendente não é membro ativo. O papel só passa a valer depois do aceite explícito. Gere um novo link sempre que precisar reenviar o convite — o link anterior deixa de funcionar."
       />
 
       {query.isPending ? (
@@ -350,7 +350,7 @@ function InvitationsPanel() {
                         disabled={resendMutation.isPending}
                         onClick={() => resendMutation.mutate(invite.id)}
                       >
-                        Reenviar
+                        Gerar novo link
                       </Button>
                       <Button
                         size="sm"
@@ -358,7 +358,7 @@ function InvitationsPanel() {
                         disabled={revokeMutation.isPending}
                         onClick={() => revokeMutation.mutate(invite.id)}
                       >
-                        Revogar
+                        Revogar convite
                       </Button>
                     </div>
                   </td>
