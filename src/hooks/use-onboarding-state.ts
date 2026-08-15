@@ -4,14 +4,11 @@ import { useEffect, useState } from "react";
 
 import { readInviteIntent } from "@/lib/invite-intent";
 import { listMyPendingInvitations } from "@/lib/invitations.functions";
+import { resolveOnboardingState, type OnboardingState } from "@/lib/onboarding-state";
 import { useWorkspace } from "@/hooks/use-workspace";
 
-export type OnboardingState =
-  | "AUTH_LOADING"
-  | "MEMBER"
-  | "PENDING_INVITATION"
-  | "NO_ORGANIZATION"
-  | "ERROR";
+export type { OnboardingState };
+export { resolveOnboardingState };
 
 export interface PendingInvitationView {
   invitationId: string;
@@ -21,25 +18,6 @@ export interface PendingInvitationView {
   email: string;
   invitedAt: string;
   expiresAt: string;
-}
-
-/**
- * Máquina de estados pura, testável sem React. Enquanto qualquer camada estiver
- * pendente o resultado é AUTH_LOADING: membership ausente nunca é interpretado como
- * "novo usuário" antes de os convites terem sido resolvidos.
- */
-export function resolveOnboardingState(input: {
-  workspaceLoading: boolean;
-  workspaceError: boolean;
-  hasMembership: boolean;
-  invitationsLoading: boolean;
-  pendingInvitationCount: number;
-}): OnboardingState {
-  if (input.workspaceError) return "ERROR";
-  if (input.workspaceLoading) return "AUTH_LOADING";
-  if (input.hasMembership) return "MEMBER";
-  if (input.invitationsLoading) return "AUTH_LOADING";
-  return input.pendingInvitationCount > 0 ? "PENDING_INVITATION" : "NO_ORGANIZATION";
 }
 
 /**
