@@ -734,6 +734,138 @@ async function main() {
     "apenas digest SHA-256 no banco",
   );
 
+  // ---------- 12. ZERO-ORG INVITEE: BUG REAL DA UI ----------
+  const zeroOrg = await createUser("zero-org");
+  const zeroOrgToken = randomToken();
+  const { data: zeroOrgInviteId } = await ownerA.client.rpc("create_organization_invitation", {
+    _organization_id: orgA!.id,
+    _email: zeroOrg.email,
+    _role: "REVIEWER",
+    _token_hash: await sha256Hex(zeroOrgToken),
+  });
+
+  const { data: zeroOrgMemberships } = await zeroOrg.client
+    .from("organization_members")
+    .select("id")
+    .eq("user_id", zeroOrg.id)
+    .eq("status", "ACTIVE");
+  const { data: zeroOrgPending } = await zeroOrg.client.rpc("list_my_pending_invitations");
+  const zeroOrgMembershipCount = (zeroOrgMemberships ?? []).length;
+  const zeroOrgPendingCount = (zeroOrgPending ?? []).length;
+
+  expectTrue(
+    "zero_org_authenticated_invitee_sees_pending_invitation",
+    resolveOnboardingState({
+      workspaceLoading: false,
+      workspaceError: false,
+      hasMembership: zeroOrgMembershipCount > 0,
+      invitationsLoading: false,
+      pendingInvitationCount: zeroOrgPendingCount,
+    }) === "PENDING_INVITATION",
+    `memberships=${zeroOrgMembershipCount} pending=${zeroOrgPendingCount}`,
+  );
+  expectTrue(
+    "zero-org: RLS realista devolve somente o convite do próprio e-mail",
+    zeroOrgPendingCount === 1 && (zeroOrgPending as any[])[0]?.email === zeroOrg.email,
+    JSON.stringify(zeroOrgPending),
+  );
+  expectTrue(
+    "zero-org: NO_ORGANIZATION nunca é exibido antes de resolver convites",
+    resolveOnboardingState({
+      workspaceLoading: false,
+      workspaceError: false,
+      hasMembership: false,
+      invitationsLoading: true,
+      pendingInvitationCount: 0,
+    }) === "AUTH_LOADING",
+    "invitations pendentes ⇒ AUTH_LOADING",
+  );
+  expectTrue(
+    "session restore: sessão não resolvida não renderiza estado zero-org final",
+    resolveOnboardingState({
+      workspaceLoading: true,
+      workspaceError: false,
+      hasMembership: false,
+      invitationsLoading: false,
+      pendingInvitationCount: 0,
+    }) === "AUTH_LOADING",
+    "workspace loading ⇒ AUTH_LOADING",
+  );
+  expectTrue(
+    "usuário realmente novo (sem convite) recebe NO_ORGANIZATION",
+    resolveOnboardingState({
+      workspaceLoading: false,
+      workspaceError: false,
+      hasMembership: false,
+      invitationsLoading: false,
+      pendingInvitationCount: 0,
+    }) === "NO_ORGANIZATION",
+    "membership=0 e convites=0",
+  );
+  expectTrue(
+    "membro existente não recebe onboarding zero-org",
+    resolveOnboardingState({
+      workspaceLoading: false,
+      workspaceError: false,
+      hasMembership: true,
+      invitationsLoading: false,
+      pendingInvitationCount: 1,
+    }) === "MEMBER",
+    "membership ACTIVE ⇒ MEMBER",
+  );
+  expectTrue(
+    "raw token ausente não permite aceite: nada além do digest existe no banco",
+    (
+      await admin
+        .from("organization_invitations")
+        .select("token_hash")
+        .eq("id", zeroOrgInviteId as unknown as string)
+        .maybeSingle()
+    ).data?.token_hash === (await sha256Hex(zeroOrgToken)),
+    "somente digest recuperável",
+  );
+  expectFail(
+    "raw token ausente/incorreto: aceite recusado no servidor",
+    (
+      await zeroOrg.client.rpc("accept_organization_invitation", {
+        _token_hash: await sha256Hex(randomToken()),
+      })
+    ).error,
+  );
+  expectOk(
+    "raw token presente: aceite explícito conclui o ingresso",
+    (
+      await zeroOrg.client.rpc("accept_organization_invitation", {
+        _token_hash: await sha256Hex(zeroOrgToken),
+      })
+    ).error,
+  );
+  const { data: zeroOrgAfter } = await zeroOrg.client.rpc("list_my_pending_invitations");
+  const { data: zeroOrgMember } = await admin
+    .from("organization_members")
+    .select("role, status, organization_id")
+    .eq("user_id", zeroOrg.id)
+    .maybeSingle();
+  expectTrue(
+    "pós-aceite: convite pendente desaparece e membership REVIEWER ACTIVE aparece",
+    (zeroOrgAfter ?? []).length === 0 &&
+      (zeroOrgMember as any)?.role === "REVIEWER" &&
+      (zeroOrgMember as any)?.status === "ACTIVE" &&
+      (zeroOrgMember as any)?.organization_id === orgA!.id,
+    JSON.stringify(zeroOrgMember),
+  );
+  expectTrue(
+    "pós-aceite: estado do onboarding volta para MEMBER",
+    resolveOnboardingState({
+      workspaceLoading: false,
+      workspaceError: false,
+      hasMembership: true,
+      invitationsLoading: false,
+      pendingInvitationCount: 0,
+    }) === "MEMBER",
+    "MEMBER",
+  );
+
   // ---------- CLEANUP ----------
   await admin.from("audit_log").delete().in("organization_id", [orgA!.id, orgB!.id]);
   await admin.from("organization_invitations").delete().in("organization_id", [orgA!.id, orgB!.id]);
