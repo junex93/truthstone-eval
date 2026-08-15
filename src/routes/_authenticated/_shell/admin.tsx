@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { OnboardingGate } from "@/components/app/OnboardingGate";
 import { EmptyState, GovernanceNote, PageHeader, SectionTitle } from "@/components/app/Primitives";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
