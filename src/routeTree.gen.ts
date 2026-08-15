@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as AuthenticatedShellRouteImport } from './routes/_authenticated/_shell'
 import { Route as ConviteTokenRouteImport } from './routes/convite.$token'
 import { Route as AuthenticatedShellAdminRouteImport } from './routes/_authenticated/_shell/admin'
@@ -50,6 +51,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
+  id: '/redefinir-senha',
+  path: '/redefinir-senha',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedShellRoute = AuthenticatedShellRouteImport.update({
@@ -202,6 +208,7 @@ const AuthenticatedShellCasesCaseIdResearchRunIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/convite/$token': typeof ConviteTokenRoute
   '/admin': typeof AuthenticatedShellAdminRoute
   '/dashboard': typeof AuthenticatedShellDashboardRoute
@@ -230,6 +237,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/convite/$token': typeof ConviteTokenRoute
   '/admin': typeof AuthenticatedShellAdminRoute
   '/dashboard': typeof AuthenticatedShellDashboardRoute
@@ -259,6 +267,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/_authenticated/_shell': typeof AuthenticatedShellRouteWithChildren
   '/convite/$token': typeof ConviteTokenRoute
   '/_authenticated/_shell/admin': typeof AuthenticatedShellAdminRoute
@@ -290,6 +299,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/redefinir-senha'
     | '/convite/$token'
     | '/admin'
     | '/dashboard'
@@ -318,6 +328,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/redefinir-senha'
     | '/convite/$token'
     | '/admin'
     | '/dashboard'
@@ -346,6 +357,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/redefinir-senha'
     | '/_authenticated/_shell'
     | '/convite/$token'
     | '/_authenticated/_shell/admin'
@@ -377,6 +389,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   ConviteTokenRoute: typeof ConviteTokenRoute
 }
 
@@ -401,6 +414,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/redefinir-senha': {
+      id: '/redefinir-senha'
+      path: '/redefinir-senha'
+      fullPath: '/redefinir-senha'
+      preLoaderRoute: typeof RedefinirSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/_shell': {
@@ -680,6 +700,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  RedefinirSenhaRoute: RedefinirSenhaRoute,
   ConviteTokenRoute: ConviteTokenRoute,
 }
 export const routeTree = rootRouteImport
