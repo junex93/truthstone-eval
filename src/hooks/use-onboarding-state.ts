@@ -24,6 +24,25 @@ export interface PendingInvitationView {
 }
 
 /**
+ * Máquina de estados pura, testável sem React. Enquanto qualquer camada estiver
+ * pendente o resultado é AUTH_LOADING: membership ausente nunca é interpretado como
+ * "novo usuário" antes de os convites terem sido resolvidos.
+ */
+export function resolveOnboardingState(input: {
+  workspaceLoading: boolean;
+  workspaceError: boolean;
+  hasMembership: boolean;
+  invitationsLoading: boolean;
+  pendingInvitationCount: number;
+}): OnboardingState {
+  if (input.workspaceError) return "ERROR";
+  if (input.workspaceLoading) return "AUTH_LOADING";
+  if (input.hasMembership) return "MEMBER";
+  if (input.invitationsLoading) return "AUTH_LOADING";
+  return input.pendingInvitationCount > 0 ? "PENDING_INVITATION" : "NO_ORGANIZATION";
+}
+
+/**
  * Fonte única de verdade do onboarding.
  *
  * Regra obrigatória: membership ausente NÃO significa "novo usuário". Só depois de
