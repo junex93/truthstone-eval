@@ -125,3 +125,22 @@ Limitação declarada: coincidência de e-mail nunca cria vínculo. Sem o token 
 convite, o aceite é impossível; o usuário precisa do link entregue pelo
 administrador. A entrega do link permanece manual
 (`BLOCKED_BY_EMAIL_CONFIGURATION`).
+
+## Resolver único de onboarding (Fase 7H.4)
+
+Toda tela que depende de organização passa pelo mesmo resolver
+(`src/lib/onboarding-state.ts`), consumido por `useOnboardingState` e aplicado
+via `OnboardingGate`:
+
+| Estado | Condição | UI |
+| --- | --- | --- |
+| `AUTH_LOADING` | sessão/workspace ou convites ainda carregando | skeleton |
+| `MEMBER` | membership ACTIVE | conteúdo normal da rota |
+| `PENDING_INVITATION` | sem membership e ≥ 1 convite `INVITED` para o e-mail | painel do convite (org, papel, expiração) |
+| `NO_ORGANIZATION` | sem membership e sem convite | criar organização / abrir link de convite |
+| `ERROR` | falha ao resolver workspace | mensagem de erro |
+
+Regras preservadas: o painel só oferece "continuar para o convite" quando o
+token bruto está na intenção local; sem token o convidado é orientado a reabrir
+o link original ou pedir reenvio. E-mail coincidente não gera membership; o
+aceite é sempre ato humano explícito validado no banco.

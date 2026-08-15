@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { OnboardingGate } from "@/components/app/OnboardingGate";
 import { EmptyState, GovernanceNote, PageHeader, SectionTitle } from "@/components/app/Primitives";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,8 +36,20 @@ import {
 import { listMembers, updateMemberRole } from "@/lib/workspace.functions";
 
 export const Route = createFileRoute("/_authenticated/_shell/admin")({
-  component: AdminPage,
+  component: AdminRoute,
 });
+
+/**
+ * Sem organização ativa não existe administração de organização: o estado de
+ * onboarding (convite pendente ou primeiro acesso) tem precedência.
+ */
+function AdminRoute() {
+  return (
+    <OnboardingGate>
+      <AdminPage />
+    </OnboardingGate>
+  );
+}
 
 function formatDate(value: string | null): string {
   if (!value) return "—";
