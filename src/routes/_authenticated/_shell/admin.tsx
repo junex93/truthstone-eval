@@ -35,8 +35,20 @@ import {
 import { listMembers, updateMemberRole } from "@/lib/workspace.functions";
 
 export const Route = createFileRoute("/_authenticated/_shell/admin")({
-  component: AdminPage,
+  component: AdminRoute,
 });
+
+/**
+ * Sem organização ativa não existe administração de organização: o estado de
+ * onboarding (convite pendente ou primeiro acesso) tem precedência.
+ */
+function AdminRoute() {
+  return (
+    <OnboardingGate>
+      <AdminPage />
+    </OnboardingGate>
+  );
+}
 
 function formatDate(value: string | null): string {
   if (!value) return "—";
