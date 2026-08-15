@@ -41,9 +41,15 @@ const credentialsSchema = z.object({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { convite } = Route.useSearch();
+  const search = Route.useSearch();
 
-  /** Após autenticar, volta ao convite pendente quando o acesso partiu de um link de convite. */
+  /**
+   * O convite pode chegar pelo search param (link direto) ou pela intenção guardada
+   * no navegador quando o ciclo de confirmação de e-mail devolve o usuário à raiz.
+   */
+  const convite = search.convite ?? readInviteIntent() ?? undefined;
+
+  /** Após autenticar, volta ao convite pendente quando existe intenção de convite. */
   const goToNextStep = async () => {
     if (convite) {
       await navigate({ to: "/convite/$token", params: { token: convite }, replace: true });
@@ -57,11 +63,22 @@ function AuthPage() {
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
+    if (search.convite) rememberInviteIntent(search.convite);
+  }, [search.convite]);
+
+  useEffect(() => {
     void supabase.auth.getSession().then(({ data }) => {
       if (data.session) void goToNextStep();
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate, convite]);
+
+  /** Destino da confirmação de e-mail: a própria tela do convite, quando houver. */
+  function confirmationRedirect(): string {
+    return convite
+      ? `${window.location.origin}/convite/${encodeURIComponent(convite)}`
+      : window.location.origin;
+  }
 
   async function handlePasswordSubmit(mode: "signin" | "signup") {
     setNotice(null);
@@ -79,14 +96,16 @@ function AuthPage() {
       } else {
         const { data, error } = await supabase.auth.signUp({
           ...parsed.data,
-          options: { emailRedirectTo: window.location.origin },
+          options: { emailRedirectTo: confirmationRedirect() },
         });
         if (error) throw error;
         if (data.session) {
           await goToNextStep();
         } else {
           setNotice(
-            "Cadastro registrado. Confirme o e-mail enviado para ativar o acesso — a sessão só é criada após a confirmação.",
+            convite
+              ? "Cadastro registrado. Confirme o e-mail enviado: o link devolve você a esta mesma tela de convite, onde o aceite ainda precisa ser feito por você. O vínculo não é criado automaticamente."
+              : "Cadastro registrado. Confirme o e-mail enviado para ativar o acesso — a sessão só é criada após a confirmação.",
           );
         }
       }
@@ -96,6 +115,7 @@ function AuthPage() {
       setBusy(false);
     }
   }
+
 
   async function handleGoogle() {
     setBusy(true);
