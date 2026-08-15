@@ -1924,3 +1924,18 @@ export const satisfySpecificationRequirement = createServerFn({ method: "POST" }
     if (error) throw new Error(error.message);
     return { requirementId: data.requirementId };
   });
+
+/**
+ * Fase 7G — leitura do gate de revisor independente.
+ *
+ * Somente diagnóstico. A segregação continua imposta pelo banco em
+ * `review_methodology_claim` (revisor distinto de quem propôs) e nas RPCs de
+ * verificação. Nenhum papel é criado, convidado ou elevado por esta função.
+ */
+export const getReviewerSegregationGate = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const membership = await requireMembership(supabase, userId);
+    return { gate: await readReviewerSegregationGate(supabase, membership, userId) };
+  });
